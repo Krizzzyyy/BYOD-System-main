@@ -353,16 +353,13 @@
     
         private void navigateTo(String fxmlPath, String title) {
             try {
-                FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath.toLowerCase()));
-                Parent root = loader.load();
-                Scene scene = new Scene(root);
-                scene.getStylesheets().add(getClass().getResource(STYLESHEET_PATH).toExternalForm());
-    
+                Parent root = FXMLLoader.load(getClass().getResource(fxmlPath.toLowerCase()));
                 Stage stage = (Stage) monitoringButton.getScene().getWindow();
-                stage.setScene(scene);
+                Scene current = stage.getScene();
+                String cssPath = getClass().getResource(STYLESHEET_PATH).toExternalForm();
+                if (!current.getStylesheets().contains(cssPath)) current.getStylesheets().add(cssPath);
+                current.setRoot(root);
                 stage.setTitle(title);
-                stage.setMaximized(false);
-                stage.centerOnScreen();
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Navigation error to " + fxmlPath, e);
                 showAlert("Navigation Error", "Could not load " + fxmlPath);

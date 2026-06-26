@@ -2,85 +2,98 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Hyperlink?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.image.Image?>
 <?import javafx.scene.image.ImageView?>
 <?import javafx.scene.layout.BorderPane?>
-<?import javafx.scene.layout.ColumnConstraints?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.layout.Region?>
 <?import javafx.scene.layout.VBox?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="450.0" prefWidth="500.0" styleClass="background" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.login.LoginController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="500.0" prefWidth="520.0" styleClass="background" stylesheets="@../css/stylesheet.css" xmlns="http://javafx.com/javafx/26" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.login.LoginController">
     <padding>
-        <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
+        <Insets bottom="30.0" left="50.0" right="50.0" top="30.0" />
     </padding>
     <center>
-        <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" BorderPane.alignment="CENTER">
+        <VBox alignment="CENTER" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" spacing="0.0" BorderPane.alignment="CENTER">
             <children>
-                <ImageView fx:id="logoImage" fitHeight="100.0" fitWidth="100.0" pickOnBounds="true" preserveRatio="true">
-                    <image>
-                        <Image url="@../assets/byod-logo.png" />
-                    </image>
-                </ImageView>
-                <Label fx:id="appTitleLabel" styleClass="title-1" text="BYOD Monitoring System" />
-                <Label fx:id="subtitleLabel" styleClass="description" text="Ingress-Egress Device Monitoring" />
-                <GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="200.0" prefWidth="300.0">
-                    <columnConstraints>
-                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                    </columnConstraints>
-                    <rowConstraints>
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" /> <!-- extra row for error label -->
-                    </rowConstraints>
-                    <children>
-                        <Label fx:id="usernameLabel" styleClass="field-label" text="Username:">
-                            <GridPane.margin>
-                                <Insets />
-                            </GridPane.margin>
+                <VBox alignment="CENTER" spacing="10.0">
+                    <padding>
+                        <Insets top="0.0" />
+                    </padding>
+                    <ImageView fx:id="logoImage" fitHeight="80.0" fitWidth="80.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                            <Image url="@../assets/byod-logo.png" />
+                        </image>
+                    </ImageView>
+                </VBox>
+
+                <VBox fx:id="roleSelectionPane" alignment="CENTER" spacing="0.0">
+                    <padding>
+                        <Insets top="10.0" />
+                    </padding>
+                    <Label fx:id="appTitleLabel" styleClass="login-title" text="Hi, BYOD User!">
+                        <VBox.margin>
+                            <Insets bottom="5.0" />
+                        </VBox.margin>
+                    </Label>
+                    <Label fx:id="subtitleLabel" styleClass="login-subtitle" text="↓ Please click or tap your destination.">
+                        <VBox.margin>
+                            <Insets bottom="25.0" />
+                        </VBox.margin>
+                    </Label>
+
+                    <Button fx:id="studentButton" alignment="CENTER" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="role-button-student" text="Student" textAlignment="CENTER">
+                        <VBox.margin>
+                            <Insets bottom="12.0" />
+                        </VBox.margin>
+                    </Button>
+
+                    <Button fx:id="facultyButton" alignment="CENTER" maxWidth="1.7976931348623157E308" mnemonicParsing="false" styleClass="role-button-faculty" text="Faculty" textAlignment="CENTER">
+                        <VBox.margin>
+                            <Insets top="0.0" />
+                        </VBox.margin>
+                    </Button>
+
+                    <HBox alignment="CENTER" spacing="5.0">
+                        <padding>
+                            <Insets top="25.0" />
+                        </padding>
+                        <Label styleClass="footer-text" text="By using this service, you understand and agree to the BYOD System" wrapText="true">
                         </Label>
-                        <!-- Username TextField with fx:id -->
-                        <TextField fx:id="usernameField" promptText="Enter username" styleClass="text-field" GridPane.rowIndex="1">
-                            <GridPane.margin>
-                                <Insets />
-                            </GridPane.margin>
-                        </TextField>
-                        <Label fx:id="passwordLabel" styleClass="field-label" text="Password:" GridPane.rowIndex="2">
-                            <GridPane.margin>
-                                <Insets />
-                            </GridPane.margin>
-                        </Label>
-                        <!-- PasswordField with fx:id (correct type) -->
-                        <PasswordField fx:id="passwordField" promptText="Enter password" styleClass="password-field" GridPane.rowIndex="3">
-                            <GridPane.margin>
-                                <Insets />
-                            </GridPane.margin>
-                        </PasswordField>
-                        <HBox alignment="CENTER" spacing="20.0" GridPane.rowIndex="4">
-                            <children>
-                                <!-- Sign In Button with fx:id -->
-                                <Button fx:id="loginButton" alignment="CENTER" mnemonicParsing="false" prefWidth="200.0" styleClass="login-button" text="Login" textAlignment="CENTER">
-                                    <HBox.margin>
-                                        <Insets />
-                                    </HBox.margin>
-                                </Button>
-                                <Button fx:id="cancelButton" alignment="CENTER" cancelButton="true" layoutX="10.0" layoutY="10.0" mnemonicParsing="false" prefWidth="200.0" styleClass="cancel-button" text="Cancel" textAlignment="CENTER">                     <HBox.margin>
-                                    <Insets />
-                                </HBox.margin>
-                                </Button>
-                            </children>
-                            <GridPane.margin>
-                                <Insets bottom="5.0" top="40.0" />
-                            </GridPane.margin>
-                        </HBox>
-                    </children>
-                </GridPane>
+                    </HBox>
+                    <HBox alignment="CENTER" spacing="5.0">
+                        <Hyperlink styleClass="footer-link" text="Terms of Use" />
+                        <Label styleClass="footer-text" text="and" />
+                        <Hyperlink styleClass="footer-link" text="Privacy Statement" />
+                    </HBox>
+                </VBox>
+
+                <VBox fx:id="loginFormPane" alignment="CENTER" spacing="10.0" managed="false" visible="false">
+                    <padding>
+                        <Insets top="10.0" />
+                    </padding>
+                    <Label fx:id="appTitleLabel2" styleClass="login-title" text="Faculty Login" />
+                    <Label styleClass="login-subtitle" text="↓ Enter your credentials to proceed.">
+                        <VBox.margin>
+                            <Insets bottom="20.0" />
+                        </VBox.margin>
+                    </Label>
+                    <Label fx:id="usernameLabel" styleClass="field-label" text="Username:" />
+                    <TextField fx:id="usernameField" promptText="Enter username" styleClass="text-field" maxWidth="350.0" />
+                    <Label fx:id="passwordLabel" styleClass="field-label" text="Password:" />
+                    <PasswordField fx:id="passwordField" promptText="Enter password" styleClass="password-field" maxWidth="350.0" />
+                    <HBox alignment="CENTER" spacing="20.0">
+                        <padding>
+                            <Insets top="15.0" />
+                        </padding>
+                        <Button fx:id="loginButton" alignment="CENTER" mnemonicParsing="false" prefWidth="160.0" styleClass="role-button-faculty" text="Login" textAlignment="CENTER" />
+                        <Button fx:id="cancelButton" alignment="CENTER" cancelButton="true" mnemonicParsing="false" prefWidth="160.0" styleClass="cancel-button" text="Back" textAlignment="CENTER" />
+                    </HBox>
+                </VBox>
             </children>
         </VBox>
     </center>

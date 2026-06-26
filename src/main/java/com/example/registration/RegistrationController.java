@@ -42,6 +42,11 @@ public class RegistrationController {
     @FXML private ComboBox<String> deviceTypeCombo;
     @FXML private TextField        brandModelField;
     @FXML private TextField        colorDescField;
+    @FXML private TextField        serialNumberField;
+    @FXML private VBox             serialNumberBox;
+
+    @FXML private Region connector1;
+    @FXML private Region connector2;
 
     @FXML private VBox  savedDevicesBox;
     @FXML private Label savedDevicesTitle;
@@ -63,6 +68,8 @@ public class RegistrationController {
     @FXML private Button saveBtn;
     @FXML private Button cancelBtn;
     @FXML private Label  formIdLabel;
+    @FXML private Button monitoringNavBtn;
+    @FXML private Button reportsNavBtn;
 
     private static final int TOTAL_STEPS = 3;
     private int currentStep = 1;
@@ -70,11 +77,12 @@ public class RegistrationController {
     private boolean step2Completed = false;
 
     private static class DeviceEntry {
-        String type, brand, color;
-        DeviceEntry(String t, String b, String c) { type=t; brand=b; color=c; }
+        String type, brand, color, serial;
+        DeviceEntry(String t, String b, String c, String s) { type=t; brand=b; color=c; serial=s; }
         static String nvl(String s) { return (s==null||s.isBlank()) ? "—" : s; }
         @Override public String toString() {
-            return nvl(type) + "  ·  " + nvl(brand) + "  ·  " + nvl(color);
+            String base = nvl(type) + "  ·  " + nvl(brand) + "  ·  " + nvl(color);
+            return (serial != null && !serial.isBlank()) ? base + "  ·  " + nvl(serial) : base;
         }
     }
     private final List<DeviceEntry> savedDevices = new ArrayList<>();
@@ -112,14 +120,38 @@ public class RegistrationController {
 
         // Live-update Add Device button state as the user fills in step 2 fields
         if (deviceTypeCombo != null)
-            deviceTypeCombo.valueProperty().addListener((obs, o, n) -> updateSaveDeviceBtnState());
+            deviceTypeCombo.valueProperty().addListener((obs, o, n) -> {
+                updateSaveDeviceBtnState();
+                updateSerialNumberVisibility();
+            });
         if (brandModelField != null)
             brandModelField.textProperty().addListener((obs, o, n) -> updateSaveDeviceBtnState());
         if (colorDescField != null)
             colorDescField.textProperty().addListener((obs, o, n) -> updateSaveDeviceBtnState());
 
+        updateSerialNumberVisibility();
         showStep(1);
         startNavClock();
+        applyRoleRestrictions();
+    }
+
+    /** Hides serial number field for categories that don't apply (e.g., project prototypes). */
+    private void updateSerialNumberVisibility() {
+        String category = deviceTypeCombo != null ? deviceTypeCombo.getValue() : null;
+        boolean showSerial = category != null && !category.equals("Other project prototypes");
+        if (serialNumberBox != null) {
+            serialNumberBox.setVisible(showSerial);
+            serialNumberBox.setManaged(showSerial);
+            if (!showSerial && serialNumberField != null) {
+                serialNumberField.clear();
+            }
+        }
+    }
+
+    private void applyRoleRestrictions() {
+        if (!"Student".equals(Auth.userRole)) return;
+        if (monitoringNavBtn != null) { monitoringNavBtn.setManaged(false); monitoringNavBtn.setVisible(false); }
+        if (reportsNavBtn != null) { reportsNavBtn.setManaged(false); reportsNavBtn.setVisible(false); }
     }
 
     private static final DateTimeFormatter NAV_DATETIME_FORMATTER =
@@ -170,6 +202,8 @@ public class RegistrationController {
 
     private void updateDots(int active) {
         Label[] dots = { stepStudentInfo, stepDeviceDetails, stepReview };
+        Region[] connectors = { connector1, connector2 };
+
         for (int i = 0; i < dots.length; i++) {
             Label d = dots[i];
             if (d == null) continue;
@@ -177,21 +211,47 @@ public class RegistrationController {
             d.getStyleClass().remove("step-complete");
             d.getStyleClass().remove("step-inactive");
 
+            boolean completed = (i == 0 && step1Completed) || (i == 1 && step2Completed);
+
             if (i + 1 < active) {
-                boolean completed = (i == 0 && step1Completed) || (i == 1 && step2Completed);
                 if (completed) {
-                    d.setText("✔");
+                    d.setText(String.valueOf(i + 1));
                     d.getStyleClass().add("step-complete");
                 } else {
-                    d.setText(String.valueOf(i+1));
+                    d.setText(String.valueOf(i + 1));
                     d.getStyleClass().add("step-inactive");
                 }
             } else if (i + 1 == active) {
-                d.setText(String.valueOf(i+1));
+                d.setText(String.valueOf(i + 1));
                 d.getStyleClass().add("step-active");
             } else {
-                d.setText(String.valueOf(i+1));
+                d.setText(String.valueOf(i + 1));
                 d.getStyleClass().add("step-inactive");
+            }
+
+            // Update step label styling (label is the second child of the VBox parent)
+            if (d.getParent() instanceof VBox parentBox) {
+                var children = parentBox.getChildrenUnmodifiable();
+                if (children.size() > 1 && children.get(1) instanceof Label stepLabel) {
+                    stepLabel.getStyleClass().remove("step-label-active");
+                    stepLabel.getStyleClass().remove("step-label-complete");
+                    if (completed) {
+                        stepLabel.getStyleClass().add("step-label-complete");
+                    } else if (i + 1 == active) {
+                        stepLabel.getStyleClass().add("step-label-active");
+                    }
+                }
+            }
+        }
+
+        // Update connectors
+        for (int i = 0; i < connectors.length; i++) {
+            Region c = connectors[i];
+            if (c == null) continue;
+            c.getStyleClass().remove("step-connector-complete");
+            boolean prevCompleted = (i == 0 && step1Completed) || (i == 1 && step2Completed);
+            if (prevCompleted) {
+                c.getStyleClass().add("step-connector-complete");
             }
         }
     }
@@ -298,11 +358,12 @@ public class RegistrationController {
             return;
         }
 
-        String type  = deviceTypeCombo.getValue();
-        String brand = brandModelField.getText().trim();
-        String color = colorDescField.getText().trim();
+        String type   = deviceTypeCombo.getValue();
+        String brand  = brandModelField.getText().trim();
+        String color  = colorDescField.getText().trim();
+        String serial = serialNumberField != null ? serialNumberField.getText().trim() : "";
 
-        savedDevices.add(new DeviceEntry(type, brand, color));
+        savedDevices.add(new DeviceEntry(type, brand, color, serial));
         step2Completed = true;
         refreshSavedDevicesUI();
         updateDots(currentStep);
@@ -310,9 +371,11 @@ public class RegistrationController {
         deviceTypeCombo.setValue(null);
         brandModelField.clear();
         colorDescField.clear();
+        if (serialNumberField != null) serialNumberField.clear();
         deviceTypeCombo.requestFocus();
 
         updateSaveDeviceBtnState();
+        updateSerialNumberVisibility();
     }
 
     private void refreshSavedDevicesUI() {
@@ -397,13 +460,25 @@ public class RegistrationController {
                 Label title = new Label("Item " + (i+1) + " — " + DeviceEntry.nvl(e.type));
                 title.setStyle("-fx-font-weight:700;-fx-text-fill:#333;");
 
-                Label detail = new Label("Brand/Model: " + DeviceEntry.nvl(e.brand) + "    Color: " + DeviceEntry.nvl(e.color));
-                detail.setStyle("-fx-text-fill:#666;-fx-font-size:12;");
+                VBox details = new VBox(2);
+                details.getChildren().addAll(
+                        makeReviewField("Brand/Model:", e.brand),
+                        makeReviewField("Color:", e.color)
+                );
+                if (e.serial != null && !e.serial.isBlank()) {
+                    details.getChildren().add(makeReviewField("Serial No.:", e.serial));
+                }
 
-                card.getChildren().addAll(title, detail);
+                card.getChildren().addAll(title, details);
                 reviewDevicesList.getChildren().add(card);
             }
         }
+    }
+
+    private Label makeReviewField(String label, String value) {
+        Label lbl = new Label(label + "  " + DeviceEntry.nvl(value));
+        lbl.setStyle("-fx-text-fill:#666;-fx-font-size:12;");
+        return lbl;
     }
 
     private void set(Label lbl, TextField tf) {
@@ -447,7 +522,8 @@ public class RegistrationController {
                         contactField.getText().trim(),
                         d.type,
                         d.brand,
-                        d.color
+                        d.color,
+                        d.serial
                 );
             }
 
@@ -469,7 +545,11 @@ public class RegistrationController {
 
     @FXML
     private void handleCancel() {
-        navigateTo("/fxml/monitoring.fxml");
+        if ("Student".equals(Auth.userRole)) {
+            navigateTo("/fxml/dashboard.fxml");
+        } else {
+            navigateTo("/fxml/monitoring.fxml");
+        }
     }
 
     @FXML private void handleDashboard()    { navigateTo("/fxml/dashboard.fxml"); }

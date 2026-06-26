@@ -22,13 +22,14 @@ public class BYODService {
 
     // FIXED: Added ingress_time = CURRENT_TIMESTAMP so new registrations appear on the dashboard today
     public void registerStudent(String sid, String ln, String fn, String ys, String cp,
-                                String cn, String dt, String bm, String cd) throws Exception {
-        String sql = "INSERT INTO student_device_logs (student_id, last_name, first_name, year_section, course_program, contact_number, device_type, brand_model, color_description, ingress_time) VALUES (?,?,?,?,?,?,?,?,?, CURRENT_TIMESTAMP)";
+                                String cn, String dt, String bm, String cd, String sn) throws Exception {
+        String sql = "INSERT INTO student_device_logs (student_id, last_name, first_name, year_section, course_program, contact_number, device_type, brand_model, color_description, serial_number, ingress_time) VALUES (?,?,?,?,?,?,?,?,?,?, CURRENT_TIMESTAMP)";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, sid); ps.setString(2, ln); ps.setString(3, fn);
             ps.setString(4, ys); ps.setString(5, cp); ps.setString(6, cn);
             ps.setString(7, dt); ps.setString(8, bm); ps.setString(9, cd);
+            ps.setString(10, (sn != null && !sn.isBlank()) ? sn : null);
             ps.executeUpdate();
         }
     }

@@ -22,18 +22,10 @@
                     <Image url="@../assets/byod-logo.png" />
                     <HBox.margin><Insets left="60.0" /></HBox.margin>
                 </ImageView>
-                <Button fx:id="dashboardButton" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onDashboardClick" prefHeight="50.0" styleClass="nav-button" text="Dashboard" textFill="WHITE">
-                    <padding><Insets left="10.0" right="10.0" /></padding>
-                </Button>
-                <Button fx:id="monitoringButton" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onMonitoringClick" prefHeight="50.0" styleClass="nav-button-active" text="Monitoring" textFill="WHITE">
-                    <padding><Insets left="10.0" right="10.0" /></padding>
-                </Button>
-                <Button fx:id="registrationButton" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onRegistrationClick" prefHeight="50.0" styleClass="nav-button" text="Registration" textFill="WHITE">
-                    <padding><Insets left="10.0" right="10.0" /></padding>
-                </Button>
-                <Button fx:id="reportsButton" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onReportsClick" prefHeight="50.0" styleClass="nav-button" text="Reports" textFill="WHITE">
-                    <padding><Insets left="10.0" right="10.0" /></padding>
-                </Button>
+                <Button fx:id="dashboardButton" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onDashboardClick" prefHeight="50.0" styleClass="nav-button" text="Dashboard" textFill="WHITE" />
+                <Button fx:id="monitoringButton" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onMonitoringClick" prefHeight="50.0" styleClass="nav-button-active" text="Monitoring" textFill="WHITE" />
+                <Button fx:id="registrationButton" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onRegistrationClick" prefHeight="50.0" styleClass="nav-button" text="Registration" textFill="WHITE" />
+                <Button fx:id="reportsButton" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#onReportsClick" prefHeight="50.0" styleClass="nav-button" text="Reports" textFill="WHITE" />
                 <Region fx:id="spacer" HBox.hgrow="ALWAYS" />
                 <Label fx:id="navDateTimeLabel" styleClass="nav-datetime" text="MM/DD/YYYY HH:MM:SS">
                     <HBox.margin><Insets right="30.0" /></HBox.margin>

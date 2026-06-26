@@ -24,22 +24,10 @@
                     <Insets left="60.0" />
                 </HBox.margin>
             </ImageView>
-            <Button onAction="#handleDashboard" prefHeight="50" styleClass="nav-button" text="Dashboard">
-                <padding>
-                    <Insets left="10.0" right="10.0" />
-                </padding></Button>
-            <Button onAction="#handleMonitoring" prefHeight="50" styleClass="nav-button" text="Monitoring">
-                <padding>
-                    <Insets left="10.0" right="10.0" />
-                </padding></Button>
-            <Button onAction="#handleRegistration" prefHeight="50" styleClass="nav-button-active" text="Registration">
-                <padding>
-                    <Insets left="10.0" right="10.0" />
-                </padding></Button>
-            <Button onAction="#handleReports" prefHeight="50" styleClass="nav-button" text="Reports">
-                <padding>
-                    <Insets left="10.0" right="10.0" />
-                </padding></Button>
+            <Button onAction="#handleDashboard" prefHeight="50" styleClass="nav-button" text="Dashboard" />
+            <Button fx:id="monitoringNavBtn" onAction="#handleMonitoring" prefHeight="50" styleClass="nav-button" text="Monitoring" />
+            <Button onAction="#handleRegistration" prefHeight="50" styleClass="nav-button-active" text="Registration" />
+            <Button fx:id="reportsNavBtn" onAction="#handleReports" prefHeight="50" styleClass="nav-button" text="Reports" />
             <Region HBox.hgrow="ALWAYS" />
             <Label fx:id="navDateTimeLabel" styleClass="nav-datetime" text="MM/DD/YYYY HH:MM:SS">
                 <HBox.margin>
@@ -70,12 +58,12 @@
                         <Label fx:id="stepStudentInfo" styleClass="step-active" text="1" />
                         <Label styleClass="step-label" text="Student info" />
                     </VBox>
-                    <Region maxHeight="2" prefHeight="2" styleClass="step-connector" HBox.hgrow="ALWAYS" />
+                    <Region fx:id="connector1" maxHeight="2" prefHeight="2" styleClass="step-connector" HBox.hgrow="ALWAYS" />
                     <VBox alignment="CENTER" prefWidth="160" spacing="6">
                         <Label fx:id="stepDeviceDetails" styleClass="step-inactive" text="2" />
                         <Label styleClass="step-label" text="Item details" />
                     </VBox>
-                    <Region maxHeight="2" prefHeight="2" styleClass="step-connector" HBox.hgrow="ALWAYS" />
+                    <Region fx:id="connector2" maxHeight="2" prefHeight="2" styleClass="step-connector" HBox.hgrow="ALWAYS" />
                     <VBox alignment="CENTER" prefWidth="160" spacing="6">
                         <Label fx:id="stepReview" styleClass="step-inactive" text="3" />
                         <Label styleClass="step-label" text="Review &amp; save" />
@@ -86,7 +74,7 @@
                 <!-- STEP 1 — Student information              -->
                 <!-- ══════════════════════════════════════════ -->
                 <VBox fx:id="stepPanel1" managed="true" spacing="16" visible="true">
-                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="section-header-bar">
+                    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header-bar">
                         <Label styleClass="section-icon" text="i" />
                         <Label styleClass="section-title" text="Student information" />
                     </HBox>
@@ -131,8 +119,8 @@
                 <!-- STEP 2 — Registered item details             -->
                 <!-- ══════════════════════════════════════════ -->
                 <VBox fx:id="stepPanel2" managed="false" spacing="16" visible="false">
-                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="section-header-bar">
-                        <Label styleClass="section-icon" text="[]" />
+                    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header-bar">
+                        <Label styleClass="section-icon" text="&#x2713;" />
                         <Label styleClass="section-title" text="Registered item information" />
                     </HBox>
                     <GridPane hgap="20" maxWidth="Infinity" vgap="14">
@@ -152,6 +140,11 @@
                             <Label styleClass="form-label-sm" text="Color / description" />
                             <TextField fx:id="colorDescField" maxWidth="Infinity" promptText="e.g., Black / with HDMI cable" />
                         </VBox>
+                        <VBox fx:id="serialNumberBox" spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="1" managed="true" visible="true">
+                            <Label styleClass="form-label-sm" text="Serial number" />
+                            <TextField fx:id="serialNumberField" maxWidth="Infinity" promptText="Optional — e.g., SN-XK29401" />
+                            <Label styleClass="form-helper" text="Leave blank if item has no serial number" />
+                        </VBox>
                         <rowConstraints>
                             <RowConstraints />
                             <RowConstraints />
@@ -160,8 +153,8 @@
 
                     <!-- Saved devices list — appears after first device is added -->
                     <VBox fx:id="savedDevicesBox" managed="false" spacing="8" visible="false">
-                        <HBox alignment="CENTER_LEFT" spacing="8" styleClass="section-header-bar">
-                            <Label styleClass="section-icon" text="✓" />
+                        <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header-bar">
+                            <Label styleClass="section-icon" text="&#x2713;" />
                             <Label fx:id="savedDevicesTitle" styleClass="section-title" text="Saved items (0)" />
                         </HBox>
                         <VBox fx:id="savedDevicesList" spacing="6" />
@@ -192,8 +185,8 @@
                     </GridPane>
 
                     <!-- Devices review list -->
-                    <HBox alignment="CENTER_LEFT" spacing="8" styleClass="section-header-bar">
-                        <Label styleClass="section-icon" text="[]" />
+                    <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header-bar">
+                        <Label styleClass="section-icon" text="&#x2713;" />
                         <Label fx:id="reviewDevicesTitle" styleClass="section-title" text="Registered Items" />
                     </HBox>
                     <VBox fx:id="reviewDevicesList" spacing="8" />

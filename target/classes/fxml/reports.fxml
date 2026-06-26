@@ -33,22 +33,10 @@
           <Insets left="60.0" />
         </HBox.margin>
       </ImageView>
-      <Button onAction="#handleDashboard" prefHeight="50" styleClass="nav-button" text="Dashboard">
-        <padding>
-          <Insets left="10.0" right="10.0" />
-        </padding></Button>
-      <Button onAction="#handleMonitoring" prefHeight="50" styleClass="nav-button" text="Monitoring">
-        <padding>
-          <Insets left="10.0" right="10.0" />
-        </padding></Button>
-      <Button onAction="#handleRegistration" prefHeight="50" styleClass="nav-button" text="Registration">
-        <padding>
-          <Insets left="10.0" right="10.0" />
-        </padding></Button>
-      <Button fx:id="reportsButton" onAction="#handleReports" prefHeight="50" styleClass="nav-button-active" text="Reports">
-        <padding>
-          <Insets left="10.0" right="10.0" />
-        </padding></Button>
+      <Button onAction="#handleDashboard" prefHeight="50" styleClass="nav-button" text="Dashboard" />
+      <Button onAction="#handleMonitoring" prefHeight="50" styleClass="nav-button" text="Monitoring" />
+      <Button onAction="#handleRegistration" prefHeight="50" styleClass="nav-button" text="Registration" />
+      <Button fx:id="reportsButton" onAction="#handleReports" prefHeight="50" styleClass="nav-button-active" text="Reports" />
       <Region HBox.hgrow="ALWAYS" />
       <Label fx:id="navDateTimeLabel" styleClass="nav-datetime" text="MM/DD/YYYY HH:MM:SS">
         <HBox.margin>
@@ -319,9 +307,9 @@
 
             <HBox alignment="CENTER_RIGHT" spacing="12">
               <Button onAction="#handleClearForm" styleClass="action-button" text="🧹 Clear Fields" />
-              <Button onAction="#handleInsertStudent" style="-fx-background-color: #62b86f; -fx-text-fill: white;" styleClass="btn-dark" text="➕ Insert Record" />
-              <Button onAction="#handleUpdateStudent" style="-fx-background-color: #e2a03f; -fx-text-fill: white;" styleClass="btn-dark" text="✏ Update Selected" />
-              <Button onAction="#handleDeleteStudent" style="-fx-background-color: #d9534f; -fx-text-fill: white;" styleClass="btn-dark" text="🗑 Delete Record" />
+              <Button onAction="#handleInsertStudent" style="-fx-background-color: #62b86f; -fx-text-fill: white; -fx-background-radius: 12px;" styleClass="btn-dark" text="➕ Insert Record" />
+              <Button onAction="#handleUpdateStudent" style="-fx-background-color: #e2a03f; -fx-text-fill: white; -fx-background-radius: 12px;" styleClass="btn-dark" text="✏ Update Selected" />
+              <Button onAction="#handleDeleteStudent" style="-fx-background-color: #d9534f; -fx-text-fill: white; -fx-background-radius: 12px;" styleClass="btn-dark" text="🗑 Delete Record" />
             </HBox>
           </VBox>
 

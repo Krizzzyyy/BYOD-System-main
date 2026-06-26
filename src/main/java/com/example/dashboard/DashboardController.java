@@ -1,7 +1,8 @@
 package com.example.dashboard;
 
 import javafx.application.Platform;
-import javafx.collections.FXCollections; // Added for explicit category array binding
+import javafx.collections.FXCollections;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import com.example.Auth;
 import javafx.fxml.FXML;
@@ -13,6 +14,8 @@ import javafx.scene.chart.CategoryAxis;
 import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
+import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import com.example.service.BYODService;
 import com.example.monitoring.QRScannerWindow;
@@ -67,6 +70,7 @@ public class DashboardController {
     @FXML private Button searchButton;
     @FXML private Button ingressButton;
     @FXML private Button egressButton;
+    @FXML private VBox quickActionsCard;
 
     // Chart
     @FXML private BarChart<String, Number> activityChart;
@@ -95,6 +99,8 @@ public class DashboardController {
             dashboardButton.getStyleClass().add("active");
         }
 
+        applyRoleRestrictions();
+
         // CRITICAL FIX: Disable layout animations to stop text elements from clumping up at (0,0)
         if (activityChart != null) {
             activityChart.setAnimated(false);
@@ -103,6 +109,14 @@ public class DashboardController {
         }
 
         loadLiveDatabaseData();
+    }
+
+    private void applyRoleRestrictions() {
+        if (!"Student".equals(Auth.userRole)) return;
+        if (monitoringButton != null) { monitoringButton.setManaged(false); monitoringButton.setVisible(false); }
+        if (reportsButton != null) { reportsButton.setManaged(false); reportsButton.setVisible(false); }
+        if (quickActionsCard != null) { quickActionsCard.setManaged(false); quickActionsCard.setVisible(false); }
+        if (seeAllButton != null) { seeAllButton.setManaged(false); seeAllButton.setVisible(false); }
     }
 
     private static final DateTimeFormatter NAV_DATETIME_FORMATTER =
@@ -140,65 +154,59 @@ public class DashboardController {
 
     private void loadLiveDatabaseData() {
         updateSyncStatus(SYNC_STATUS_LOADING);
+        Platform.runLater(this::loadDashboardData);
+    }
 
-        Platform.runLater(() -> {
-            try {
-                // 1. Counters
-                Map<String, Integer> metrics = byodService.fetchDashboardMetrics();
-                if (!metrics.isEmpty()) {
-                    totalStudentsLabel.setText(String.valueOf(metrics.getOrDefault("totalStudents", 0)));
-                    totalDevicesLabel.setText(String.valueOf(metrics.getOrDefault("totalDevices", 0)));
-                    devicesInsideLabel.setText(String.valueOf(metrics.getOrDefault("devicesInside", 0)));
-                    ingressTodayLabel.setText(String.valueOf(metrics.getOrDefault("ingressToday", 0)));
-                    egressTodayLabel.setText(String.valueOf(metrics.getOrDefault("egressToday", 0)));
-                }
-
-                // 2. Clear out log rows
-                for (int i = 0; i < 5; i++) {
-                    if (logNames[i] != null) {
-                        logNames[i].setText(""); logIds[i].setText("");
-                        logStatuses[i].setText(""); logTimes[i].setText("");
-                    }
-                }
-
-                // 3. Populate logs table list data views
-                List<Object[]> databaseLogs = byodService.fetchLogs();
-                int displayLimit = Math.min(databaseLogs.size(), 5);
-
-                for (int i = 0; i < displayLimit; i++) {
-                    Object[] row = databaseLogs.get(i);
-                    String studentId = (String) row[1];
-                    String studentName = (String) row[2];
-                    String egressTime = (String) row[5];
-
-                    String statusText = (egressTime == null) ? "📥 In" : "📤 Out";
-                    String timestampText = (egressTime == null) ? (String) row[4] : egressTime;
-
-                    if (timestampText != null && timestampText.contains(" ")) {
-                        String[] parts = timestampText.split(" ");
-                        if (parts.length > 1) timestampText = parts[1].substring(0, 5);
-                    }
-
-                    if (logNames[i] != null) {
-                        logNames[i].setText(studentName);
-                        logIds[i].setText(studentId);
-                        logStatuses[i].setText(statusText);
-                        logTimes[i].setText(timestampText);
-                        applyStatusStyle(logStatuses[i], logTimes[i], statusText);
-                    }
-                }
-
-                // 4. Update Activity Chart Visuals
-                Map<String, Map<String, Integer>> weeklyData = byodService.fetchWeeklyChartData();
-                updateChart(weeklyData);
-
-                updateSyncStatus(SYNC_STATUS_LIVE);
-
-            } catch (Exception ex) {
-                LOGGER.log(Level.SEVERE, "Failed to load live tracking logs dashboard metrics", ex);
-                updateSyncStatus(SYNC_STATUS_OFFLINE);
+    private void loadDashboardData() {
+        try {
+            Map<String, Integer> metrics = byodService.fetchDashboardMetrics();
+            if (!metrics.isEmpty()) {
+                totalStudentsLabel.setText(String.valueOf(metrics.getOrDefault("totalStudents", 0)));
+                totalDevicesLabel.setText(String.valueOf(metrics.getOrDefault("totalDevices", 0)));
+                devicesInsideLabel.setText(String.valueOf(metrics.getOrDefault("devicesInside", 0)));
+                ingressTodayLabel.setText(String.valueOf(metrics.getOrDefault("ingressToday", 0)));
+                egressTodayLabel.setText(String.valueOf(metrics.getOrDefault("egressToday", 0)));
             }
-        });
+
+            for (int i = 0; i < 5; i++) {
+                if (logNames[i] != null) {
+                    logNames[i].setText(""); logIds[i].setText("");
+                    logStatuses[i].setText(""); logTimes[i].setText("");
+                }
+            }
+
+            List<Object[]> databaseLogs = byodService.fetchLogs();
+            int displayLimit = Math.min(databaseLogs.size(), 5);
+            for (int i = 0; i < displayLimit; i++) {
+                Object[] row = databaseLogs.get(i);
+                String studentId = (String) row[1];
+                String studentName = (String) row[2];
+                String egressTime = (String) row[5];
+
+                String statusText = (egressTime == null) ? "In" : "Out";
+                String timestampText = (egressTime == null) ? (String) row[4] : egressTime;
+
+                if (timestampText != null && timestampText.contains(" ")) {
+                    String[] parts = timestampText.split(" ");
+                    if (parts.length > 1) timestampText = parts[1].substring(0, 5);
+                }
+
+                if (logNames[i] != null) {
+                    logNames[i].setText(studentName);
+                    logIds[i].setText(studentId);
+                    logStatuses[i].setText(statusText);
+                    logTimes[i].setText(timestampText);
+                    applyStatusStyle(logStatuses[i], logTimes[i], statusText);
+                }
+            }
+
+            Map<String, Map<String, Integer>> weeklyData = byodService.fetchWeeklyChartData();
+            updateChart(weeklyData);
+            updateSyncStatus(SYNC_STATUS_LIVE);
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, "Failed to load dashboard data", ex);
+            updateSyncStatus(SYNC_STATUS_OFFLINE);
+        }
     }
 
     private void applyStatusStyle(Label statusLabel, Label timeLabel, String statusText) {
@@ -255,7 +263,49 @@ public class DashboardController {
         }
     }
 
-    @FXML private void handleRefresh() { loadLiveDatabaseData(); }
+    @FXML private void handleRefresh() {
+        Stage owner = (Stage) dateLabel.getScene().getWindow();
+
+        Dialog<Void> loadingDialog = new Dialog<>();
+        loadingDialog.initModality(Modality.APPLICATION_MODAL);
+        loadingDialog.initOwner(owner);
+        loadingDialog.setTitle("Refreshing");
+        loadingDialog.setHeaderText(null);
+        loadingDialog.setGraphic(null);
+        loadingDialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+
+        VBox dialogContent = new VBox(12);
+        dialogContent.setAlignment(javafx.geometry.Pos.CENTER);
+        dialogContent.setStyle("-fx-padding: 20;");
+        ProgressIndicator spinner = new ProgressIndicator();
+        spinner.setMaxSize(48, 48);
+        Label msg = new Label("Fetching latest data...");
+        msg.setStyle("-fx-font-size: 14px; -fx-text-fill: #555;");
+        dialogContent.getChildren().addAll(spinner, msg);
+        loadingDialog.getDialogPane().setContent(dialogContent);
+
+        loadingDialog.getDialogPane().lookupButton(ButtonType.CANCEL).addEventFilter(
+                javafx.event.ActionEvent.ACTION, e -> loadingDialog.close());
+
+        String css = getClass().getResource(STYLESHEET_PATH).toExternalForm();
+        loadingDialog.getDialogPane().getStylesheets().add(css);
+        loadingDialog.getDialogPane().setStyle("-fx-background-color: white; -fx-background-radius: 12;");
+
+        Task<Void> task = new Task<>() {
+            @Override protected Void call() throws Exception {
+                Thread.sleep(400);
+                loadDashboardData();
+                return null;
+            }
+        };
+        task.setOnSucceeded(e -> loadingDialog.close());
+        task.setOnFailed(e -> loadingDialog.close());
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+        loadingDialog.showAndWait();
+    }
 
     @FXML
     private void handleLogout() {
@@ -281,7 +331,7 @@ public class DashboardController {
         }
     }
 
-    @FXML private void handleDashboard() { handleRefresh(); }
+    @FXML private void handleDashboard() { loadLiveDatabaseData(); }
     @FXML private void handleMonitoring() { navigateTo(MONITORING_FXML, "Monitoring - BYOD System"); }
     @FXML private void handleRegistration() { navigateTo(REGISTRATION_FXML, "Registration - BYOD System"); }
     @FXML
@@ -312,15 +362,13 @@ public class DashboardController {
 
     private void navigateTo(String fxmlPath, String title) {
         try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(fxmlPath.toLowerCase()));
-            Parent root = loader.load();
-            Scene scene = new Scene(root);
-            scene.getStylesheets().add(getClass().getResource(STYLESHEET_PATH).toExternalForm());
-
+            Parent root = FXMLLoader.load(getClass().getResource(fxmlPath.toLowerCase()));
             Stage stage = (Stage) dateLabel.getScene().getWindow();
-            stage.setScene(scene);
+            Scene current = stage.getScene();
+            String cssPath = getClass().getResource(STYLESHEET_PATH).toExternalForm();
+            if (!current.getStylesheets().contains(cssPath)) current.getStylesheets().add(cssPath);
+            current.setRoot(root);
             stage.setTitle(title);
-            stage.centerOnScreen();
         } catch (IOException e) {
             LOGGER.log(Level.SEVERE, "Failed to navigate to view " + fxmlPath, e);
         }

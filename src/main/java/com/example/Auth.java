@@ -6,4 +6,7 @@ public class Auth {
 
     // Tracks whether the Report Tab has been unlocked via login
     public static boolean reportUnlocked = false;
+
+    // Stores the user's role (Student or Faculty)
+    public static String userRole = null;
 }

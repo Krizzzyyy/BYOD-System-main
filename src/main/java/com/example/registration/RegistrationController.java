@@ -2,12 +2,15 @@ package com.example.registration;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.geometry.Insets;
 import javafx.stage.Stage;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
@@ -39,6 +42,8 @@ public class RegistrationController {
     @FXML private TextField studentIdField;
     @FXML private TextField contactField;
 
+    @FXML private DatePicker scheduledEntryDate;
+
     @FXML private ComboBox<String> deviceTypeCombo;
     @FXML private TextField        brandModelField;
     @FXML private TextField        colorDescField;
@@ -58,6 +63,7 @@ public class RegistrationController {
     @FXML private Label reviewYearSection;
     @FXML private Label reviewCourse;
     @FXML private Label reviewContact;
+    @FXML private Label reviewScheduledDate;
     @FXML private Label reviewDevicesTitle;
     @FXML private VBox  reviewDevicesList;
 
@@ -273,6 +279,12 @@ public class RegistrationController {
             showAlert("Missing Information", "Please select a Course / Program.");
             return false;
         }
+        if (scheduledEntryDate != null && scheduledEntryDate.getValue() != null) {
+            if (scheduledEntryDate.getValue().isBefore(LocalDate.now())) {
+                showAlert("Invalid Date", "Scheduled entry date cannot be in the past.");
+                return false;
+            }
+        }
 
         String validation = RegistrationValidator.validate(studentId, firstName, lastName, contact, yearSection);
         if (!validation.equals("VALID")) {
@@ -446,6 +458,13 @@ public class RegistrationController {
             String course = courseCombo != null ? courseCombo.getValue() : null;
             reviewCourse.setText(course == null || course.isBlank() ? "-" : course);
         }
+        if (reviewScheduledDate != null) {
+            if (scheduledEntryDate != null && scheduledEntryDate.getValue() != null) {
+                reviewScheduledDate.setText(scheduledEntryDate.getValue().toString());
+            } else {
+                reviewScheduledDate.setText("-");
+            }
+        }
 
         if (reviewDevicesTitle != null)
             reviewDevicesTitle.setText("Registered Items (" + savedDevices.size() + ")");
@@ -491,6 +510,7 @@ public class RegistrationController {
         a.setTitle(title);
         a.setHeaderText(null);
         a.setContentText(msg);
+
         a.showAndWait();
     }
 
@@ -500,8 +520,15 @@ public class RegistrationController {
     private void handleSave() {
         if (!isStep1Valid() || !isStep2Valid()) return;
 
+        if (scheduledEntryDate == null || scheduledEntryDate.getValue() == null) {
+            showAlert("Missing Information", "Please select a Scheduled Entry Date.");
+            return;
+        }
+
         String sid = studentIdField.getText().trim();
         String course = courseCombo != null && courseCombo.getValue() != null ? courseCombo.getValue() : "";
+        String scheduledDate = scheduledEntryDate.getValue().toString();
+
         String validation = byodService.validate(sid, firstNameField.getText().trim(),
                 lastNameField.getText().trim(), contactField.getText().trim(),
                 yearSectionField.getText().trim());
@@ -523,7 +550,8 @@ public class RegistrationController {
                         d.type,
                         d.brand,
                         d.color,
-                        d.serial
+                        d.serial,
+                        scheduledDate
                 );
             }
 
@@ -531,11 +559,9 @@ public class RegistrationController {
                     yearSectionField.getText(), course, contactField.getText());
             String qrPath = byodService.generateQR(payload, sid, System.getProperty("user.dir"));
 
-            // HOOKED UP: Spawns the clean side-by-side aesthetic instructions + layout QR window
             Stage activeStage = (Stage) cancelBtn.getScene().getWindow();
             com.example.monitoring.QRRegistrationSuccessWindow.show(activeStage, sid, qrPath);
 
-            // Navigate back to tracking list dashboard logs automatically
             navigateTo("/fxml/dashboard.fxml");
 
         } catch (Exception ex) {
@@ -560,22 +586,39 @@ public class RegistrationController {
             navigateTo("/fxml/reports.fxml");
             return;
         }
-        try {
-            Parent loginRoot = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
-            Stage loginStage = new Stage();
-            Scene loginScene = new Scene(loginRoot);
-            loginScene.getStylesheets().add(getClass().getResource("/css/stylesheet.css").toExternalForm());
-            loginStage.setScene(loginScene);
-            loginStage.setTitle("Login Required - Reports Access");
-            loginStage.initModality(Modality.APPLICATION_MODAL);
-            loginStage.showAndWait();
 
-            if (Auth.reportUnlocked) {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Reports Access");
+        dialog.setHeaderText("Faculty verification required to access Reports.");
+
+        ButtonType loginBtn = new ButtonType("Unlock", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(loginBtn, ButtonType.CANCEL);
+
+        PasswordField passwordField = new PasswordField();
+        passwordField.setPromptText("Enter faculty password");
+        passwordField.setPrefWidth(280);
+
+        Label errorLabel = new Label("");
+        errorLabel.setStyle("-fx-text-fill: #D32F2F; -fx-font-size: 12px;");
+
+        VBox vbox = new VBox(10, new Label("Password:"), passwordField, errorLabel);
+        vbox.setPadding(new Insets(20));
+        dialog.getDialogPane().setContent(vbox);
+
+
+        dialog.setResultConverter(btn -> {
+            if (btn == loginBtn) return passwordField.getText();
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(password -> {
+            if ("password".equals(password)) {
+                Auth.reportUnlocked = true;
                 navigateTo("/fxml/reports.fxml");
+            } else {
+                errorLabel.setText("Incorrect password. Access denied.");
             }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        });
     }
     @FXML private void handleRegistration() { /* already here */ }
 
@@ -590,5 +633,25 @@ public class RegistrationController {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    @FXML private void handleLogout() {
+        Auth.isLoggedIn = false;
+        Auth.userRole = null;
+        Auth.reportUnlocked = false;
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
+            Stage stage = (Stage) cancelBtn.getScene().getWindow();
+            stage.setMaximized(false);
+            stage.setMinWidth(0);
+            stage.setMinHeight(0);
+            stage.setMaxWidth(Double.MAX_VALUE);
+            stage.setMaxHeight(Double.MAX_VALUE);
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource("/css/stylesheet.css").toExternalForm());
+            stage.setScene(scene);
+            stage.setResizable(false);
+            stage.centerOnScreen();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 }

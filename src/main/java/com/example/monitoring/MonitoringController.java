@@ -11,6 +11,9 @@
     import javafx.scene.control.*;
     import javafx.scene.control.cell.PropertyValueFactory;
     import javafx.scene.image.ImageView;
+    import javafx.scene.layout.HBox;
+    import javafx.scene.layout.VBox;
+    import javafx.geometry.Insets;
     import javafx.stage.Stage;
     import com.example.service.BYODService;
     import com.example.Auth;
@@ -53,18 +56,11 @@
         // ==================== STATUS & FILTERS ====================
         @FXML private Label syncNoDevices;
         @FXML private TextField searchField;
-        @FXML private Button allDeviceTypesButton;
-        @FXML private Button allStatusButton;
-        @FXML private Button datePickerButton; // The targeted node for modification
+        @FXML private ComboBox<String> deviceTypeFilter;
+        @FXML private ComboBox<String> statusFilter;
+        @FXML private DatePicker dateFilter;
         @FXML private Button exportLogButton;
         @FXML private Button logEntryButton;
-    
-        // ==================== CARD LABELS ====================
-        @FXML private Label totalStudentsLabel;
-        @FXML private Label totalDevicesLabel;
-        @FXML private Label devicesInsideLabel;
-        @FXML private Label ingressTodayLabel;
-        @FXML private Label egressTodayLabel;
     
         // ==================== TABLE & COLUMNS ====================
         @FXML private TableView<LogEntry> monitoringTableView;
@@ -73,7 +69,6 @@
         @FXML private TableColumn<LogEntry, String> deviceSerialColumn;
         @FXML private TableColumn<LogEntry, String> statusColumn;
         @FXML private TableColumn<LogEntry, String> lastLogColumn;
-        @FXML private TableColumn<LogEntry, Void> actionsColumn;
         @FXML private TableColumn<LogEntry, Void> editColumn;
     
         // ==================== PAGINATION ====================
@@ -86,9 +81,25 @@
         @FXML private Button lastPageButton;
         @FXML private Button nextPageButton;
     
+        // ==================== PENDING TAB ====================
+        @FXML private TabPane mainTabPane;
+        @FXML private Tab pendingTab;
+        @FXML private Tab activeTab;
+        @FXML private Label pendingCountLabel;
+        @FXML private TableView<LogEntry> pendingTableView;
+        @FXML private TableColumn<LogEntry, String> pendingNameColumn;
+        @FXML private TableColumn<LogEntry, String> pendingIdColumn;
+        @FXML private TableColumn<LogEntry, String> pendingDeviceColumn;
+        @FXML private TableColumn<LogEntry, String> pendingDateColumn;
+        @FXML private TableColumn<LogEntry, Void> pendingActionsColumn;
+        @FXML private Button approveAllBtn;
+        @FXML private Button disapproveBtn;
+        @FXML private Button cancelRegBtn;
+
         // ==================== DATA MODELS ====================
         private final ObservableList<LogEntry> allLogEntries = FXCollections.observableArrayList();
         private final ObservableList<LogEntry> currentPageData = FXCollections.observableArrayList();
+        private final ObservableList<LogEntry> pendingEntries = FXCollections.observableArrayList();
         private int currentPage = 1;
         private int totalPages = 1;
         private int totalItems = 0;
@@ -100,16 +111,14 @@
             try {
                 addStylesheetToScene();
                 setupTableColumns();
+                setupPendingTableColumns();
                 setupSearchListener();
+                setupFilters();
                 loadInitialData();
+                loadPendingData();
                 updateCardNumbers();
                 updatePagination();
-    
-                // FIX: Formats the Date Picker Button with the actual current system date
-                if (datePickerButton != null) {
-                    String currentDateStr = DateTimeFormatter.ofPattern("MMMM d, yyyy").format(LocalDate.now());
-                    datePickerButton.setText(currentDateStr);
-                }
+                updatePendingCount();
     
                 if (monitoringButton != null) {
                     monitoringButton.getStyleClass().add("active");
@@ -170,26 +179,6 @@
                 }
             });
     
-            actionsColumn.setCellFactory(param -> new TableCell<>() {
-                private final Button historyButton = new Button("👁️‍🗨️");
-                {
-                    historyButton.getStyleClass().add("table-action");
-                    historyButton.setOnAction(e -> {
-                        LogEntry entry = getTableView().getItems().get(getIndex());
-                        if (entry != null) onViewHistory(entry);
-                    });
-                }
-                @Override
-                protected void updateItem(Void item, boolean empty) {
-                    super.updateItem(item, empty);
-                    if (empty || getIndex() < 0 || getIndex() >= getTableView().getItems().size()) {
-                        setGraphic(null);
-                    } else {
-                        setGraphic(historyButton);
-                    }
-                }
-            });
-    
             editColumn.setCellFactory(param -> new TableCell<>() {
                 private final Button ingressButton = new Button("📥 In");
                 private final Button egressButton = new Button("📤 Out");
@@ -236,14 +225,54 @@
                 filterAndPaginate();
             });
         }
+
+        private void setupFilters() {
+            deviceTypeFilter.getItems().addAll(
+                "Display devices",
+                "Appliances",
+                "Sounds and light equipment",
+                "Other project prototypes",
+                "Rentable items"
+            );
+            statusFilter.getItems().addAll(
+                "Approved",
+                "Disapproved",
+                "Cancelled",
+                "Pending"
+            );
+            deviceTypeFilter.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+                currentPage = 1;
+                filterAndPaginate();
+            });
+            statusFilter.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
+                currentPage = 1;
+                filterAndPaginate();
+            });
+        }
     
         private void filterAndPaginate() {
             String searchTerm = searchField.getText().toLowerCase();
-            ObservableList<LogEntry> filtered = allLogEntries.filtered(entry ->
+            String deviceType = deviceTypeFilter.getValue();
+            String status = statusFilter.getValue();
+            LocalDate date = dateFilter.getValue();
+
+            ObservableList<LogEntry> filtered = allLogEntries.filtered(entry -> {
+                boolean matchesSearch = searchTerm.isEmpty() ||
                     entry.getStudentName().toLowerCase().contains(searchTerm) ||
-                            entry.getStudentId().toLowerCase().contains(searchTerm) ||
-                            entry.getDeviceSerial().toLowerCase().contains(searchTerm)
-            );
+                    entry.getStudentId().toLowerCase().contains(searchTerm) ||
+                    entry.getDeviceSerial().toLowerCase().contains(searchTerm);
+
+                boolean matchesDeviceType = deviceType == null || deviceType.isEmpty() ||
+                    entry.getDeviceSerial().toLowerCase().contains(deviceType.toLowerCase());
+
+                boolean matchesStatus = status == null || status.isEmpty() ||
+                    entry.getApprovalStatus().equalsIgnoreCase(status);
+
+                boolean matchesDate = date == null ||
+                    entry.getLastLog().contains(date.toString());
+
+                return matchesSearch && matchesDeviceType && matchesStatus && matchesDate;
+            });
             totalItems = filtered.size();
             totalPages = Math.max(1, (int) Math.ceil((double) totalItems / ROWS_PER_PAGE));
             if (currentPage > totalPages) currentPage = totalPages;
@@ -376,29 +405,59 @@
                 navigateTo(REPORTS_FXML, "Reports - BYOD System");
                 return;
             }
-            try {
-                FXMLLoader loginLoader = new FXMLLoader(getClass().getResource(LOGIN_FXML));
-                Parent loginRoot = loginLoader.load();
-                Stage loginStage = new Stage();
-                Scene loginScene = new Scene(loginRoot);
-                loginScene.getStylesheets().add(getClass().getResource(STYLESHEET_PATH).toExternalForm());
-                loginStage.setScene(loginScene);
-                loginStage.setTitle("Login Required - Reports Access");
-                loginStage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
-                loginStage.showAndWait();
-    
-                if (Auth.reportUnlocked) {
+
+            Dialog<String> dialog = new Dialog<>();
+            dialog.setTitle("Reports Access");
+            dialog.setHeaderText("Faculty verification required to access Reports.");
+
+            ButtonType loginBtn = new ButtonType("Unlock", ButtonBar.ButtonData.OK_DONE);
+            dialog.getDialogPane().getButtonTypes().addAll(loginBtn, ButtonType.CANCEL);
+
+            PasswordField passwordField = new PasswordField();
+            passwordField.setPromptText("Enter faculty password");
+            passwordField.setPrefWidth(280);
+
+            Label errorLabel = new Label("");
+            errorLabel.setStyle("-fx-text-fill: #D32F2F; -fx-font-size: 12px;");
+
+            VBox content = new VBox(10, new Label("Password:"), passwordField, errorLabel);
+            content.setPadding(new Insets(20));
+            dialog.getDialogPane().setContent(content);
+
+            dialog.setResultConverter(btn -> {
+                if (btn == loginBtn) return passwordField.getText();
+                return null;
+            });
+
+            dialog.showAndWait().ifPresent(password -> {
+                if ("password".equals(password)) {
+                    Auth.reportUnlocked = true;
                     navigateTo(REPORTS_FXML, "Reports - BYOD System");
+                } else {
+                    errorLabel.setText("Incorrect password. Access denied.");
                 }
-            } catch (IOException e) {
-                LOGGER.log(Level.SEVERE, "Failed to open login popup", e);
-            }
+            });
         }
         @FXML private void onAccountClick() { navigateTo(ACCOUNT_FXML, "Account Settings - BYOD System"); }
     
-        @FXML private void onLogoutClick() {
-            Platform.exit();
-            System.exit(0);
+        @FXML private void handleLogout() {
+            Auth.isLoggedIn = false;
+            Auth.userRole = null;
+            Auth.reportUnlocked = false;
+            try {
+                Parent root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
+                Stage stage = (Stage) monitoringButton.getScene().getWindow();
+                stage.setMaximized(false);
+                stage.setMinWidth(0);
+                stage.setMinHeight(0);
+                stage.setMaxWidth(Double.MAX_VALUE);
+                stage.setMaxHeight(Double.MAX_VALUE);
+                Scene scene = new Scene(root);
+                scene.getStylesheets().add(getClass().getResource(STYLESHEET_PATH).toExternalForm());
+                stage.setScene(scene);
+                stage.setResizable(false);
+                stage.centerOnScreen();
+            } catch (Exception e) { e.printStackTrace(); }
         }
     
         private void loadLoginScreen() {
@@ -424,9 +483,7 @@
         }
     
         @FXML private void onSearch() { filterAndPaginate(); }
-        @FXML private void onAllDeviceTypesFilter() { filterAndPaginate(); }
-        @FXML private void onAllStatusFilter() { filterAndPaginate(); }
-        @FXML private void onDatePicker() { LOGGER.info("Date filter clicked"); }
+        @FXML private void onFilterChanged() { currentPage = 1; filterAndPaginate(); }
         @FXML private void onExportLog() { LOGGER.info("Export CSV handling triggered"); }
         @FXML private void onLogEntry() { LOGGER.info("Manual row creation requested"); }
     
@@ -464,6 +521,7 @@
                     "\nStudent Name: " + entry.getStudentName() +
                     "\nDevice Details: " + entry.getDeviceSerial() +
                     "\nLast Recorded Action: " + entry.getLastLog());
+
             info.showAndWait();
         }
     
@@ -499,16 +557,22 @@
             allLogEntries.clear();
             try {
                 for (Object[] row : byodService.fetchLogs()) {
+                    int logId = (int) row[0];
                     String egress = (String) row[5];
                     String status = (egress == null) ? "Ingress" : "Egress";
                     String timestamp = status.equals("Ingress") ? (String) row[4] : egress;
-    
+                    String approvalStatus = row.length > 6 ? (String) row[6] : "Approved";
+                    String scheduledDate = row.length > 7 ? (String) row[7] : null;
+
                     allLogEntries.add(new LogEntry(
+                            logId,
                             (String) row[2],
                             (String) row[1],
                             (String) row[3],
                             status,
-                            timestamp
+                            timestamp,
+                            approvalStatus,
+                            scheduledDate
                     ));
                 }
             } catch (Exception e) {
@@ -518,7 +582,9 @@
     
         private void refreshMonitoringData() {
             loadInitialData();
+            loadPendingData();
             updateCardNumbers();
+            updatePendingCount();
             currentPage = 1;
             filterAndPaginate();
         }
@@ -527,13 +593,8 @@
             try {
                 Map<String, Integer> metrics = byodService.fetchDashboardMetrics();
                 if (!metrics.isEmpty()) {
-                    totalStudentsLabel.setText(String.valueOf(metrics.get("totalStudents")));
-                    totalDevicesLabel.setText(String.valueOf(metrics.get("totalDevices")));
-                    devicesInsideLabel.setText(String.valueOf(metrics.get("devicesInside")));
-                    ingressTodayLabel.setText(String.valueOf(metrics.get("ingressToday")));
-                    egressTodayLabel.setText(String.valueOf(metrics.get("egressToday")));
-    
-                    syncNoDevices.setText("Devices in campus: " + devicesInsideLabel.getText());
+                    String devicesInside = String.valueOf(metrics.get("devicesInside"));
+                    syncNoDevices.setText("Devices in campus: " + devicesInside);
                     syncNoDevices.getStyleClass().removeAll("sync-status-live");
                     syncNoDevices.getStyleClass().add("sync-status-live");
                 }
@@ -548,6 +609,7 @@
             alert.setTitle("Access Granted");
             alert.setHeaderText(null);
             alert.setContentText(message);
+
             alert.showAndWait();
         }
     
@@ -556,6 +618,152 @@
             alert.setTitle(title);
             alert.setHeaderText(null);
             alert.setContentText(message);
+
             alert.showAndWait();
+        }
+
+        // ==================== PENDING APPROVALS TAB ====================
+        private void setupPendingTableColumns() {
+            pendingNameColumn.setCellValueFactory(new PropertyValueFactory<>("studentName"));
+            pendingIdColumn.setCellValueFactory(new PropertyValueFactory<>("studentId"));
+            pendingDeviceColumn.setCellValueFactory(new PropertyValueFactory<>("deviceSerial"));
+            pendingDateColumn.setCellValueFactory(new PropertyValueFactory<>("scheduledEntryDate"));
+
+            pendingActionsColumn.setCellFactory(param -> new TableCell<>() {
+                private final Button approveBtn = new Button("Approve");
+                private final Button disapproveBtn = new Button("Disapprove");
+                private final HBox box = new HBox(5, approveBtn, disapproveBtn);
+                {
+                    approveBtn.getStyleClass().add("btn-save");
+                    approveBtn.setStyle("-fx-font-size:11px; -fx-padding:4 10;");
+                    disapproveBtn.getStyleClass().add("action-button");
+                    disapproveBtn.setStyle("-fx-font-size:11px; -fx-padding:4 10;");
+
+                    approveBtn.setOnAction(e -> {
+                        LogEntry entry = getTableView().getItems().get(getIndex());
+                        if (entry != null) onApproveEntry(entry);
+                    });
+                    disapproveBtn.setOnAction(e -> {
+                        LogEntry entry = getTableView().getItems().get(getIndex());
+                        if (entry != null) onDisapproveEntry(entry);
+                    });
+                }
+                @Override
+                protected void updateItem(Void item, boolean empty) {
+                    super.updateItem(item, empty);
+                    setGraphic(empty ? null : box);
+                }
+            });
+        }
+
+        private void loadPendingData() {
+            pendingEntries.clear();
+            try {
+                for (Object[] row : byodService.fetchPendingApprovals()) {
+                    pendingEntries.add(new LogEntry(
+                            (int) row[0],
+                            (String) row[2],
+                            (String) row[1],
+                            (String) row[3],
+                            "Pending",
+                            (String) row[4],
+                            "Pending",
+                            (String) row[4]
+                    ));
+                }
+            } catch (Exception e) {
+                LOGGER.log(Level.WARNING, "Could not load pending approvals", e);
+            }
+            pendingTableView.setItems(pendingEntries);
+            updatePendingCount();
+        }
+
+        private void updatePendingCount() {
+            if (pendingCountLabel != null) {
+                pendingCountLabel.setText("Pending Registrations (" + pendingEntries.size() + ")");
+            }
+            if (pendingTab != null) {
+                pendingTab.setText("Pending Approvals (" + pendingEntries.size() + ")");
+            }
+        }
+
+        private void onApproveEntry(LogEntry entry) {
+            Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+            confirm.setTitle("Approve Registration");
+            confirm.setHeaderText("Approve " + entry.getStudentName() + "?");
+            confirm.setContentText("Student: " + entry.getStudentName() +
+                    "\nStudent ID: " + entry.getStudentId() +
+                    "\nScheduled Entry: " + entry.getScheduledEntryDate());
+
+            confirm.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    try {
+                        byodService.approveRegistration(entry.getLogId(), entry.getStudentId(), "Faculty");
+                        refreshMonitoringData();
+                    } catch (Exception ex) {
+                        showAlert("Approval Error", ex.getMessage());
+                    }
+                }
+            });
+        }
+
+        private void onDisapproveEntry(LogEntry entry) {
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Disapprove Registration");
+            dialog.setHeaderText("Disapprove " + entry.getStudentName() + "?");
+            dialog.setContentText("Reason for disapproval:");
+            dialog.showAndWait().ifPresent(reason -> {
+                if (reason != null && !reason.isBlank()) {
+                    try {
+                        byodService.disapproveRegistration(entry.getStudentId(), reason, "Faculty");
+                        refreshMonitoringData();
+                    } catch (Exception ex) {
+                        showAlert("Disapproval Error", ex.getMessage());
+                    }
+                }
+            });
+        }
+
+        @FXML
+        private void onApproveSelected() {
+            LogEntry selected = pendingTableView.getSelectionModel().getSelectedItem();
+            if (selected == null) {
+                showAlert("No Selection", "Please select a registration to approve.");
+                return;
+            }
+            onApproveEntry(selected);
+        }
+
+        @FXML
+        private void onDisapproveSelected() {
+            LogEntry selected = pendingTableView.getSelectionModel().getSelectedItem();
+            if (selected == null) {
+                showAlert("No Selection", "Please select a registration to disapprove.");
+                return;
+            }
+            onDisapproveEntry(selected);
+        }
+
+        @FXML
+        private void onCancelSelected() {
+            LogEntry selected = pendingTableView.getSelectionModel().getSelectedItem();
+            if (selected == null) {
+                showAlert("No Selection", "Please select a registration to cancel.");
+                return;
+            }
+            TextInputDialog dialog = new TextInputDialog();
+            dialog.setTitle("Cancel Registration");
+            dialog.setHeaderText("Cancel registration for " + selected.getStudentName() + "?");
+            dialog.setContentText("Reason for cancellation:");
+            dialog.showAndWait().ifPresent(reason -> {
+                if (reason != null && !reason.isBlank()) {
+                    try {
+                        byodService.cancelRegistration(selected.getStudentId(), reason, "Faculty");
+                        refreshMonitoringData();
+                    } catch (Exception ex) {
+                        showAlert("Cancellation Error", ex.getMessage());
+                    }
+                }
+            });
         }
     }

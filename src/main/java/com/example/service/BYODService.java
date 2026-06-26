@@ -22,14 +22,16 @@ public class BYODService {
 
     // FIXED: Added ingress_time = CURRENT_TIMESTAMP so new registrations appear on the dashboard today
     public void registerStudent(String sid, String ln, String fn, String ys, String cp,
-                                String cn, String dt, String bm, String cd, String sn) throws Exception {
-        String sql = "INSERT INTO student_device_logs (student_id, last_name, first_name, year_section, course_program, contact_number, device_type, brand_model, color_description, serial_number, ingress_time) VALUES (?,?,?,?,?,?,?,?,?,?, CURRENT_TIMESTAMP)";
+                                String cn, String dt, String bm, String cd, String sn,
+                                String scheduledDate) throws Exception {
+        String sql = "INSERT INTO student_device_logs (student_id, last_name, first_name, year_section, course_program, contact_number, device_type, brand_model, color_description, serial_number, scheduled_entry_date, approval_status, ingress_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,'Pending', CURRENT_TIMESTAMP)";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, sid); ps.setString(2, ln); ps.setString(3, fn);
             ps.setString(4, ys); ps.setString(5, cp); ps.setString(6, cn);
             ps.setString(7, dt); ps.setString(8, bm); ps.setString(9, cd);
             ps.setString(10, (sn != null && !sn.isBlank()) ? sn : null);
+            ps.setString(11, (scheduledDate != null && !scheduledDate.isBlank()) ? scheduledDate : null);
             ps.executeUpdate();
         }
     }
@@ -49,7 +51,7 @@ public class BYODService {
                 "GROUP_CONCAT(brand_model SEPARATOR ', ') as brand_model, " +
                 "MAX(contact_number) as contact_number " +
                 "FROM student_device_logs " +
-                "WHERE student_id IS NOT NULL " +
+                "WHERE student_id IS NOT NULL AND (is_deleted = 0 OR is_deleted IS NULL) " +
                 (targetDate != null ? "AND DATE(ingress_time) = ? " : "") +
                 "GROUP BY student_id " +
                 "ORDER BY last_name ASC";
@@ -107,6 +109,7 @@ public class BYODService {
     }
 
     // Merges multiple devices into a single comma-separated row for the monitoring table
+    // Only returns Approved registrations (backward-compatible: NULL approval_status treated as Approved)
     public List<Object[]> fetchLogs() throws Exception {
         List<Object[]> logs = new ArrayList<>();
         String sql = "SELECT " +
@@ -116,8 +119,11 @@ public class BYODService {
                 "MAX(first_name) as first_name, " +
                 "GROUP_CONCAT(brand_model SEPARATOR ', ') as brand_models, " +
                 "MAX(ingress_time) as ingress_time, " +
-                "CASE WHEN SUM(CASE WHEN egress_time IS NULL THEN 1 ELSE 0 END) > 0 THEN NULL ELSE MAX(egress_time) END as final_egress " +
+                "CASE WHEN SUM(CASE WHEN egress_time IS NULL THEN 1 ELSE 0 END) > 0 THEN NULL ELSE MAX(egress_time) END as final_egress, " +
+                "MAX(approval_status) as approval_status, " +
+                "MAX(scheduled_entry_date) as scheduled_entry_date " +
                 "FROM student_device_logs " +
+                "WHERE (approval_status = 'Approved' OR approval_status IS NULL) " +
                 "GROUP BY student_id, DATE(ingress_time) " +
                 "ORDER BY MAX(ingress_time) DESC";
 
@@ -131,23 +137,96 @@ public class BYODService {
                         rs.getString("last_name") + ", " + rs.getString("first_name"),
                         rs.getString("brand_models"),
                         rs.getString("ingress_time"),
-                        rs.getString("final_egress")
+                        rs.getString("final_egress"),
+                        rs.getString("approval_status"),
+                        rs.getString("scheduled_entry_date")
                 });
             }
         }
         return logs;
     }
 
+    // Fetches all Pending registrations for the Pending Approvals tab
+    public List<Object[]> fetchPendingApprovals() throws Exception {
+        List<Object[]> pending = new ArrayList<>();
+        String sql = "SELECT " +
+                "MIN(log_id) as log_id, " +
+                "student_id, " +
+                "MAX(last_name) as last_name, " +
+                "MAX(first_name) as first_name, " +
+                "GROUP_CONCAT(brand_model SEPARATOR ', ') as brand_models, " +
+                "MAX(scheduled_entry_date) as scheduled_entry_date, " +
+                "MAX(course_program) as course_program, " +
+                "MAX(contact_number) as contact_number " +
+                "FROM student_device_logs " +
+                "WHERE approval_status = 'Pending' " +
+                "GROUP BY student_id " +
+                "ORDER BY MAX(scheduled_entry_date) ASC";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                pending.add(new Object[]{
+                        rs.getInt("log_id"),
+                        rs.getString("student_id"),
+                        rs.getString("last_name") + ", " + rs.getString("first_name"),
+                        rs.getString("brand_models"),
+                        rs.getString("scheduled_entry_date"),
+                        rs.getString("course_program"),
+                        rs.getString("contact_number")
+                });
+            }
+        }
+        return pending;
+    }
+
+    // Approves a pending registration
+    public void approveRegistration(int logId, String studentId, String approvedBy) throws Exception {
+        String sql = "UPDATE student_device_logs SET approval_status = 'Approved', approved_by = ?, approval_date = CURRENT_TIMESTAMP WHERE student_id = ? AND approval_status = 'Pending'";
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, approvedBy);
+            ps.setString(2, studentId);
+            ps.executeUpdate();
+        }
+    }
+
+    // Disapproves a pending registration with a reason
+    public void disapproveRegistration(String studentId, String reason, String approvedBy) throws Exception {
+        String sql = "UPDATE student_device_logs SET approval_status = 'Disapproved', approval_remarks = ?, approved_by = ?, approval_date = CURRENT_TIMESTAMP WHERE student_id = ? AND approval_status = 'Pending'";
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, reason);
+            ps.setString(2, approvedBy);
+            ps.setString(3, studentId);
+            ps.executeUpdate();
+        }
+    }
+
+    // Cancels a registration with a reason
+    public void cancelRegistration(String studentId, String reason, String cancelledBy) throws Exception {
+        String sql = "UPDATE student_device_logs SET approval_status = 'Cancelled', approval_remarks = ?, approved_by = ?, approval_date = CURRENT_TIMESTAMP WHERE student_id = ? AND approval_status IN ('Pending', 'Approved')";
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, reason);
+            ps.setString(2, cancelledBy);
+            ps.setString(3, studentId);
+            ps.executeUpdate();
+        }
+    }
+
     // Gathers analytical numbers using standard dynamic SQL evaluations
+    // Only counts Approved registrations (backward-compatible: NULL approval_status treated as Approved)
     public Map<String, Integer> fetchDashboardMetrics() throws Exception {
         Map<String, Integer> metrics = new HashMap<>();
 
         String sql = "SELECT " +
-                "  (SELECT COUNT(DISTINCT student_id) FROM student_device_logs) as total_students, " +
-                "  (SELECT COUNT(*) FROM student_device_logs) as total_devices, " +
-                "  (SELECT COUNT(*) FROM student_device_logs WHERE egress_time IS NULL) as devices_inside, " +
-                "  (SELECT COUNT(*) FROM student_device_logs WHERE DATE(ingress_time) = CURRENT_DATE) as ingress_today, " +
-                "  (SELECT COUNT(*) FROM student_device_logs WHERE DATE(egress_time) = CURRENT_DATE) as egress_today";
+                "  (SELECT COUNT(DISTINCT student_id) FROM student_device_logs WHERE approval_status = 'Approved' OR approval_status IS NULL) as total_students, " +
+                "  (SELECT COUNT(*) FROM student_device_logs WHERE approval_status = 'Approved' OR approval_status IS NULL) as total_devices, " +
+                "  (SELECT COUNT(*) FROM student_device_logs WHERE egress_time IS NULL AND (approval_status = 'Approved' OR approval_status IS NULL)) as devices_inside, " +
+                "  (SELECT COUNT(*) FROM student_device_logs WHERE DATE(ingress_time) = CURRENT_DATE AND (approval_status = 'Approved' OR approval_status IS NULL)) as ingress_today, " +
+                "  (SELECT COUNT(*) FROM student_device_logs WHERE DATE(egress_time) = CURRENT_DATE AND (approval_status = 'Approved' OR approval_status IS NULL)) as egress_today";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              Statement stmt = conn.createStatement();
@@ -213,36 +292,83 @@ public class BYODService {
      * Groups devices by type and brand for a single row per student.
      */
     public List<String[]> fetchRegisteredStudentsList() {
+        return fetchFilteredStudentsList(null, null);
+    }
+
+    /**
+     * Fetches filtered student profiles by status and/or period.
+     * @param status  "All", "Approved", "Disapproved", "Cancelled", "Pending", or null for all
+     * @param period  "This Month", "Last Month", "Last 3 Months", "This Year", or null for all
+     */
+    public List<String[]> fetchFilteredStudentsList(String status, String period) {
         List<String[]> students = new ArrayList<>();
 
-        String sql = "SELECT student_id, " +
-                "MAX(first_name) as first_name, " +
-                "MAX(last_name) as last_name, " +
-                "MAX(course_program) as course_program, " +
-                "GROUP_CONCAT(device_type SEPARATOR ', ') as device_type, " +
-                "GROUP_CONCAT(brand_model SEPARATOR ', ') as brand_model, " +
-                "MAX(contact_number) as contact_number " +
-                "FROM student_device_logs WHERE student_id IS NOT NULL " +
-                "GROUP BY student_id " +
-                "ORDER BY last_name ASC";
+        StringBuilder sql = new StringBuilder(
+            "SELECT student_id, " +
+            "MAX(first_name) as first_name, " +
+            "MAX(last_name) as last_name, " +
+            "MAX(course_program) as course_program, " +
+            "GROUP_CONCAT(DISTINCT device_type SEPARATOR ', ') as device_type, " +
+            "GROUP_CONCAT(DISTINCT brand_model SEPARATOR ', ') as brand_model, " +
+            "MAX(contact_number) as contact_number, " +
+            "MAX(approval_status) as approval_status, " +
+            "MAX(approval_remarks) as approval_remarks, " +
+            "MAX(ingress_time) as ingress_time " +
+            "FROM student_device_logs " +
+            "WHERE student_id IS NOT NULL AND (is_deleted = 0 OR is_deleted IS NULL) "
+        );
+
+        List<Object> params = new ArrayList<>();
+
+        if (status != null && !status.equals("All")) {
+            sql.append("AND approval_status = ? ");
+            params.add(status);
+        }
+
+        if (period != null && !period.equals("All")) {
+            switch (period) {
+                case "This Month":
+                    sql.append("AND YEAR(ingress_time) = YEAR(CURDATE()) AND MONTH(ingress_time) = MONTH(CURDATE()) ");
+                    break;
+                case "Last Month":
+                    sql.append("AND YEAR(ingress_time) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) " +
+                               "AND MONTH(ingress_time) = MONTH(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) ");
+                    break;
+                case "Last 3 Months":
+                    sql.append("AND ingress_time >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH) ");
+                    break;
+                case "This Year":
+                    sql.append("AND YEAR(ingress_time) = YEAR(CURDATE()) ");
+                    break;
+            }
+        }
+
+        sql.append("GROUP BY student_id ORDER BY last_name ASC");
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-             PreparedStatement ps = conn.prepareStatement(sql);
-             ResultSet rs = ps.executeQuery()) {
+             PreparedStatement ps = conn.prepareStatement(sql.toString())) {
 
-            while (rs.next()) {
-                String fullName = rs.getString("first_name") + " " + rs.getString("last_name");
-                students.add(new String[]{
-                        rs.getString("student_id"),
-                        fullName,
-                        rs.getString("course_program") != null ? rs.getString("course_program") : "N/A",
-                        rs.getString("device_type") != null ? rs.getString("device_type") : "Unknown",
-                        rs.getString("brand_model") != null ? rs.getString("brand_model") : "N/A",
-                        rs.getString("contact_number") != null ? rs.getString("contact_number") : "N/A"
-                });
+            for (int i = 0; i < params.size(); i++) {
+                ps.setObject(i + 1, params.get(i));
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String fullName = rs.getString("first_name") + " " + rs.getString("last_name");
+                    students.add(new String[]{
+                            rs.getString("student_id"),
+                            fullName,
+                            rs.getString("course_program") != null ? rs.getString("course_program") : "N/A",
+                            rs.getString("device_type") != null ? rs.getString("device_type") : "Unknown",
+                            rs.getString("brand_model") != null ? rs.getString("brand_model") : "N/A",
+                            rs.getString("contact_number") != null ? rs.getString("contact_number") : "N/A",
+                            rs.getString("approval_status") != null ? rs.getString("approval_status") : "N/A",
+                            rs.getString("approval_remarks") != null ? rs.getString("approval_remarks") : ""
+                    });
+                }
             }
         } catch (Exception e) {
-            System.err.println("Error fetching reporting students list: " + e.getMessage());
+            System.err.println("Error fetching filtered students list: " + e.getMessage());
         }
         return students;
     }
@@ -360,9 +486,9 @@ public class BYODService {
         }
     }
 
-    // 3. DELETE: Removes a student's records from the system based on their Student ID
+    // 3. SOFT DELETE: Marks a student's records as deleted (trash bin logic)
     public boolean deleteRegisteredStudent(String id) {
-        String sql = "DELETE FROM student_device_logs WHERE student_id = ?";
+        String sql = "UPDATE student_device_logs SET is_deleted = 1 WHERE student_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -372,8 +498,78 @@ public class BYODService {
             return ps.executeUpdate() > 0;
 
         } catch (SQLException e) {
-            System.err.println("Error deleting registered student: " + e.getMessage());
+            System.err.println("Error soft-deleting registered student: " + e.getMessage());
             return false;
         }
+    }
+
+    // Restore a soft-deleted student from trash
+    public boolean restoreRegisteredStudent(String id) {
+        String sql = "UPDATE student_device_logs SET is_deleted = 0 WHERE student_id = ? AND is_deleted = 1";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, id);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error restoring registered student: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Permanently delete (empty trash)
+    public boolean permanentlyDeleteStudent(String id) {
+        String sql = "DELETE FROM student_device_logs WHERE student_id = ? AND is_deleted = 1";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, id);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error permanently deleting student: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Fetch soft-deleted students (trash bin)
+    public List<String[]> fetchDeletedStudentsList() {
+        List<String[]> students = new ArrayList<>();
+
+        String sql = "SELECT student_id, " +
+                "MAX(first_name) as first_name, " +
+                "MAX(last_name) as last_name, " +
+                "MAX(course_program) as course_program, " +
+                "GROUP_CONCAT(device_type SEPARATOR ', ') as device_type, " +
+                "GROUP_CONCAT(brand_model SEPARATOR ', ') as brand_model, " +
+                "MAX(contact_number) as contact_number " +
+                "FROM student_device_logs WHERE student_id IS NOT NULL AND is_deleted = 1 " +
+                "GROUP BY student_id " +
+                "ORDER BY last_name ASC";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                String fullName = rs.getString("first_name") + " " + rs.getString("last_name");
+                students.add(new String[]{
+                        rs.getString("student_id"),
+                        fullName,
+                        rs.getString("course_program") != null ? rs.getString("course_program") : "N/A",
+                        rs.getString("device_type") != null ? rs.getString("device_type") : "Unknown",
+                        rs.getString("brand_model") != null ? rs.getString("brand_model") : "N/A",
+                        rs.getString("contact_number") != null ? rs.getString("contact_number") : "N/A"
+                });
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching deleted students list: " + e.getMessage());
+        }
+        return students;
     }
 }

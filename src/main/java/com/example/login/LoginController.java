@@ -118,9 +118,29 @@ public class LoginController {
 
         Auth.isLoggedIn = true;
         Auth.userRole = "Faculty";
-        Auth.reportUnlocked = true;
 
         closeWindow();
+        openMonitoring();
+    }
+
+    private void openMonitoring() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/monitoring.fxml"));
+            Parent root = loader.load();
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource(STYLESHEET_PATH).toExternalForm());
+
+            Stage stage = new Stage();
+            stage.setScene(scene);
+            stage.setTitle("Monitoring - BYOD System");
+            stage.setMinWidth(1024);
+            stage.setMinHeight(700);
+            stage.setMaximized(true);
+            stage.centerOnScreen();
+            stage.show();
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "Failed to open monitoring", e);
+        }
     }
 
     private void openRegistration() {
@@ -148,6 +168,7 @@ public class LoginController {
         alert.setTitle(title);
         alert.setHeaderText(header);
         alert.setContentText(content);
+
         alert.showAndWait();
     }
 

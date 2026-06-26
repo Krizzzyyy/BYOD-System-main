@@ -31,6 +31,7 @@ public class QRScannerWindow {
         Webcam webcam = Webcam.getDefault();
         if (webcam == null) {
             Alert alert = new Alert(Alert.AlertType.ERROR, "No camera device detected on this system.");
+
             alert.showAndWait();
             return;
         }

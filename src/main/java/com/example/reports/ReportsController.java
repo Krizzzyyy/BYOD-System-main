@@ -79,6 +79,18 @@ public class ReportsController {
     /* ── Students Management Table ──────────────────────── */
     @FXML private TableView<StudentRow> studentsTable;
     @FXML private TableColumn<StudentRow, String> colName, colStudentId, colDepartment, colDevice, colSerial, colPhone;
+    @FXML private TableColumn<StudentRow, String> colStatus, colRemarks;
+
+    /* ── Filter Controls ────────────────────────────────── */
+    @FXML private ComboBox<String> statusFilterCombo;
+    @FXML private ComboBox<String> statusPeriodCombo;
+    @FXML private Label filteredCountLabel;
+
+    /* ── Trash Bin View ──────────────────────────────────── */
+    @FXML private ScrollPane trashView;
+    @FXML private TableView<StudentRow> trashTable;
+    @FXML private TableColumn<StudentRow, String> trColName, trColStudentId, trColDepartment, trColDevice, trColSerial, trColPhone;
+    @FXML private Label trashCountLabel;
 
     /* ── Wizard Export Views Variables ── */
     @FXML private DatePicker exportFromDate;
@@ -102,7 +114,7 @@ public class ReportsController {
     @FXML private Label laptopsPct, tabletsPct, smartphonesPct, othersPct;
     @FXML private Label laptopsCount, tabletsCount, smartphonesCount, othersCount;
 
-    private enum View { MAIN, EXPORT, INVENTORY, STUDENTS }
+    private enum View { MAIN, EXPORT, INVENTORY, STUDENTS, TRASH }
     private final BYODService byodService = new BYODService();
     private String selectedFormat = "CSV";
 
@@ -115,8 +127,20 @@ public class ReportsController {
         }
 
         if (periodCombo != null) {
-            periodCombo.getItems().addAll("This Month", "Last Month", "Last 3 Months", "This Year");
-            periodCombo.setValue("This Month");
+            periodCombo.getItems().addAll("All", "This Month", "Last Month", "Last 3 Months", "This Year");
+            periodCombo.setValue("All");
+        }
+
+        if (statusFilterCombo != null) {
+            statusFilterCombo.getItems().addAll("All", "Approved", "Pending", "Disapproved", "Cancelled");
+            statusFilterCombo.setValue("All");
+            statusFilterCombo.setOnAction(e -> loadStudentsData());
+        }
+
+        if (statusPeriodCombo != null) {
+            statusPeriodCombo.getItems().addAll("All", "This Month", "Last Month", "Last 3 Months", "This Year");
+            statusPeriodCombo.setValue("All");
+            statusPeriodCombo.setOnAction(e -> loadStudentsData());
         }
 
         setupTables();
@@ -142,9 +166,13 @@ public class ReportsController {
         setVisible(exportView,    v == View.EXPORT);
         setVisible(inventoryView, v == View.INVENTORY);
         setVisible(studentsView,  v == View.STUDENTS);
+        setVisible(trashView,     v == View.TRASH);
 
         if (v == View.INVENTORY) {
             updateInventoryMetricsDisplay();
+        }
+        if (v == View.TRASH) {
+            loadTrashData();
         }
     }
 
@@ -162,6 +190,43 @@ public class ReportsController {
             colDevice.setCellValueFactory(new PropertyValueFactory<>("device"));
             colSerial.setCellValueFactory(new PropertyValueFactory<>("serial"));
             colPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));
+            if (colStatus != null) {
+                colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+                colStatus.setCellFactory(col -> new TableCell<StudentRow, String>() {
+                    @Override
+                    protected void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty || item == null || item.equals("N/A")) {
+                            setText(null);
+                            setGraphic(null);
+                            setStyle("");
+                        } else {
+                            Label badge = new Label(item);
+                            badge.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 4 10; -fx-background-radius: 12px;");
+                            switch (item) {
+                                case "Approved":
+                                    badge.setStyle(badge.getStyle() + "-fx-background-color: #D4EDDA; -fx-text-fill: #155724;");
+                                    break;
+                                case "Pending":
+                                    badge.setStyle(badge.getStyle() + "-fx-background-color: #FFF3CD; -fx-text-fill: #856404;");
+                                    break;
+                                case "Disapproved":
+                                    badge.setStyle(badge.getStyle() + "-fx-background-color: #F8D7DA; -fx-text-fill: #721C24;");
+                                    break;
+                                case "Cancelled":
+                                    badge.setStyle(badge.getStyle() + "-fx-background-color: #E2E3E5; -fx-text-fill: #383D41;");
+                                    break;
+                                default:
+                                    badge.setStyle(badge.getStyle() + "-fx-background-color: #E2E3E5; -fx-text-fill: #383D41;");
+                                    break;
+                            }
+                            setGraphic(badge);
+                            setText(null);
+                        }
+                    }
+                });
+            }
+            if (colRemarks != null) colRemarks.setCellValueFactory(new PropertyValueFactory<>("remarks"));
             studentsTable.setPlaceholder(new Label("No records inside the security database structure."));
 
             studentsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
@@ -183,6 +248,16 @@ public class ReportsController {
             colExpStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
             colExpAction.setCellValueFactory(new PropertyValueFactory<>("action"));
             exportsTable.setPlaceholder(new Label("No recent administrative data exports found."));
+        }
+
+        if (trashTable != null) {
+            trColStudentId.setCellValueFactory(new PropertyValueFactory<>("studentId"));
+            trColName.setCellValueFactory(new PropertyValueFactory<>("name"));
+            trColDepartment.setCellValueFactory(new PropertyValueFactory<>("department"));
+            trColDevice.setCellValueFactory(new PropertyValueFactory<>("device"));
+            trColSerial.setCellValueFactory(new PropertyValueFactory<>("serial"));
+            trColPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));
+            trashTable.setPlaceholder(new Label("Trash bin is empty."));
         }
     }
 
@@ -278,12 +353,13 @@ public class ReportsController {
     private void handleDeleteStudent() {
         String id = studentIdField.getText().trim();
         if (id.isEmpty()) {
-            showAlert("Reference Target Void", "Select a clean entry target inside the table row index context to purge.");
+            showAlert("Reference Target Void", "Select a clean entry target inside the table row index context to move to trash.");
             return;
         }
 
-        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION, "Purge record row tracking ID: " + id + "?", ButtonType.YES, ButtonType.NO);
+        Alert confirmation = new Alert(Alert.AlertType.CONFIRMATION, "Move record (ID: " + id + ") to trash?\n\nYou can restore it later from the Trash Bin.", ButtonType.YES, ButtonType.NO);
         confirmation.setHeaderText(null);
+
         confirmation.showAndWait();
 
         if (confirmation.getResult() == ButtonType.YES) {
@@ -291,10 +367,102 @@ public class ReportsController {
             if (success) {
                 loadStudentsData();
                 handleClearForm();
-                showSuccessAlert("Record deleted successfully.");
+                showSuccessAlert("Record moved to trash successfully.");
             } else {
-                showAlert("Query Rejection Error", "Database constraints prevented data element execution drop.");
+                showAlert("Query Rejection Error", "Database constraints prevented moving record to trash.");
             }
+        }
+    }
+
+    @FXML
+    private void handleOpenTrash() {
+        showView(View.TRASH);
+    }
+
+    @FXML
+    private void handleRestoreStudent() {
+        if (trashTable == null) return;
+        StudentRow selected = trashTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("No Selection", "Select a record from the trash bin to restore.");
+            return;
+        }
+
+        boolean success = byodService.restoreRegisteredStudent(selected.getStudentId());
+        if (success) {
+            loadTrashData();
+            loadStudentsData();
+            showSuccessAlert("Record restored successfully.");
+        } else {
+            showAlert("Restore Error", "Failed to restore the selected record.");
+        }
+    }
+
+    @FXML
+    private void handlePermanentDelete() {
+        if (trashTable == null) return;
+        StudentRow selected = trashTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("No Selection", "Select a record from the trash bin to permanently delete.");
+            return;
+        }
+
+        Alert confirmation = new Alert(Alert.AlertType.WARNING,
+                "PERMANENTLY delete record (ID: " + selected.getStudentId() + ")?\n\nThis action CANNOT be undone.",
+                ButtonType.YES, ButtonType.NO);
+        confirmation.setTitle("Permanent Deletion Warning");
+        confirmation.setHeaderText(null);
+
+        confirmation.showAndWait();
+
+        if (confirmation.getResult() == ButtonType.YES) {
+            boolean success = byodService.permanentlyDeleteStudent(selected.getStudentId());
+            if (success) {
+                loadTrashData();
+                showSuccessAlert("Record permanently deleted.");
+            } else {
+                showAlert("Deletion Error", "Failed to permanently delete the record.");
+            }
+        }
+    }
+
+    @FXML
+    private void handleEmptyTrash() {
+        List<String[]> deletedItems = byodService.fetchDeletedStudentsList();
+        if (deletedItems.isEmpty()) {
+            showAlert("Trash Empty", "There are no records in the trash bin.");
+            return;
+        }
+
+        Alert confirmation = new Alert(Alert.AlertType.WARNING,
+                "PERMANENTLY delete ALL " + deletedItems.size() + " records in trash?\n\nThis action CANNOT be undone.",
+                ButtonType.YES, ButtonType.NO);
+        confirmation.setTitle("Empty Trash Warning");
+        confirmation.setHeaderText(null);
+
+        confirmation.showAndWait();
+
+        if (confirmation.getResult() == ButtonType.YES) {
+            int count = 0;
+            for (String[] row : deletedItems) {
+                if (byodService.permanentlyDeleteStudent(row[0])) {
+                    count++;
+                }
+            }
+            loadTrashData();
+            showSuccessAlert(count + " record(s) permanently deleted from trash.");
+        }
+    }
+
+    private void loadTrashData() {
+        if (trashTable == null) return;
+        trashTable.getItems().clear();
+        List<String[]> dataRows = byodService.fetchDeletedStudentsList();
+        for (String[] row : dataRows) {
+            trashTable.getItems().add(new StudentRow(row[0], row[1], row[2], row[3], row[4], row.length > 5 ? row[5] : ""));
+        }
+        if (trashCountLabel != null) {
+            trashCountLabel.setText(dataRows.size() + " record(s) in trash");
         }
     }
 
@@ -343,10 +511,25 @@ public class ReportsController {
     private void loadStudentsData() {
         if (studentsTable == null) return;
         studentsTable.getItems().clear();
-        List<String[]> dataRows = byodService.fetchRegisteredStudentsList();
+
+        String statusFilter = (statusFilterCombo != null) ? statusFilterCombo.getValue() : "All";
+        String periodFilter = (statusPeriodCombo != null) ? statusPeriodCombo.getValue() :
+                              (periodCombo != null) ? periodCombo.getValue() : "All";
+        if (statusFilter == null || statusFilter.isEmpty()) statusFilter = "All";
+        if (periodFilter == null || periodFilter.isEmpty()) periodFilter = "All";
+
+        List<String[]> dataRows = byodService.fetchFilteredStudentsList(statusFilter, periodFilter);
 
         for (String[] row : dataRows) {
-            studentsTable.getItems().add(new StudentRow(row[0], row[1], row[2], row[3], row[4], row.length > 5 ? row[5] : ""));
+            studentsTable.getItems().add(new StudentRow(
+                row[0], row[1], row[2], row[3], row[4], row.length > 5 ? row[5] : "",
+                row.length > 6 ? row[6] : "N/A",
+                row.length > 7 ? row[7] : ""
+            ));
+        }
+
+        if (filteredCountLabel != null) {
+            filteredCountLabel.setText(dataRows.size() + " record(s) found");
         }
     }
 
@@ -356,6 +539,7 @@ public class ReportsController {
     @FXML private void handleGenExport()    { showView(View.EXPORT); }
     @FXML private void handleExportAll()    { showView(View.EXPORT); }
     @FXML private void handleBack()         { showView(View.MAIN); }
+    @FXML private void handleBackToStudents() { showView(View.STUDENTS); }
 
 
             @FXML
@@ -460,7 +644,12 @@ public class ReportsController {
         File targetedFile = fileChooser.showSaveDialog(activeStage);
 
         if (targetedFile != null) {
-            List<String[]> extractionDatabaseRows = byodService.fetchRegisteredStudentsList();
+            String exportStatusFilter = (statusFilterCombo != null) ? statusFilterCombo.getValue() : "All";
+            String exportPeriodFilter = (periodCombo != null) ? periodCombo.getValue() : "All";
+            if (exportStatusFilter == null || exportStatusFilter.isEmpty()) exportStatusFilter = "All";
+            if (exportPeriodFilter == null || exportPeriodFilter.isEmpty()) exportPeriodFilter = "All";
+
+            List<String[]> extractionDatabaseRows = byodService.fetchFilteredStudentsList(exportStatusFilter, exportPeriodFilter);
             boolean isSuccess = false;
 
             try {
@@ -510,7 +699,7 @@ public class ReportsController {
     // 1. Native CSV Compiler (No external libraries needed)
     private boolean exportToCSV(File file, List<String[]> data) throws IOException {
         try (FileWriter writer = new FileWriter(file)) {
-            writer.write("Student ID,Full Name,Department,Device Type,Brand/Model,Contact Number\n");
+            writer.write("Student ID,Full Name,Department,Device Type,Brand/Model,Contact Number,Status,Remarks\n");
             for (String[] row : data) {
                 StringBuilder line = new StringBuilder();
                 for (int i = 0; i < row.length; i++) {
@@ -531,7 +720,7 @@ public class ReportsController {
 
         // Create Header
         XSSFRow headerRow = sheet.createRow(0);
-        String[] headers = {"Student ID", "Full Name", "Department", "Device Type", "Brand/Model", "Phone"};
+        String[] headers = {"Student ID", "Full Name", "Department", "Device Type", "Brand/Model", "Phone", "Status", "Remarks"};
         for (int i = 0; i < headers.length; i++) {
             headerRow.createCell(i).setCellValue(headers[i]);
         }
@@ -563,11 +752,11 @@ public class ReportsController {
         document.add(new Paragraph("Generated on: " + LocalDateTime.now().toString()));
         document.add(new Paragraph(" ")); // spacing
 
-        PdfPTable table = new PdfPTable(6); // 6 columns
+        PdfPTable table = new PdfPTable(8); // 8 columns
         table.setWidthPercentage(100);
 
         // Add Headers
-        String[] headers = {"Student ID", "Full Name", "Department", "Device", "Brand/Model", "Phone"};
+        String[] headers = {"Student ID", "Full Name", "Department", "Device", "Brand/Model", "Phone", "Status", "Remarks"};
         for (String header : headers) {
             table.addCell(header);
         }
@@ -584,6 +773,8 @@ public class ReportsController {
 
         return true;
     }
+
+    private static final String STYLESHEET_PATH = "/css/stylesheet.css";
 
     private void showAlert(String t, String m) {
         Alert a = new Alert(Alert.AlertType.WARNING); a.setTitle(t); a.setHeaderText(null); a.setContentText(m); a.showAndWait();
@@ -605,9 +796,13 @@ public class ReportsController {
 
     /* ── Inner POJO Data Mapping Wrappers ── */
     public static class StudentRow {
-        private final String studentId, name, department, device, serial, phone;
+        private final String studentId, name, department, device, serial, phone, status, remarks;
         public StudentRow(String id, String n, String d, String dv, String s, String p) {
+            this(id, n, d, dv, s, p, "N/A", "");
+        }
+        public StudentRow(String id, String n, String d, String dv, String s, String p, String st, String rm) {
             this.studentId=id; this.name=n; this.department=d; this.device=dv; this.serial=s; this.phone=p;
+            this.status=st; this.remarks=rm;
         }
         public String getStudentId()  { return studentId; }
         public String getName()       { return name; }
@@ -615,6 +810,8 @@ public class ReportsController {
         public String getDevice()     { return device; }
         public String getSerial()     { return serial; }
         public String getPhone()      { return phone; }
+        public String getStatus()     { return status; }
+        public String getRemarks()    { return remarks; }
     }
 
     public static class ExportRow {
@@ -626,5 +823,25 @@ public class ReportsController {
         public String getParameters() { return parameters; }
         public String getStatus()     { return status; }
         public String getAction()     { return action; }
+    }
+
+    @FXML private void handleLogout() {
+        Auth.isLoggedIn = false;
+        Auth.userRole = null;
+        Auth.reportUnlocked = false;
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
+            Stage stage = (Stage) reportsButton.getScene().getWindow();
+            stage.setMaximized(false);
+            stage.setMinWidth(0);
+            stage.setMinHeight(0);
+            stage.setMaxWidth(Double.MAX_VALUE);
+            stage.setMaxHeight(Double.MAX_VALUE);
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource(STYLESHEET_PATH).toExternalForm());
+            stage.setScene(scene);
+            stage.setResizable(false);
+            stage.centerOnScreen();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 }

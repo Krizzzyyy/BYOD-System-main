@@ -15,6 +15,7 @@ import javafx.scene.chart.NumberAxis;
 import javafx.scene.chart.XYChart;
 import javafx.scene.control.*;
 import javafx.scene.layout.VBox;
+import javafx.geometry.Insets;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import com.example.service.BYODService;
@@ -288,7 +289,6 @@ public class DashboardController {
                 javafx.event.ActionEvent.ACTION, e -> loadingDialog.close());
 
         String css = getClass().getResource(STYLESHEET_PATH).toExternalForm();
-        loadingDialog.getDialogPane().getStylesheets().add(css);
         loadingDialog.getDialogPane().setStyle("-fx-background-color: white; -fx-background-radius: 12;");
 
         Task<Void> task = new Task<>() {
@@ -309,8 +309,23 @@ public class DashboardController {
 
     @FXML
     private void handleLogout() {
-        Platform.exit();
-        System.exit(0);
+        Auth.isLoggedIn = false;
+        Auth.userRole = null;
+        Auth.reportUnlocked = false;
+        try {
+            Parent root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
+            Stage stage = (Stage) dashboardButton.getScene().getWindow();
+            stage.setMaximized(false);
+            stage.setMinWidth(0);
+            stage.setMinHeight(0);
+            stage.setMaxWidth(Double.MAX_VALUE);
+            stage.setMaxHeight(Double.MAX_VALUE);
+            Scene scene = new Scene(root);
+            scene.getStylesheets().add(getClass().getResource(STYLESHEET_PATH).toExternalForm());
+            stage.setScene(scene);
+            stage.setResizable(false);
+            stage.centerOnScreen();
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private void loadLoginScreen() {
@@ -340,23 +355,38 @@ public class DashboardController {
             navigateTo(REPORTS_FXML, "Reports - BYOD System");
             return;
         }
-        try {
-            FXMLLoader loginLoader = new FXMLLoader(getClass().getResource(LOGIN_FXML));
-            Parent loginRoot = loginLoader.load();
-            Stage loginStage = new Stage();
-            Scene loginScene = new Scene(loginRoot);
-            loginScene.getStylesheets().add(getClass().getResource(STYLESHEET_PATH).toExternalForm());
-            loginStage.setScene(loginScene);
-            loginStage.setTitle("Login Required - Reports Access");
-            loginStage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
-            loginStage.showAndWait();
 
-            if (Auth.reportUnlocked) {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Reports Access");
+        dialog.setHeaderText("Faculty verification required to access Reports.");
+
+        ButtonType loginBtn = new ButtonType("Unlock", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(loginBtn, ButtonType.CANCEL);
+
+        PasswordField passwordField = new PasswordField();
+        passwordField.setPromptText("Enter faculty password");
+        passwordField.setPrefWidth(280);
+
+        Label errorLabel = new Label("");
+        errorLabel.setStyle("-fx-text-fill: #D32F2F; -fx-font-size: 12px;");
+
+        VBox content = new VBox(10, new Label("Password:"), passwordField, errorLabel);
+        content.setPadding(new Insets(20));
+        dialog.getDialogPane().setContent(content);
+
+        dialog.setResultConverter(btn -> {
+            if (btn == loginBtn) return passwordField.getText();
+            return null;
+        });
+
+        dialog.showAndWait().ifPresent(password -> {
+            if ("password".equals(password)) {
+                Auth.reportUnlocked = true;
                 navigateTo(REPORTS_FXML, "Reports - BYOD System");
+            } else {
+                errorLabel.setText("Incorrect password. Access denied.");
             }
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to open login popup", e);
-        }
+        });
     }
     @FXML private void handleAccount() { navigateTo(ACCOUNT_FXML, "Account - BYOD System"); }
 

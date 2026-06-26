@@ -40,9 +40,14 @@
       <Region HBox.hgrow="ALWAYS" />
       <Label fx:id="navDateTimeLabel" styleClass="nav-datetime" text="MM/DD/YYYY HH:MM:SS">
         <HBox.margin>
-          <Insets right="30.0" />
+          <Insets right="15.0" />
         </HBox.margin>
       </Label>
+      <Button onAction="#handleLogout" styleClass="logout-button" text="&#x23FB; Logout">
+        <HBox.margin>
+          <Insets right="60.0" />
+        </HBox.margin>
+      </Button>
     </HBox>
   </top>
 
@@ -52,7 +57,7 @@
       <ScrollPane fx:id="mainView" fitToWidth="true" styleClass="scroll-bg">
         <VBox spacing="20">
           <padding>
-            <Insets bottom="20.0" top="20.0" />
+            <Insets bottom="20.0" left="10.0" right="10.0" top="20.0" />
           </padding>
 
           <HBox alignment="CENTER_LEFT" spacing="12">
@@ -271,9 +276,11 @@
           <HBox alignment="CENTER_LEFT" spacing="12">
             <Button onAction="#handleBack" prefHeight="40" styleClass="action-button" text="← Back" />
             <VBox spacing="4" HBox.hgrow="ALWAYS">
-              <Label styleClass="title-2" text="Admin Database Control" />
-              <Label styleClass="description" text="Direct Create, Update, and Delete access to registered student device logs." />
+              <Label styleClass="title-2" text="Report Records Database" />
+              <Label styleClass="description" text="View, filter, and manage registered student device records by status and period." />
             </VBox>
+            <Label styleClass="form-label-sm" text="PERIOD:" />
+            <ComboBox fx:id="statusPeriodCombo" maxWidth="180" prefWidth="160" styleClass="combo-box" />
           </HBox>
 
           <VBox spacing="14" styleClass="card">
@@ -307,22 +314,65 @@
 
             <HBox alignment="CENTER_RIGHT" spacing="12">
               <Button onAction="#handleClearForm" styleClass="action-button" text="🧹 Clear Fields" />
+              <Button onAction="#handleOpenTrash" style="-fx-background-color: #6c757d; -fx-text-fill: white; -fx-background-radius: 12px;" styleClass="btn-dark" text="🗑 Trash Bin" />
               <Button onAction="#handleInsertStudent" style="-fx-background-color: #62b86f; -fx-text-fill: white; -fx-background-radius: 12px;" styleClass="btn-dark" text="➕ Insert Record" />
               <Button onAction="#handleUpdateStudent" style="-fx-background-color: #e2a03f; -fx-text-fill: white; -fx-background-radius: 12px;" styleClass="btn-dark" text="✏ Update Selected" />
-              <Button onAction="#handleDeleteStudent" style="-fx-background-color: #d9534f; -fx-text-fill: white; -fx-background-radius: 12px;" styleClass="btn-dark" text="🗑 Delete Record" />
+              <Button onAction="#handleDeleteStudent" style="-fx-background-color: #d9534f; -fx-text-fill: white; -fx-background-radius: 12px;" styleClass="btn-dark" text="🗑 Move to Trash" />
             </HBox>
           </VBox>
 
           <VBox spacing="12" styleClass="card">
-            <Label styleClass="card-title" text="Active Live Records Database" />
+            <HBox alignment="CENTER_LEFT" spacing="12">
+              <Label styleClass="card-title" text="Active Live Records Database" HBox.hgrow="ALWAYS" />
+              <Label fx:id="filteredCountLabel" styleClass="form-label-sm" text="0 record(s) found" />
+              <Label styleClass="form-label-sm" text="STATUS:" />
+              <ComboBox fx:id="statusFilterCombo" maxWidth="180" prefWidth="160" styleClass="combo-box" />
+            </HBox>
             <TableView fx:id="studentsTable" prefHeight="300" VBox.vgrow="ALWAYS">
               <columns>
                 <TableColumn fx:id="colStudentId" prefWidth="130" text="Student ID" />
-                <TableColumn fx:id="colName" prefWidth="200" text="Student Name" />
-                <TableColumn fx:id="colDepartment" prefWidth="220" text="Department" />
-                <TableColumn fx:id="colDevice" prefWidth="160" text="Registered Devices" />
-                <TableColumn fx:id="colSerial" prefWidth="180" text="Brand / Model" />
-                <TableColumn fx:id="colPhone" prefWidth="150" text="Contact Number" />
+                <TableColumn fx:id="colName" prefWidth="180" text="Student Name" />
+                <TableColumn fx:id="colDepartment" prefWidth="180" text="Department" />
+                <TableColumn fx:id="colDevice" prefWidth="140" text="Registered Devices" />
+                <TableColumn fx:id="colSerial" prefWidth="150" text="Brand / Model" />
+                <TableColumn fx:id="colPhone" prefWidth="120" text="Contact Number" />
+                <TableColumn fx:id="colStatus" prefWidth="100" text="Status" />
+                <TableColumn fx:id="colRemarks" prefWidth="180" text="Remarks" />
+              </columns>
+              <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY" /></columnResizePolicy>
+            </TableView>
+          </VBox>
+        </VBox>
+      </ScrollPane>
+
+      <ScrollPane fx:id="trashView" fitToWidth="true" managed="false" styleClass="scroll-bg" visible="false">
+        <VBox spacing="20">
+          <padding><Insets bottom="40" left="40" right="40" top="24" /></padding>
+
+          <HBox alignment="CENTER_LEFT" spacing="12">
+            <Button onAction="#handleBackToStudents" prefHeight="40" styleClass="action-button" text="← Back to Students" />
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+              <Label styleClass="title-2" text="🗑 Trash Bin" />
+              <Label fx:id="trashCountLabel" styleClass="description" text="0 record(s) in trash" />
+            </VBox>
+          </HBox>
+
+          <Label styleClass="description" text="Soft-deleted records are stored here. You can restore them or permanently delete them." />
+
+          <VBox spacing="12" styleClass="card">
+            <HBox alignment="CENTER_RIGHT" spacing="12">
+              <Button onAction="#handleRestoreStudent" style="-fx-background-color: #62b86f; -fx-text-fill: white; -fx-background-radius: 12px;" styleClass="btn-dark" text="♻ Restore Selected" />
+              <Button onAction="#handlePermanentDelete" style="-fx-background-color: #d9534f; -fx-text-fill: white; -fx-background-radius: 12px;" styleClass="btn-dark" text="⚠ Permanently Delete" />
+              <Button onAction="#handleEmptyTrash" style="-fx-background-color: #b71c1c; -fx-text-fill: white; -fx-background-radius: 12px;" styleClass="btn-dark" text="🗑 Empty Trash" />
+            </HBox>
+            <TableView fx:id="trashTable" prefHeight="400" VBox.vgrow="ALWAYS">
+              <columns>
+                <TableColumn fx:id="trColStudentId" prefWidth="130" text="Student ID" />
+                <TableColumn fx:id="trColName" prefWidth="200" text="Student Name" />
+                <TableColumn fx:id="trColDepartment" prefWidth="220" text="Department" />
+                <TableColumn fx:id="trColDevice" prefWidth="160" text="Registered Devices" />
+                <TableColumn fx:id="trColSerial" prefWidth="180" text="Brand / Model" />
+                <TableColumn fx:id="trColPhone" prefWidth="150" text="Contact Number" />
               </columns>
               <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY" /></columnResizePolicy>
             </TableView>

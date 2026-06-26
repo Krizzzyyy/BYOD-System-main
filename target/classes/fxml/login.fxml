@@ -90,8 +90,8 @@
                         <padding>
                             <Insets top="15.0" />
                         </padding>
-                        <Button fx:id="loginButton" alignment="CENTER" mnemonicParsing="false" prefWidth="160.0" styleClass="role-button-faculty" text="Login" textAlignment="CENTER" />
-                        <Button fx:id="cancelButton" alignment="CENTER" cancelButton="true" mnemonicParsing="false" prefWidth="160.0" styleClass="cancel-button" text="Back" textAlignment="CENTER" />
+                        <Button fx:id="loginButton" alignment="CENTER" mnemonicParsing="false" prefWidth="160.0" styleClass="login-btn" text="Login" textAlignment="CENTER" />
+                        <Button fx:id="cancelButton" alignment="CENTER" cancelButton="true" mnemonicParsing="false" prefWidth="160.0" styleClass="login-cancel" text="Back" textAlignment="CENTER" />
                     </HBox>
                 </VBox>
             </children>

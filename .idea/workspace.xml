@@ -4,7 +4,40 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e42ca9df-bb06-48d1-9f0f-a325f83c684f" name="Changes" comment="" />
+    <list default="true" id="e42ca9df-bb06-48d1-9f0f-a325f83c684f" name="Changes" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/databasescript.txt" beforeDir="false" afterPath="$PROJECT_DIR$/databasescript.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/Auth.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/Auth.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/account/AccountController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/account/AccountController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/dashboard/DashboardApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/dashboard/DashboardApp.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/dashboard/DashboardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/dashboard/DashboardController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/launcher/Launcher.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/launcher/Launcher.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/login/LoginApp.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/login/LoginApp.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/login/LoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/login/LoginController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/monitoring/LogEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/monitoring/LogEntry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/monitoring/MonitoringController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/monitoring/MonitoringController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/monitoring/QRRegistrationSuccessWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/monitoring/QRRegistrationSuccessWindow.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/monitoring/QRScannerWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/monitoring/QRScannerWindow.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/registration/RegistrationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/registration/RegistrationController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/reports/ReportsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/reports/ReportsController.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/service/BYODService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/service/BYODService.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/service/RegistrationValidator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/service/RegistrationValidator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/META-INF/MANIFEST.MF" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/META-INF/MANIFEST.MF" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/css/stylesheet.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/css/stylesheet.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/fxml/dashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/fxml/dashboard.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/fxml/login.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/fxml/login.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/fxml/monitoring.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/fxml/monitoring.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/fxml/registration.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/fxml/registration.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/fxml/reports.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/fxml/reports.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/META-INF/MANIFEST.MF" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/META-INF/MANIFEST.MF" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/css/stylesheet.css" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/css/stylesheet.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/fxml/dashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/fxml/dashboard.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/fxml/login.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/fxml/login.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/fxml/monitoring.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/fxml/monitoring.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/fxml/registration.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/fxml/registration.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/fxml/reports.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/fxml/reports.fxml" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -34,7 +67,10 @@
     "git-widget-placeholder": "main",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/Administrator/OneDrive - Polytechnic University of the Philippines/Desktop/ej files/BYOD/BYOD-System-main-main",
-    "settings.editor.selected.configurable": "configurable.group.appearance"
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.0",
+    "project.structure.side.proportion": "0.0",
+    "settings.editor.selected.configurable": "preferences.fileTypes"
   }
 }]]></component>
   <component name="RunManager">

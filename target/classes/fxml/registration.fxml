@@ -209,8 +209,8 @@
                     <!-- Next Step: steps 1 and 2 -->
                     <Button fx:id="nextStepBtn" managed="true" onAction="#handleNextStep" styleClass="btn-dark" text="Next Step" visible="true" />
                     <!-- Save + Cancel: step 3 only -->
-                    <Button fx:id="saveBtn" managed="false" onAction="#handleSave" styleClass="btn-dark" text="Save" visible="false" />
                     <Button fx:id="cancelBtn" managed="false" onAction="#handleCancel" styleClass="action-button" text="Cancel" visible="false" />
+                    <Button fx:id="saveBtn" managed="false" onAction="#handleSave" styleClass="btn-save" text="Save" visible="false" />
                 </HBox>
 
             </VBox>

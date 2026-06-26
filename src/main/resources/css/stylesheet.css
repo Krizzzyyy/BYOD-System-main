@@ -581,7 +581,7 @@
     -fx-padding: 10px 20px;
     -fx-cursor: hand;
     -fx-effect: -color-shadow-card;
-    -fx-alignment: LEFT;
+    -fx-alignment: CENTER-LEFT;
 }
 
 .filter-button {
@@ -657,9 +657,9 @@
 
 .page-button:selected, .page-button.active {
     -fx-background-color: -color-status-error-alpha;
-    -fx-text-fill: -color-primary;
+    -fx-text-fill: -color-accent;
     -fx-font-weight: bold;
-    -fx-border-color: derive(-color-primary, 20%);
+    -fx-border-color: derive(-color-accent, 20%);
     -fx-border-color: -color-accent;
     -fx-border-width: 1px;
     -fx-background-radius: 6px;
@@ -989,15 +989,16 @@
 }
 
 .btn-save {
-    -fx-background-color: -color-status-success;
+    -fx-background-color: -color-accent;
     -fx-text-fill: -color-bg-overlay;
     -fx-font-weight: bold;
-    -fx-font-size: 14px;
-    -fx-background-radius: 8px;
-    -fx-padding: 8 18;
+    -fx-font-size: 16px;
+    -fx-background-radius: 10px;
+    -fx-padding: 10px 20px;
     -fx-cursor: hand;
 }
-.btn-save:hover { -fx-background-color: derive(-color-status-success, -10%); }
+.btn-save:hover { -fx-background-color: -color-accent-hover; }
+.btn-save:pressed { -fx-background-color: -color-accent-pressed; }
 
 /* ── Scroll bg ───────────────────────────────────────────── */
 .scroll-bg { -fx-background-color: -color-bg-default; -fx-border-color: transparent; }
@@ -1105,7 +1106,7 @@
 
 .combo-box-popup .list-view .list-cell:selected {
     -fx-background-color: derive(-color-border-default, 40%);
-    -fx-text-fill: -colorfg-default;
+    -fx-text-fill: -color-fg-default;
 }
 /* ── Navbar real-time date/time display ── */
 .nav-datetime {

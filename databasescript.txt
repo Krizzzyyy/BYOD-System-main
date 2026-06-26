@@ -1,0 +1,26 @@
+
+// jerich eto lagay mo sa mysql script para gumana database
+-- Create the database if it doesn't exist
+CREATE DATABASE IF NOT EXISTS `byod_db`
+CHARACTER SET utf8mb4
+COLLATE utf8mb4_general_ci;
+
+-- Select the database to use
+USE `byod_db`;
+
+        -- Create the table
+CREATE TABLE `student_device_logs` (
+        `log_id` int(11) NOT NULL AUTO_INCREMENT,
+  `student_id` varchar(50) NOT NULL,
+  `last_name` varchar(100) NOT NULL,
+  `first_name` varchar(100) NOT NULL,
+  `year_section` varchar(50) DEFAULT NULL,
+  `course_program` varchar(100) DEFAULT NULL,
+  `contact_number` varchar(20) DEFAULT NULL,
+  `device_type` varchar(50) DEFAULT NULL,
+  `brand_model` varchar(150) NOT NULL,
+  `color_description` varchar(100) DEFAULT NULL,
+  `ingress_time` datetime DEFAULT CURRENT_TIMESTAMP,
+        `egress_time` datetime DEFAULT NULL,
+PRIMARY KEY (`log_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;

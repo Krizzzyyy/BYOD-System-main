@@ -1,0 +1,378 @@
+package com.example.service;
+
+import java.sql.*;
+import java.io.File;
+import com.google.zxing.*;
+import com.google.zxing.client.j2se.MatrixToImageWriter;
+import com.google.zxing.common.BitMatrix;
+import java.nio.file.FileSystems;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
+
+public class BYODService {
+    private static final String DB_URL = "jdbc:mysql://localhost:3306/byod_db";
+    private static final String DB_USER = "root";
+    private static final String DB_PASS = "";
+
+    public String validate(String sid, String fn, String ln, String contact, String yearSec) {
+        return RegistrationValidator.validate(sid, fn, ln, contact, yearSec);
+    }
+
+    // FIXED: Added ingress_time = CURRENT_TIMESTAMP so new registrations appear on the dashboard today
+    public void registerStudent(String sid, String ln, String fn, String ys, String cp,
+                                String cn, String dt, String bm, String cd) throws Exception {
+        String sql = "INSERT INTO student_device_logs (student_id, last_name, first_name, year_section, course_program, contact_number, device_type, brand_model, color_description, ingress_time) VALUES (?,?,?,?,?,?,?,?,?, CURRENT_TIMESTAMP)";
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, sid); ps.setString(2, ln); ps.setString(3, fn);
+            ps.setString(4, ys); ps.setString(5, cp); ps.setString(6, cn);
+            ps.setString(7, dt); ps.setString(8, bm); ps.setString(9, cd);
+            ps.executeUpdate();
+        }
+    }
+    /**
+     * Fetches registered student profiles filtered by a specific date.
+     * If targetDate is null, it returns all records.
+     */
+    public List<String[]> fetchStudentsByDate(String targetDate) {
+        List<String[]> students = new ArrayList<>();
+
+        // Dynamic query: adds the date filter only if a date is provided
+        String sql = "SELECT student_id, " +
+                "MAX(first_name) as first_name, " +
+                "MAX(last_name) as last_name, " +
+                "MAX(course_program) as course_program, " +
+                "GROUP_CONCAT(device_type SEPARATOR ', ') as device_type, " +
+                "GROUP_CONCAT(brand_model SEPARATOR ', ') as brand_model, " +
+                "MAX(contact_number) as contact_number " +
+                "FROM student_device_logs " +
+                "WHERE student_id IS NOT NULL " +
+                (targetDate != null ? "AND DATE(ingress_time) = ? " : "") +
+                "GROUP BY student_id " +
+                "ORDER BY last_name ASC";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            if (targetDate != null) {
+                ps.setString(1, targetDate);
+            }
+
+            try (ResultSet rs = ps.executeQuery()) {
+                while (rs.next()) {
+                    String fullName = rs.getString("first_name") + " " + rs.getString("last_name");
+                    students.add(new String[]{
+                            rs.getString("student_id"),
+                            fullName,
+                            rs.getString("course_program") != null ? rs.getString("course_program") : "N/A",
+                            rs.getString("device_type") != null ? rs.getString("device_type") : "Unknown",
+                            rs.getString("brand_model") != null ? rs.getString("brand_model") : "N/A",
+                            rs.getString("contact_number") != null ? rs.getString("contact_number") : "N/A"
+                    });
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching filtered students list: " + e.getMessage());
+        }
+        return students;
+    }
+    // Explicitly updates a student's active logs to set an Egress timestamp for ALL devices at once
+    public void updateEgress(String sid) throws Exception {
+        String sql = "UPDATE student_device_logs SET egress_time = CURRENT_TIMESTAMP WHERE student_id = ? AND egress_time IS NULL";
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, sid);
+            ps.executeUpdate();
+        }
+    }
+
+    // Adds a clean new Ingress log item for an existing student context
+    public void updateIngress(String sid, String studentName, String brandModel) throws Exception {
+        String[] nameParts = studentName.split(", ");
+        String ln = nameParts[0];
+        String fn = nameParts.length > 1 ? nameParts[1] : "";
+
+        String sql = "INSERT INTO student_device_logs (student_id, last_name, first_name, brand_model, ingress_time, egress_time) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, NULL)";
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, sid);
+            ps.setString(2, ln);
+            ps.setString(3, fn);
+            ps.setString(4, brandModel);
+            ps.executeUpdate();
+        }
+    }
+
+    // Merges multiple devices into a single comma-separated row for the monitoring table
+    public List<Object[]> fetchLogs() throws Exception {
+        List<Object[]> logs = new ArrayList<>();
+        String sql = "SELECT " +
+                "MIN(log_id) as log_id, " +
+                "student_id, " +
+                "MAX(last_name) as last_name, " +
+                "MAX(first_name) as first_name, " +
+                "GROUP_CONCAT(brand_model SEPARATOR ', ') as brand_models, " +
+                "MAX(ingress_time) as ingress_time, " +
+                "CASE WHEN SUM(CASE WHEN egress_time IS NULL THEN 1 ELSE 0 END) > 0 THEN NULL ELSE MAX(egress_time) END as final_egress " +
+                "FROM student_device_logs " +
+                "GROUP BY student_id, DATE(ingress_time) " +
+                "ORDER BY MAX(ingress_time) DESC";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                logs.add(new Object[]{
+                        rs.getInt("log_id"),
+                        rs.getString("student_id"),
+                        rs.getString("last_name") + ", " + rs.getString("first_name"),
+                        rs.getString("brand_models"),
+                        rs.getString("ingress_time"),
+                        rs.getString("final_egress")
+                });
+            }
+        }
+        return logs;
+    }
+
+    // Gathers analytical numbers using standard dynamic SQL evaluations
+    public Map<String, Integer> fetchDashboardMetrics() throws Exception {
+        Map<String, Integer> metrics = new HashMap<>();
+
+        String sql = "SELECT " +
+                "  (SELECT COUNT(DISTINCT student_id) FROM student_device_logs) as total_students, " +
+                "  (SELECT COUNT(*) FROM student_device_logs) as total_devices, " +
+                "  (SELECT COUNT(*) FROM student_device_logs WHERE egress_time IS NULL) as devices_inside, " +
+                "  (SELECT COUNT(*) FROM student_device_logs WHERE DATE(ingress_time) = CURRENT_DATE) as ingress_today, " +
+                "  (SELECT COUNT(*) FROM student_device_logs WHERE DATE(egress_time) = CURRENT_DATE) as egress_today";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            if (rs.next()) {
+                metrics.put("totalStudents", rs.getInt("total_students"));
+                metrics.put("totalDevices", rs.getInt("total_devices"));
+                metrics.put("devicesInside", rs.getInt("devices_inside"));
+                metrics.put("ingressToday", rs.getInt("ingress_today"));
+                metrics.put("egressToday", rs.getInt("egress_today"));
+            }
+        }
+        return metrics;
+    }
+
+    public String generateQR(String payload, String studentId, String outputDir) throws Exception {
+        String path = outputDir + File.separator + "QR_" + studentId + ".png";
+        BitMatrix matrix = new MultiFormatWriter().encode(payload, BarcodeFormat.QR_CODE, 400, 400);
+        MatrixToImageWriter.writeToPath(matrix, "PNG", FileSystems.getDefault().getPath(path));
+        return path;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════ */
+    /* ── REPORT GENERATION METRIC QUERIES FOR REPORTSCONTROLLER ────────── */
+    /* ════════════════════════════════════════════════════════════════════ */
+
+    /**
+     * Pulls the count of hardware grouped by device type from student_device_logs.
+     */
+    public Map<String, Integer> fetchInventoryBreakdown() {
+        Map<String, Integer> breakdown = new HashMap<>();
+        breakdown.put("Display devices", 0);
+        breakdown.put("Appliances", 0);
+        breakdown.put("Sounds and light equipment", 0);
+        breakdown.put("Other project prototypes", 0);
+        breakdown.put("Rentable items (DDMI)", 0);
+
+        String sql = "SELECT device_type, COUNT(*) as count FROM student_device_logs WHERE device_type IS NOT NULL GROUP BY device_type";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                String type = rs.getString("device_type");
+                int count = rs.getInt("count");
+
+                if (type == null || type.isBlank()) continue;
+                if (breakdown.containsKey(type)) {
+                    breakdown.put(type, count);
+                } else {
+                    breakdown.put("Other project prototypes", breakdown.get("Other project prototypes") + count);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Error pulling inventory breakdown: " + e.getMessage());
+        }
+        return breakdown;
+    }
+
+    /**
+     * Fetches all registered student profiles for the reports master table list.
+     * Groups devices by type and brand for a single row per student.
+     */
+    public List<String[]> fetchRegisteredStudentsList() {
+        List<String[]> students = new ArrayList<>();
+
+        String sql = "SELECT student_id, " +
+                "MAX(first_name) as first_name, " +
+                "MAX(last_name) as last_name, " +
+                "MAX(course_program) as course_program, " +
+                "GROUP_CONCAT(device_type SEPARATOR ', ') as device_type, " +
+                "GROUP_CONCAT(brand_model SEPARATOR ', ') as brand_model, " +
+                "MAX(contact_number) as contact_number " +
+                "FROM student_device_logs WHERE student_id IS NOT NULL " +
+                "GROUP BY student_id " +
+                "ORDER BY last_name ASC";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            while (rs.next()) {
+                String fullName = rs.getString("first_name") + " " + rs.getString("last_name");
+                students.add(new String[]{
+                        rs.getString("student_id"),
+                        fullName,
+                        rs.getString("course_program") != null ? rs.getString("course_program") : "N/A",
+                        rs.getString("device_type") != null ? rs.getString("device_type") : "Unknown",
+                        rs.getString("brand_model") != null ? rs.getString("brand_model") : "N/A",
+                        rs.getString("contact_number") != null ? rs.getString("contact_number") : "N/A"
+                });
+            }
+        } catch (Exception e) {
+            System.err.println("Error fetching reporting students list: " + e.getMessage());
+        }
+        return students;
+    }
+
+    /**
+     * Generates weekly ingress and egress totals for the current month's chart visualization.
+     */
+    public Map<String, Map<String, Integer>> fetchWeeklyChartData() {
+        Map<String, Map<String, Integer>> chartData = new HashMap<>();
+        Map<String, Integer> ingressMap = new HashMap<>();
+        Map<String, Integer> egressMap = new HashMap<>();
+
+        String[] days = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+        for (String day : days) {
+            ingressMap.put(day, 0);
+            egressMap.put(day, 0);
+        }
+
+        String sql = "SELECT DAYNAME(ingress_time) as day_name, " +
+                "COUNT(*) as ingress_count, " +
+                "SUM(CASE WHEN egress_time IS NOT NULL THEN 1 ELSE 0 END) as egress_count " +
+                "FROM student_device_logs " +
+                "WHERE YEARWEEK(ingress_time, 1) = YEARWEEK(CURDATE(), 1) " +
+                "GROUP BY day_name";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+
+            while (rs.next()) {
+                String day = rs.getString("day_name").substring(0, 3); // Gets "Mon", "Tue" etc.
+                ingressMap.put(day, rs.getInt("ingress_count"));
+                egressMap.put(day, rs.getInt("egress_count"));
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+
+        chartData.put("Ingress", ingressMap);
+        chartData.put("Egress", egressMap);
+        return chartData;
+    }
+
+    /* ════════════════════════════════════════════════════════════════════ */
+    /* ── CRUD OPERATIONS FOR REPORTS CONTROLLER ────────────────────────── */
+    /* ════════════════════════════════════════════════════════════════════ */
+
+    // FIXED: Added ingress_time = CURRENT_TIMESTAMP so manual inserts show up on the dashboard today
+    public boolean insertRegisteredStudent(String id, String name, String dept, String type, String brandModel, String phone) {
+        String fn = "";
+        String ln = name;
+
+        if (name != null && name.contains(", ")) {
+            String[] parts = name.split(", ", 2);
+            ln = parts[0];
+            fn = parts.length > 1 ? parts[1] : "";
+        } else if (name != null && name.contains(" ")) {
+            String[] parts = name.split(" ", 2);
+            fn = parts[0];
+            ln = parts[1];
+        }
+
+        String sql = "INSERT INTO student_device_logs (student_id, first_name, last_name, course_program, device_type, brand_model, contact_number, ingress_time) VALUES (?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, id);
+            ps.setString(2, fn);
+            ps.setString(3, ln);
+            ps.setString(4, dept);
+            ps.setString(5, type);
+            ps.setString(6, brandModel);
+            ps.setString(7, phone);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error inserting registered student: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // 2. UPDATE: Modifies an existing student's record based on their Student ID
+    public boolean updateRegisteredStudent(String id, String name, String dept, String type, String brandModel, String phone) {
+        String fn = "";
+        String ln = name;
+
+        if (name != null && name.contains(", ")) {
+            String[] parts = name.split(", ", 2);
+            ln = parts[0];
+            fn = parts.length > 1 ? parts[1] : "";
+        } else if (name != null && name.contains(" ")) {
+            String[] parts = name.split(" ", 2);
+            fn = parts[0];
+            ln = parts[1];
+        }
+
+        String sql = "UPDATE student_device_logs SET first_name = ?, last_name = ?, course_program = ?, device_type = ?, brand_model = ?, contact_number = ? WHERE student_id = ?";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, fn);
+            ps.setString(2, ln);
+            ps.setString(3, dept);
+            ps.setString(4, type);
+            ps.setString(5, brandModel);
+            ps.setString(6, phone);
+            ps.setString(7, id);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error updating registered student: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // 3. DELETE: Removes a student's records from the system based on their Student ID
+    public boolean deleteRegisteredStudent(String id) {
+        String sql = "DELETE FROM student_device_logs WHERE student_id = ?";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setString(1, id);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            System.err.println("Error deleting registered student: " + e.getMessage());
+            return false;
+        }
+    }
+}

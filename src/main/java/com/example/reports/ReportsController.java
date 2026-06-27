@@ -55,10 +55,10 @@ public class ReportsController {
 
     /* ── StackPane views ────────────────────────────────── */
     @FXML private BorderPane rootPane;
-    @FXML private ScrollPane mainView;
-    @FXML private ScrollPane exportView;
-    @FXML private ScrollPane inventoryView;
-    @FXML private ScrollPane studentsView;
+    @FXML private VBox mainView;
+    @FXML private VBox exportView;
+    @FXML private VBox inventoryView;
+    @FXML private VBox studentsView;
 
     /* ── Main view widgets ──────────────────────────────── */
     @FXML private ComboBox<String> periodCombo;
@@ -87,7 +87,7 @@ public class ReportsController {
     @FXML private Label filteredCountLabel;
 
     /* ── Trash Bin View ──────────────────────────────────── */
-    @FXML private ScrollPane trashView;
+    @FXML private VBox trashView;
     @FXML private TableView<StudentRow> trashTable;
     @FXML private TableColumn<StudentRow, String> trColName, trColStudentId, trColDepartment, trColDevice, trColSerial, trColPhone;
     @FXML private Label trashCountLabel;
@@ -97,10 +97,11 @@ public class ReportsController {
     @FXML private DatePicker exportToDate;
     @FXML private TextField exportCourseField;
     @FXML private CheckBox exportAllCheckBox;
-    @FXML private CheckBox exportLaptops;
-    @FXML private CheckBox exportMobile;
-    @FXML private CheckBox exportTablets;
-    @FXML private CheckBox exportOthers;
+    @FXML private CheckBox exportDisplayDevices;
+    @FXML private CheckBox exportAppliances;
+    @FXML private CheckBox exportSoundsLight;
+    @FXML private CheckBox exportProjectPrototypes;
+    @FXML private CheckBox exportRentable;
     @FXML private Button exportCsvBtn;
     @FXML private Button exportPdfBtn;
     @FXML private Button exportXlsBtn;
@@ -147,6 +148,7 @@ public class ReportsController {
         loadData();
         showView(View.MAIN);
         startNavClock();
+        if (exportCsvBtn != null) selectFormat("CSV");
     }
 
     private static final DateTimeFormatter NAV_DATETIME_FORMATTER =
@@ -176,7 +178,7 @@ public class ReportsController {
         }
     }
 
-    private void setVisible(ScrollPane pane, boolean show) {
+    private void setVisible(javafx.scene.Node pane, boolean show) {
         if (pane == null) return;
         pane.setVisible(show);
         pane.setManaged(show);
@@ -579,7 +581,47 @@ public class ReportsController {
                     }
                 });
             }
-       @FXML private void handleRefresh()      { loadData(); }
+       @FXML private void handleRefresh() {
+        Stage owner = (Stage) reportsButton.getScene().getWindow();
+
+        Dialog<Void> loadingDialog = new Dialog<>();
+        loadingDialog.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+        loadingDialog.initOwner(owner);
+        loadingDialog.setTitle("Refreshing");
+        loadingDialog.setHeaderText(null);
+        loadingDialog.setGraphic(null);
+        loadingDialog.getDialogPane().getButtonTypes().add(ButtonType.CANCEL);
+
+        VBox dialogContent = new VBox(12);
+        dialogContent.setAlignment(javafx.geometry.Pos.CENTER);
+        dialogContent.setStyle("-fx-padding: 20;");
+        ProgressIndicator spinner = new ProgressIndicator();
+        spinner.setMaxSize(48, 48);
+        Label msg = new Label("Fetching latest data...");
+        msg.setStyle("-fx-font-size: 14px; -fx-text-fill: #555;");
+        dialogContent.getChildren().addAll(spinner, msg);
+        loadingDialog.getDialogPane().setContent(dialogContent);
+
+        loadingDialog.getDialogPane().lookupButton(ButtonType.CANCEL).addEventFilter(
+                ActionEvent.ACTION, e -> loadingDialog.close());
+
+        loadingDialog.getDialogPane().setStyle("-fx-background-color: white; -fx-background-radius: 12;");
+
+        javafx.concurrent.Task<Void> task = new javafx.concurrent.Task<>() {
+            @Override protected Void call() throws Exception {
+                Thread.sleep(400);
+                loadData();
+                return null;
+            }
+        };
+        task.setOnSucceeded(e -> loadingDialog.close());
+        task.setOnFailed(e -> loadingDialog.close());
+
+        Thread thread = new Thread(task);
+        thread.setDaemon(true);
+        thread.start();
+        loadingDialog.showAndWait();
+    }
     @FXML private void handleDashboard()    { confirmLeaveReports(() -> navigateTo("/fxml/dashboard.fxml")); }
     @FXML private void handleMonitoring()   { confirmLeaveReports(() -> navigateTo("/fxml/monitoring.fxml")); }
     @FXML private void handleRegistration() { confirmLeaveReports(() -> navigateTo("/fxml/registration.fxml")); }
@@ -602,15 +644,28 @@ public class ReportsController {
     private void handleSelectAllToggle() {
         if (exportAllCheckBox == null) return;
         boolean state = exportAllCheckBox.isSelected();
-        if (exportLaptops != null) exportLaptops.setSelected(state);
-        if (exportMobile != null) exportMobile.setSelected(state);
-        if (exportTablets != null) exportTablets.setSelected(state);
-        if (exportOthers != null) exportOthers.setSelected(state);
+        if (exportDisplayDevices != null) exportDisplayDevices.setSelected(state);
+        if (exportAppliances != null) exportAppliances.setSelected(state);
+        if (exportSoundsLight != null) exportSoundsLight.setSelected(state);
+        if (exportProjectPrototypes != null) exportProjectPrototypes.setSelected(state);
+        if (exportRentable != null) exportRentable.setSelected(state);
     }
 
-    @FXML private void handleExportCsv()    { this.selectedFormat = "CSV";   showSuccessAlert("Selected Format changed to standard CSV Data stream."); }
-    @FXML private void handleExportPdf()    { this.selectedFormat = "PDF";   showSuccessAlert("Selected Format changed to Adobe structural PDF compilation."); }
-    @FXML private void handleExportXls()    { this.selectedFormat = "EXCEL"; showSuccessAlert("Selected Format changed to Microsoft Excel Spreadsheet cluster."); }
+    @FXML private void handleExportCsv()    { selectFormat("CSV");   showSuccessAlert("Selected Format changed to standard CSV Data stream."); }
+    @FXML private void handleExportPdf()    { selectFormat("PDF");   showSuccessAlert("Selected Format changed to Adobe structural PDF compilation."); }
+    @FXML private void handleExportXls()    { selectFormat("EXCEL"); showSuccessAlert("Selected Format changed to Microsoft Excel Spreadsheet cluster."); }
+
+    private void selectFormat(String format) {
+        this.selectedFormat = format;
+        exportCsvBtn.getStyleClass().remove("format-btn-selected");
+        exportPdfBtn.getStyleClass().remove("format-btn-selected");
+        exportXlsBtn.getStyleClass().remove("format-btn-selected");
+        switch (format) {
+            case "CSV":   exportCsvBtn.getStyleClass().add("format-btn-selected"); break;
+            case "PDF":   exportPdfBtn.getStyleClass().add("format-btn-selected"); break;
+            case "EXCEL": exportXlsBtn.getStyleClass().add("format-btn-selected"); break;
+        }
+    }
 
     /* ── DYNAMIC EXPORT ROUTING FUNCTION ── */
 
@@ -833,10 +888,10 @@ public class ReportsController {
             Parent root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
             Stage stage = (Stage) reportsButton.getScene().getWindow();
             stage.setMaximized(false);
-            stage.setMinWidth(0);
-            stage.setMinHeight(0);
-            stage.setMaxWidth(Double.MAX_VALUE);
-            stage.setMaxHeight(Double.MAX_VALUE);
+            stage.setMinWidth(600);
+            stage.setMinHeight(550);
+            stage.setMaxWidth(600);
+            stage.setMaxHeight(550);
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource(STYLESHEET_PATH).toExternalForm());
             stage.setScene(scene);

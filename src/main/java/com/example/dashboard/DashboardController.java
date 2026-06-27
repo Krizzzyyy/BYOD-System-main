@@ -316,34 +316,16 @@ public class DashboardController {
             Parent root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
             Stage stage = (Stage) dashboardButton.getScene().getWindow();
             stage.setMaximized(false);
-            stage.setMinWidth(0);
-            stage.setMinHeight(0);
-            stage.setMaxWidth(Double.MAX_VALUE);
-            stage.setMaxHeight(Double.MAX_VALUE);
+            stage.setMinWidth(600);
+            stage.setMinHeight(550);
+            stage.setMaxWidth(600);
+            stage.setMaxHeight(550);
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource(STYLESHEET_PATH).toExternalForm());
             stage.setScene(scene);
             stage.setResizable(false);
             stage.centerOnScreen();
         } catch (Exception e) { e.printStackTrace(); }
-    }
-
-    private void loadLoginScreen() {
-        try {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource(LOGIN_FXML));
-            Parent root = loader.load();
-            Scene scene = new Scene(root);
-            scene.getStylesheets().add(getClass().getResource(STYLESHEET_PATH).toExternalForm());
-
-            Stage loginStage = new Stage();
-            loginStage.setScene(scene);
-            loginStage.setTitle("BYOD Monitoring System - Login");
-            loginStage.setResizable(false);
-            loginStage.centerOnScreen();
-            loginStage.show();
-        } catch (IOException e) {
-            LOGGER.log(Level.SEVERE, "Failed to load login screen", e);
-        }
     }
 
     @FXML private void handleDashboard() { loadLiveDatabaseData(); }

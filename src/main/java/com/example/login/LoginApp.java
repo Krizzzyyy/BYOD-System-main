@@ -9,17 +9,18 @@ import javafx.stage.Stage;
 public class LoginApp extends Application {
 
     @Override
-    public void start(Stage stage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(getClass().getResource("/fxml/login.fxml"));
-        Parent root = loader.load();
-
+    public void start(Stage primaryStage) throws Exception {
+        Parent root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
         Scene scene = new Scene(root);
-        scene.getStylesheets().add(getClass().getResource("/css/stylesheet.css").toExternalForm());
 
-        stage.setTitle("BYOD Monitoring System - Login");
-        stage.setScene(scene);
-        stage.setResizable(false);
-        stage.centerOnScreen();
-        stage.show();
+        primaryStage.setTitle("BYOD System - Login");
+        primaryStage.setMinWidth(600);
+        primaryStage.setMinHeight(550);
+        primaryStage.setMaxWidth(600);
+        primaryStage.setMaxHeight(550);
+        primaryStage.setScene(scene);
+        primaryStage.setResizable(false);
+        primaryStage.centerOnScreen();
+        primaryStage.show();
     }
 }

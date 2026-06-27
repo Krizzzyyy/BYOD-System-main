@@ -4,38 +4,32 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e42ca9df-bb06-48d1-9f0f-a325f83c684f" name="Changes" comment="v1.0">
+    <list default="true" id="e42ca9df-bb06-48d1-9f0f-a325f83c684f" name="Changes" comment="v1.2">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/dashboard/DashboardController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/dashboard/DashboardController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/login/LoginController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/login/LoginController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/monitoring/LogEntry.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/monitoring/LogEntry.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/login/LoginApp.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/login/LoginService.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/monitoring/MonitoringController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/monitoring/MonitoringController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/monitoring/QRScannerWindow.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/monitoring/QRScannerWindow.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/registration/RegistrationController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/registration/RegistrationController.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/example/reports/ReportsController.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/reports/ReportsController.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/example/service/BYODService.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/example/service/BYODService.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/css/stylesheet.css" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/css/stylesheet.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/fxml/dashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/fxml/dashboard.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/resources/fxml/login.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/fxml/login.fxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/fxml/monitoring.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/fxml/monitoring.fxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/fxml/registration.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/fxml/registration.fxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/resources/fxml/reports.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/fxml/reports.fxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/dashboard/DashboardController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/dashboard/DashboardController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/login/LoginController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/login/LoginController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/monitoring/LogEntry.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/monitoring/LogEntry.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/monitoring/MonitoringController$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/monitoring/MonitoringController$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/monitoring/MonitoringController$2.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/monitoring/MonitoringController$2.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/example/login/LoginApp.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/login/LoginApp.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/monitoring/MonitoringController$3.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/monitoring/MonitoringController$3.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/monitoring/MonitoringController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/monitoring/MonitoringController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/monitoring/QRScannerWindow.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/monitoring/QRScannerWindow.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/registration/RegistrationController$DeviceEntry.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/registration/RegistrationController$DeviceEntry.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/registration/RegistrationController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/registration/RegistrationController.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/reports/ReportsController$ExportRow.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/reports/ReportsController$ExportRow.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/reports/ReportsController$StudentRow.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/reports/ReportsController$StudentRow.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/reports/ReportsController$View.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/reports/ReportsController$View.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/example/reports/ReportsController.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/reports/ReportsController.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/example/service/BYODService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/example/service/BYODService.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/css/stylesheet.css" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/css/stylesheet.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/fxml/dashboard.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/fxml/dashboard.fxml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/fxml/login.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/fxml/login.fxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/fxml/monitoring.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/fxml/monitoring.fxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/fxml/registration.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/fxml/registration.fxml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/fxml/reports.fxml" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/fxml/reports.fxml" afterDir="false" />
@@ -48,18 +42,18 @@
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
-  "lastFilter": {
-    "state": "OPEN",
-    "assignee": "jeorgrenaissnc"
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;jeorgrenaissnc&quot;
   }
-}]]></component>
-  <component name="GithubPullRequestsUISettings"><![CDATA[{
-  "selectedUrlAndAccountId": {
-    "url": "https://github.com/Krizzzyyy/BYOD-System-main.git",
-    "accountId": "3b46c3b1-3537-4fbe-b373-e115533a52f9"
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Krizzzyyy/BYOD-System-main.git&quot;,
+    &quot;accountId&quot;: &quot;3b46c3b1-3537-4fbe-b373-e115533a52f9&quot;
   }
-}]]></component>
+}</component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 4,
   &quot;fromUser&quot;: false
@@ -69,38 +63,57 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "Application.DashboardApp.executor": "Run",
-    "Application.Launcher.executor": "Run",
-    "Application.LoginApp.executor": "Run",
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "git-widget-placeholder": "main",
-    "ignore.virus.scanning.warn.message": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "C:/Users/Administrator/OneDrive - Polytechnic University of the Philippines/Desktop/ej files/BYOD/BYOD-System-main-main",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Modules",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
-    "settings.editor.selected.configurable": "preferences.fileTypes"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;Application.DashboardApp.executor&quot;: &quot;Run&quot;,
+    &quot;Application.Launcher.executor&quot;: &quot;Run&quot;,
+    &quot;Application.LoginApp.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Administrator/OneDrive - Polytechnic University of the Philippines/Desktop/ej files/BYOD/BYOD-System-main-main&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
+    &quot;project.structure.proportion&quot;: &quot;0.0&quot;,
+    &quot;project.structure.side.proportion&quot;: &quot;0.0&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.fileTypes&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
+    <configuration name="Launcher" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
+      <option name="MAIN_CLASS_NAME" value="com.example.launcher.Launcher" />
+      <module name="frontendDraft" />
+      <option name="VM_PARAMETERS" value="--enable-native-access=javafx.graphics" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.example.launcher.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
     <configuration default="true" type="Application" factoryName="Application">
       <option name="VM_PARAMETERS" value="--enable-native-access=javafx.graphics" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Application.Launcher" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
@@ -126,7 +139,23 @@
       <option name="project" value="LOCAL" />
       <updated>1782490456191</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="v1.1">
+      <option name="closed" value="true" />
+      <created>1782498871506</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1782498871506</updated>
+    </task>
+    <task id="LOCAL-00003" summary="v1.2">
+      <option name="closed" value="true" />
+      <created>1782499081860</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1782499081860</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -134,6 +163,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="v1.0" />
-    <option name="LAST_COMMIT_MESSAGE" value="v1.0" />
+    <MESSAGE value="v1.1" />
+    <MESSAGE value="v1.2" />
+    <option name="LAST_COMMIT_MESSAGE" value="v1.2" />
   </component>
 </project>

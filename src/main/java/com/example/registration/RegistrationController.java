@@ -74,8 +74,8 @@ public class RegistrationController {
     @FXML private Button saveBtn;
     @FXML private Button cancelBtn;
     @FXML private Label  formIdLabel;
-    @FXML private Button monitoringNavBtn;
-    @FXML private Button reportsNavBtn;
+    @FXML private Button monitoringButton;
+    @FXML private Button reportsButton;
 
     private static final int TOTAL_STEPS = 3;
     private int currentStep = 1;
@@ -156,8 +156,8 @@ public class RegistrationController {
 
     private void applyRoleRestrictions() {
         if (!"Student".equals(Auth.userRole)) return;
-        if (monitoringNavBtn != null) { monitoringNavBtn.setManaged(false); monitoringNavBtn.setVisible(false); }
-        if (reportsNavBtn != null) { reportsNavBtn.setManaged(false); reportsNavBtn.setVisible(false); }
+        if (monitoringButton != null) { monitoringButton.setManaged(false); monitoringButton.setVisible(false); }
+        if (reportsButton != null) { reportsButton.setManaged(false); reportsButton.setVisible(false); }
     }
 
     private static final DateTimeFormatter NAV_DATETIME_FORMATTER =
@@ -643,10 +643,10 @@ public class RegistrationController {
             Parent root = FXMLLoader.load(getClass().getResource("/fxml/login.fxml"));
             Stage stage = (Stage) cancelBtn.getScene().getWindow();
             stage.setMaximized(false);
-            stage.setMinWidth(0);
-            stage.setMinHeight(0);
-            stage.setMaxWidth(Double.MAX_VALUE);
-            stage.setMaxHeight(Double.MAX_VALUE);
+            stage.setMinWidth(600);
+            stage.setMinHeight(550);
+            stage.setMaxWidth(600);
+            stage.setMaxHeight(550);
             Scene scene = new Scene(root);
             scene.getStylesheets().add(getClass().getResource("/css/stylesheet.css").toExternalForm());
             stage.setScene(scene);

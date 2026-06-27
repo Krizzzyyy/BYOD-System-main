@@ -73,10 +73,12 @@ public class ReportsController {
     /* ── Interactive CRUD Admin Fields ──────────────────── */
     @FXML private TextField studentIdField;
     @FXML private TextField studentNameField;
-    @FXML private TextField departmentField;
-    @FXML private TextField deviceField;
+    @FXML private ComboBox<String> departmentCombo;
+    @FXML private ComboBox<String> deviceCombo;
     @FXML private TextField serialField;
     @FXML private TextField phoneField;
+    @FXML private ComboBox<String> formStatusCombo;
+    @FXML private TextField remarksField;
 
     /* ── Students Management Table ──────────────────────── */
     @FXML private TableView<StudentRow> studentsTable;
@@ -150,6 +152,42 @@ public class ReportsController {
             statusPeriodCombo.getItems().addAll("All", "This Month", "Last Month", "Last 3 Months", "This Year");
             statusPeriodCombo.setValue("All");
             statusPeriodCombo.setOnAction(e -> loadStudentsData());
+        }
+
+        if (departmentCombo != null) {
+            departmentCombo.getItems().add("Select Course");
+            departmentCombo.getItems().addAll(
+                    "Bachelor of Science in Electronics Engineering (BSECE)",
+                    "Bachelor of Science in Business Administration Major in Human Resource Management (BSBA-HRM)",
+                    "Bachelor of Science in Business Administration Major in Marketing Management (BSBA-MM)",
+                    "Bachelor in Secondary Education Major in English (BSEd-English)",
+                    "Bachelor in Secondary Education Major in Filipino (BSEd-Filipino)",
+                    "Bachelor in Secondary Education Major in Mathematics (BSEd-Mathematics)",
+                    "Bachelor of Science in Industrial Engineering (BSIE)",
+                    "Bachelor of Science in Information Technology (BSIT)",
+                    "Bachelor of Science in Psychology (BSPSY)",
+                    "Bachelor in Technology And Livelihood Education Major in Home Economics (BTLEd-HE)",
+                    "Bachelor of Science in Management Accounting (BSMA)"
+            );
+            departmentCombo.setValue("Select Course");
+        }
+
+        if (deviceCombo != null) {
+            deviceCombo.getItems().add("Select Items");
+            deviceCombo.getItems().addAll(
+                    "Display devices",
+                    "Appliances",
+                    "Sounds and light equipment",
+                    "Other project prototypes",
+                    "Rentable items (DDMI)"
+            );
+            deviceCombo.setValue("Select Items");
+        }
+
+        if (formStatusCombo != null) {
+            formStatusCombo.getItems().add("Select Status");
+            formStatusCombo.getItems().addAll("Approved", "Pending", "Disapproved", "Cancelled");
+            formStatusCombo.setValue("Select Status");
         }
 
         setupTables();
@@ -243,10 +281,12 @@ public class ReportsController {
                 if (newVal != null) {
                     studentIdField.setText(newVal.getStudentId());
                     studentNameField.setText(newVal.getName());
-                    departmentField.setText(newVal.getDepartment());
-                    deviceField.setText(newVal.getDevice());
+                    if (departmentCombo != null) departmentCombo.setValue(newVal.getDepartment());
+                    if (deviceCombo != null) deviceCombo.setValue(newVal.getDevice());
                     serialField.setText(newVal.getSerial());
                     phoneField.setText(newVal.getPhone());
+                    if (formStatusCombo != null) formStatusCombo.setValue(newVal.getStatus());
+                    if (remarksField != null) remarksField.setText(newVal.getRemarks());
                     studentIdField.setEditable(false);
                 }
             });
@@ -304,28 +344,45 @@ public class ReportsController {
     private void handleClearForm() {
         if (studentIdField != null) studentIdField.clear();
         if (studentNameField != null) studentNameField.clear();
-        if (departmentField != null) departmentField.clear();
-        if (deviceField != null) deviceField.clear();
+        if (departmentCombo != null) departmentCombo.setValue("Select Course");
+        if (deviceCombo != null) deviceCombo.setValue("Select Category:");
         if (serialField != null) serialField.clear();
         if (phoneField != null) phoneField.clear();
         if (studentIdField != null) studentIdField.setEditable(true);
+        if (remarksField != null) remarksField.clear();
+        if (formStatusCombo != null) formStatusCombo.setValue("Select Status");
     }
 
     @FXML
     private void handleInsertStudent() {
         String id = studentIdField.getText().trim();
         String name = studentNameField.getText().trim();
-        String dept = departmentField.getText().trim();
-        String type = deviceField.getText().trim();
+        String dept = departmentCombo != null ? departmentCombo.getValue() : "";
+        String type = deviceCombo != null ? deviceCombo.getValue() : "";
         String serial = serialField.getText().trim();
         String phone = phoneField.getText().trim();
+        String status  = formStatusCombo != null ? formStatusCombo.getValue() : "Pending";
+        String remarks = remarksField != null ? remarksField.getText().trim() : "";
 
         if (id.isEmpty() || name.isEmpty()) {
             showAlert("Validation Missing", "Student ID and Full Name properties are required.");
             return;
         }
 
-        boolean success = byodService.insertRegisteredStudent(id, name, dept, type, serial, phone);
+        if (dept == null || dept.equals("Select Course")) {
+            showAlert("Validation Missing", "Please select a Department / Course.");
+            return;
+        }
+        if (type == null || type.equals("Select Items")) {
+            showAlert("Validation Missing", "Please select an Item Category.");
+            return;
+        }
+        if (status == null || status.equals("Select Status")) {
+            showAlert("Validation Missing", "Please select a Status.");
+            return;
+        }
+
+        boolean success = byodService.insertRegisteredStudent(id, name, dept, type, serial, phone, status, remarks);
         if (success) {
             loadStudentsData();
             handleClearForm();
@@ -339,17 +396,32 @@ public class ReportsController {
     private void handleUpdateStudent() {
         String id = studentIdField.getText().trim();
         String name = studentNameField.getText().trim();
-        String dept = departmentField.getText().trim();
-        String type = deviceField.getText().trim();
+        String dept = departmentCombo != null ? departmentCombo.getValue() : "";
+        String type = deviceCombo != null ? deviceCombo.getValue() : "";
         String serial = serialField.getText().trim();
         String phone = phoneField.getText().trim();
+        String status  = formStatusCombo != null ? formStatusCombo.getValue() : "Pending";
+        String remarks = remarksField != null ? remarksField.getText().trim() : "";
 
         if (id.isEmpty()) {
             showAlert("Validation Error", "No clear target primary index key selected to modify.");
             return;
         }
 
-        boolean success = byodService.updateRegisteredStudent(id, name, dept, type, serial, phone);
+        if (dept == null || dept.equals("Select Course")) {
+            showAlert("Validation Missing", "Please select a Department / Course.");
+            return;
+        }
+        if (type == null || type.equals("Select Items")) {
+            showAlert("Validation Missing", "Please select an Item Category.");
+            return;
+        }
+        if (status == null || status.equals("Select Status")) {
+            showAlert("Validation Missing", "Please select a Status.");
+            return;
+        }
+
+        boolean success = byodService.updateRegisteredStudent(id, name, dept, type, serial, phone, status, remarks);
         if (success) {
             loadStudentsData();
             handleClearForm();

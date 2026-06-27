@@ -251,8 +251,6 @@
               <Label styleClass="title-2" text="Report Records Database" />
               <Label styleClass="description" text="View, filter, and manage registered student device records by status and period." />
             </VBox>
-            <Label styleClass="form-label-sm" text="PERIOD:" />
-            <ComboBox fx:id="statusPeriodCombo" maxWidth="180" prefWidth="160" styleClass="combo-box" />
             <Region HBox.hgrow="ALWAYS" />
             <Button onAction="#handleRefresh" styleClass="refresh-button" text="&#x21BB; Refresh" />
           </HBox>
@@ -269,20 +267,30 @@
                 <TextField fx:id="studentNameField" promptText="e.g., Juan Dela Cruz" />
               </VBox>
               <VBox spacing="4" HBox.hgrow="ALWAYS">
-                <Label styleClass="form-label-sm" text="DEPARTMENT / COURSE" />
-                <TextField fx:id="departmentField" promptText="e.g., Bachelor of Science in Information Technology (BSIT)" />
-              </VBox>
-              <VBox spacing="4" HBox.hgrow="ALWAYS">
-                <Label styleClass="form-label-sm" text="DEVICE TYPE" />
-                <TextField fx:id="deviceField" promptText="e.g., Laptop" />
-              </VBox>
-              <VBox spacing="4" HBox.hgrow="ALWAYS">
                 <Label styleClass="form-label-sm" text="BRAND / MODEL" />
                 <TextField fx:id="serialField" promptText="e.g., Lenovo ThinkPad E14" />
               </VBox>
               <VBox spacing="4" HBox.hgrow="ALWAYS">
                 <Label styleClass="form-label-sm" text="CONTACT NUMBER" />
                 <TextField fx:id="phoneField" promptText="e.g., 09123456789" />
+              </VBox>
+              <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label styleClass="form-label-sm" text="REMARKS" />
+                <TextField fx:id="remarksField" promptText="e.g., For approval" />
+              </VBox>
+            </HBox>
+            <HBox alignment="BOTTOM_LEFT" spacing="12">
+              <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label styleClass="form-label-sm" text="DEPARTMENT / COURSE" />
+                <ComboBox fx:id="departmentCombo" maxWidth="Infinity" styleClass="combo-box" />
+              </VBox>
+              <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label styleClass="form-label-sm" text="ITEM CATEGORY" />
+                <ComboBox fx:id="deviceCombo" maxWidth="Infinity" styleClass="combo-box" />
+              </VBox>
+              <VBox spacing="4" HBox.hgrow="ALWAYS">
+                <Label styleClass="form-label-sm" text="STATUS" />
+                <ComboBox fx:id="formStatusCombo" maxWidth="Infinity" styleClass="combo-box" />
               </VBox>
             </HBox>
 
@@ -300,6 +308,8 @@
               <Label styleClass="card-title" text="Active Live Records Database" />
               <Region HBox.hgrow="ALWAYS" />
               <Label fx:id="filteredCountLabel" styleClass="form-label-sm" text="0 record(s) found" />
+              <Label styleClass="form-label-sm" text="PERIOD:" />
+              <ComboBox fx:id="statusPeriodCombo" maxWidth="180" prefWidth="160" styleClass="combo-box" />
               <Label styleClass="form-label-sm" text="STATUS:" />
               <ComboBox fx:id="statusFilterCombo" maxWidth="180" prefWidth="160" styleClass="combo-box" />
             </HBox>

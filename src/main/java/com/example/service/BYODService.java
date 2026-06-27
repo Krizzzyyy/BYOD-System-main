@@ -2,6 +2,8 @@ package com.example.service;
 
 import java.sql.*;
 import java.io.File;
+
+import com.example.registration.RegistrationValidator;
 import com.google.zxing.*;
 import com.google.zxing.client.j2se.MatrixToImageWriter;
 import com.google.zxing.common.BitMatrix;

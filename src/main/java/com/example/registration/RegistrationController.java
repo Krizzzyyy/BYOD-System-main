@@ -2,7 +2,6 @@ package com.example.registration;
 
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.application.Platform;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -16,12 +15,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import com.example.service.BYODService;
-import com.example.service.RegistrationValidator;
 import com.example.Auth;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
-import javafx.stage.Modality;
 import javafx.util.Duration;
 
 public class RegistrationController {

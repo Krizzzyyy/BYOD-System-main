@@ -217,6 +217,25 @@ public class ReportsController {
         startNavClock();
         if (exportCsvBtn != null) selectFormat("CSV");
 
+        if (exportAllCheckBox != null) exportAllCheckBox.setSelected(true);
+        if (exportDisplayDevices != null) exportDisplayDevices.setSelected(true);
+        if (exportAppliances != null) exportAppliances.setSelected(true);
+        if (exportSoundsLight != null) exportSoundsLight.setSelected(true);
+        if (exportProjectPrototypes != null) exportProjectPrototypes.setSelected(true);
+        if (exportRentable != null) exportRentable.setSelected(true);
+        if (exportAllCoursesCheckBox != null) exportAllCoursesCheckBox.setSelected(true);
+        if (exportBSECE != null) exportBSECE.setSelected(true);
+        if (exportBSBAHRM != null) exportBSBAHRM.setSelected(true);
+        if (exportBSBAMM != null) exportBSBAMM.setSelected(true);
+        if (exportBSEdEnglish != null) exportBSEdEnglish.setSelected(true);
+        if (exportBSEdFilipino != null) exportBSEdFilipino.setSelected(true);
+        if (exportBSEdMath != null) exportBSEdMath.setSelected(true);
+        if (exportBSIE != null) exportBSIE.setSelected(true);
+        if (exportBSIT != null) exportBSIT.setSelected(true);
+        if (exportBSPSY != null) exportBSPSY.setSelected(true);
+        if (exportBTLEdHE != null) exportBTLEdHE.setSelected(true);
+        if (exportBSMA != null) exportBSMA.setSelected(true);
+
         if (scopePeriodRadio != null && scopeTemporalRadio != null) {
             scopePeriodRadio.setToggleGroup(scopeToggleGroup);
             scopeTemporalRadio.setToggleGroup(scopeToggleGroup);
@@ -654,8 +673,10 @@ public class ReportsController {
             System.err.println("Metric stream mapping error: " + e.getMessage());
         }
 
+        String currentPeriod = (chartPeriodCombo != null && chartPeriodCombo.getValue() != null)
+                ? chartPeriodCombo.getValue() : "Daily";
         javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(300));
-        pause.setOnFinished(e -> loadChartForPeriod("Daily"));
+        pause.setOnFinished(e -> loadChartForPeriod(currentPeriod));
         pause.play();
         loadStudentsData();
     }
@@ -942,18 +963,46 @@ public class ReportsController {
         File targetedFile = fileChooser.showSaveDialog(activeStage);
 
         if (targetedFile != null) {
+            boolean noCourseSelected = exportAllCoursesCheckBox != null && !exportAllCoursesCheckBox.isSelected()
+                    && (exportBSECE == null || !exportBSECE.isSelected())
+                    && (exportBSBAHRM == null || !exportBSBAHRM.isSelected())
+                    && (exportBSBAMM == null || !exportBSBAMM.isSelected())
+                    && (exportBSEdEnglish == null || !exportBSEdEnglish.isSelected())
+                    && (exportBSEdFilipino == null || !exportBSEdFilipino.isSelected())
+                    && (exportBSEdMath == null || !exportBSEdMath.isSelected())
+                    && (exportBSIE == null || !exportBSIE.isSelected())
+                    && (exportBSIT == null || !exportBSIT.isSelected())
+                    && (exportBSPSY == null || !exportBSPSY.isSelected())
+                    && (exportBTLEdHE == null || !exportBTLEdHE.isSelected())
+                    && (exportBSMA == null || !exportBSMA.isSelected());
+            if (noCourseSelected) {
+                showAlert("Validation Missing", "Please select at least one Student Course.");
+                return;
+            }
+
+            boolean noItemSelected = exportAllCheckBox != null && !exportAllCheckBox.isSelected()
+                    && (exportDisplayDevices == null || !exportDisplayDevices.isSelected())
+                    && (exportAppliances == null || !exportAppliances.isSelected())
+                    && (exportSoundsLight == null || !exportSoundsLight.isSelected())
+                    && (exportProjectPrototypes == null || !exportProjectPrototypes.isSelected())
+                    && (exportRentable == null || !exportRentable.isSelected());
+            if (noItemSelected) {
+                showAlert("Validation Missing", "Please select at least one Item Category.");
+                return;
+            }
+
             List<String[]> extractionDatabaseRows;
 
             boolean usingPeriodScope = scopePeriodRadio != null && scopePeriodRadio.isSelected();
             if (usingPeriodScope) {
                 String scopeType  = exportScopeTypeCombo != null ? exportScopeTypeCombo.getValue() : null;
                 String scopeValue = exportScopeValueCombo != null ? exportScopeValueCombo.getValue() : null;
-                if (scopeType == null || scopeType.equals("Select...")) {
-                    showAlert("Scope Error", "Please select a scope type.");
+                if (scopeType == null || scopeType.isEmpty()) {
+                    showAlert("Validation Missing", "Please select a scope type.");
                     return;
                 }
-                if (scopeValue == null || scopeValue.equals("Select...")) {
-                    showAlert("Scope Error", "Please select a scope value.");
+                if (scopeValue == null || scopeValue.isEmpty()) {
+                    showAlert("Validation Missing", "Please select a scope value.");
                     return;
                 }
                 extractionDatabaseRows = byodService.fetchExportByPeriodScope(scopeType, scopeValue);

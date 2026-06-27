@@ -742,4 +742,61 @@ public class BYODService {
         }
         return students;
     }
+
+    public String getDbUrl()  { return DB_URL; }
+    public String getDbUser() { return DB_USER; }
+    public String getDbPass() { return DB_PASS; }
+
+    public List<String[]> fetchExportByDateRange(java.time.LocalDate from, java.time.LocalDate to) {
+        List<String[]> rows = new ArrayList<>();
+        String sql = "SELECT student_id, CONCAT(first_name,' ',last_name), course_program, device_type, brand_model, contact_number, approval_status, approval_remarks " +
+                "FROM student_device_logs WHERE (is_deleted = 0 OR is_deleted IS NULL)";
+        if (from != null) sql += " AND DATE(ingress_time) >= '" + from + "'";
+        if (to   != null) sql += " AND DATE(ingress_time) <= '" + to + "'";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             java.sql.Statement st = conn.createStatement();
+             java.sql.ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                rows.add(new String[]{ rs.getString(1), rs.getString(2), rs.getString(3),
+                        rs.getString(4), rs.getString(5), rs.getString(6), rs.getString(7), rs.getString(8) });
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return rows;
+    }
+
+    public List<String[]> fetchExportByPeriodScope(String type, String value) {
+        List<String[]> rows = new ArrayList<>();
+        String condition;
+        switch (type) {
+            case "Annual" -> condition = "YEAR(ingress_time) = " + value;
+            case "Quarter" -> {
+                int yr = Integer.parseInt(value.replaceAll(".*,\\s*", "").trim());
+                int qr = Integer.parseInt(value.replaceAll("Q(\\d).*", "$1"));
+                condition = "YEAR(ingress_time) = " + yr + " AND QUARTER(ingress_time) = " + qr;
+            }
+            case "Month" -> {
+                String[] parts = value.split(" ");
+                String[] monthNames = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+                int mn = java.util.Arrays.asList(monthNames).indexOf(parts[0]) + 1;
+                int yr = Integer.parseInt(parts[1]);
+                condition = "YEAR(ingress_time) = " + yr + " AND MONTH(ingress_time) = " + mn;
+            }
+            default -> condition = "1=1";
+        }
+
+        String sql = "SELECT student_id, CONCAT(first_name,' ',last_name), course_program, device_type, brand_model, contact_number, approval_status, approval_remarks " +
+                "FROM student_device_logs WHERE (is_deleted = 0 OR is_deleted IS NULL) AND " + condition;
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             java.sql.Statement st = conn.createStatement();
+             java.sql.ResultSet rs = st.executeQuery(sql)) {
+            while (rs.next()) {
+                rows.add(new String[]{ rs.getString(1), rs.getString(2), rs.getString(3),
+                        rs.getString(4), rs.getString(5), rs.getString(6), rs.getString(7), rs.getString(8) });
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+        return rows;
+    }
+
 }

@@ -110,15 +110,46 @@
           <HBox spacing="20" VBox.vgrow="ALWAYS">
             <VBox minWidth="300" prefWidth="380" spacing="14" styleClass="card">
               <Label styleClass="chart-title" text="🔧  Export Parameters" />
-              <Label styleClass="form-label-sm" text="TEMPORAL SCOPE" />
-              <HBox alignment="CENTER_LEFT" spacing="10">
+
+              <HBox alignment="CENTER_LEFT" spacing="8">
+                <RadioButton fx:id="scopePeriodRadio" onAction="#handleScopeToggle" styleClass="scope-radio" />
+                <Label styleClass="form-label-sm" fx:id="scopePeriodLabel" text="PERIOD SCOPE" />
+                <Region HBox.hgrow="ALWAYS" />
+              </HBox>
+              <HBox alignment="CENTER_LEFT" spacing="8" fx:id="periodScopeRow">
+                <ComboBox fx:id="exportScopeTypeCombo" prefWidth="120" styleClass="combo-box" promptText="Select..." />
+                <ComboBox fx:id="exportScopeValueCombo" prefWidth="160" styleClass="combo-box" promptText="Select..." />
+              </HBox>
+
+              <HBox alignment="CENTER_LEFT" spacing="8">
+                <RadioButton fx:id="scopeTemporalRadio" onAction="#handleScopeToggle" styleClass="scope-radio" />
+                <Label styleClass="form-label-sm" fx:id="scopeTemporalLabel" text="TEMPORAL SCOPE" />
+                <Region HBox.hgrow="ALWAYS" />
+              </HBox>
+              <HBox alignment="CENTER_LEFT" spacing="10" fx:id="temporalScopeRow">
                 <DatePicker fx:id="exportFromDate" prefWidth="160" />
                 <Label text="—" />
                 <DatePicker fx:id="exportToDate" prefWidth="160" />
               </HBox>
               <Label styleClass="form-label-sm" text="STUDENT COURSE" />
-              <TextField fx:id="exportCourseField" maxWidth="Infinity" promptText="All courses" />
+              <VBox spacing="6">
+                <CheckBox fx:id="exportAllCoursesCheckBox" onAction="#handleSelectAllCourses" styleClass="label-bold" text="All" />
+                <GridPane hgap="8" vgap="6">
+                  <CheckBox fx:id="exportBSECE" text="BSECE" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                  <CheckBox fx:id="exportBSBAHRM" text="BSBA-HRM" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                  <CheckBox fx:id="exportBSBAMM" text="BSBA-MM" GridPane.columnIndex="0" GridPane.rowIndex="1" />
+                  <CheckBox fx:id="exportBSEdEnglish" text="BSEd-English" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                  <CheckBox fx:id="exportBSEdFilipino" text="BSEd-Filipino" GridPane.columnIndex="0" GridPane.rowIndex="2" />
+                  <CheckBox fx:id="exportBSEdMath" text="BSEd-Math" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                  <CheckBox fx:id="exportBSIE" text="BSIE" GridPane.columnIndex="0" GridPane.rowIndex="3" />
+                  <CheckBox fx:id="exportBSIT" text="BSIT" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                  <CheckBox fx:id="exportBSPSY" text="BSPSY" GridPane.columnIndex="0" GridPane.rowIndex="4" />
+                  <CheckBox fx:id="exportBTLEdHE" text="BTLEd-HE" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                  <CheckBox fx:id="exportBSMA" text="BSMA" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                </GridPane>
+              </VBox>
 
+              <Label styleClass="form-label-sm" text="ITEM CATEGORY" />
               <VBox spacing="10">
                 <CheckBox fx:id="exportAllCheckBox" onAction="#handleSelectAllToggle" styleClass="label-bold" text="All" />
                 <CheckBox fx:id="exportDisplayDevices" selected="true" text="Display devices" />

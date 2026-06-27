@@ -278,6 +278,26 @@
 .btn-gold { -fx-background-color: -color-accent-border; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-radius: 12px; -fx-padding: 10px 20px; -fx-cursor: hand; }
 .btn-gold:hover { -fx-background-color: -color-accent-border-hover; }
 
+.scope-radio .radio {
+    -fx-background-color: white, white;
+    -fx-border-color: #aaaaaa;
+    -fx-border-radius: 50%;
+    -fx-background-radius: 50%;
+}
+.scope-radio .radio .dot {
+    -fx-background-color: transparent;
+}
+.scope-radio:selected .radio {
+    -fx-background-color: #D4AF37, white, #D4AF37;
+    -fx-background-insets: 0, 2, 4;
+    -fx-background-radius: 50%;
+    -fx-border-color: #D4AF37;
+    -fx-border-radius: 50%;
+}
+.scope-radio:selected .radio .dot {
+    -fx-background-color: transparent;
+}
+
 .btn-red { -fx-background-color: -color-status-error; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-radius: 12px; -fx-padding: 10px 20px; -fx-cursor: hand; }
 .btn-red:hover { -fx-background-color: derive(-color-status-error, -15%); }
 

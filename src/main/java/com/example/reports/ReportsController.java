@@ -100,6 +100,27 @@ public class ReportsController {
     @FXML private DatePicker exportFromDate;
     @FXML private DatePicker exportToDate;
     @FXML private TextField exportCourseField;
+    @FXML private CheckBox exportAllCoursesCheckBox;
+    @FXML private CheckBox exportBSECE;
+    @FXML private CheckBox exportBSBAHRM;
+    @FXML private CheckBox exportBSBAMM;
+    @FXML private CheckBox exportBSEdEnglish;
+    @FXML private CheckBox exportBSEdFilipino;
+    @FXML private CheckBox exportBSEdMath;
+    @FXML private CheckBox exportBSIE;
+    @FXML private CheckBox exportBSIT;
+    @FXML private CheckBox exportBSPSY;
+    @FXML private CheckBox exportBTLEdHE;
+    @FXML private CheckBox exportBSMA;
+    @FXML private RadioButton scopePeriodRadio;
+    @FXML private RadioButton scopeTemporalRadio;
+    @FXML private Label scopePeriodLabel;
+    @FXML private Label scopeTemporalLabel;
+    @FXML private HBox periodScopeRow;
+    @FXML private HBox temporalScopeRow;
+    @FXML private ComboBox<String> exportScopeTypeCombo;
+    @FXML private ComboBox<String> exportScopeValueCombo;
+    private final javafx.scene.control.ToggleGroup scopeToggleGroup = new javafx.scene.control.ToggleGroup();
     @FXML private CheckBox exportAllCheckBox;
     @FXML private CheckBox exportDisplayDevices;
     @FXML private CheckBox exportAppliances;
@@ -195,6 +216,78 @@ public class ReportsController {
         showView(View.MAIN);
         startNavClock();
         if (exportCsvBtn != null) selectFormat("CSV");
+
+        if (scopePeriodRadio != null && scopeTemporalRadio != null) {
+            scopePeriodRadio.setToggleGroup(scopeToggleGroup);
+            scopeTemporalRadio.setToggleGroup(scopeToggleGroup);
+            scopePeriodRadio.setSelected(true);
+            applyScopeToggle("period");
+        }
+
+        if (exportScopeTypeCombo != null) {
+            exportScopeTypeCombo.getItems().addAll("Annual", "Quarter", "Month");
+            exportScopeTypeCombo.setOnAction(e -> loadExportScopeValues());
+        }
+    }
+
+    @FXML
+    private void handleScopeToggle() {
+        boolean periodSelected = scopePeriodRadio != null && scopePeriodRadio.isSelected();
+        applyScopeToggle(periodSelected ? "period" : "temporal");
+    }
+
+    private void applyScopeToggle(String active) {
+        boolean isPeriod = active.equals("period");
+
+        if (periodScopeRow != null)  { periodScopeRow.setDisable(!isPeriod);  periodScopeRow.setOpacity(isPeriod ? 1.0 : 0.4); }
+        if (temporalScopeRow != null) { temporalScopeRow.setDisable(isPeriod); temporalScopeRow.setOpacity(isPeriod ? 0.4 : 1.0); }
+        if (scopePeriodLabel != null)  scopePeriodLabel.setOpacity(isPeriod ? 1.0 : 0.4);
+        if (scopeTemporalLabel != null) scopeTemporalLabel.setOpacity(isPeriod ? 0.4 : 1.0);
+    }
+
+    private void loadExportScopeValues() {
+        if (exportScopeValueCombo == null || exportScopeTypeCombo == null) return;
+        exportScopeValueCombo.getItems().clear();
+        String type = exportScopeTypeCombo.getValue();
+        if (type == null) return;
+
+        try (java.sql.Connection conn = java.sql.DriverManager.getConnection(
+                byodService.getDbUrl(), byodService.getDbUser(), byodService.getDbPass());
+             java.sql.Statement st = conn.createStatement()) {
+
+            switch (type) {
+                case "Annual" -> {
+                    java.sql.ResultSet rs = st.executeQuery(
+                            "SELECT DISTINCT YEAR(ingress_time) as yr FROM student_device_logs ORDER BY yr DESC");
+                    while (rs.next()) exportScopeValueCombo.getItems().add(String.valueOf(rs.getInt("yr")));
+                }
+                case "Quarter" -> {
+                    java.sql.ResultSet rs = st.executeQuery(
+                            "SELECT DISTINCT YEAR(ingress_time) as yr, QUARTER(ingress_time) as qr " +
+                                    "FROM student_device_logs ORDER BY yr DESC, qr DESC");
+                    while (rs.next()) {
+                        int yr = rs.getInt("yr"); int qr = rs.getInt("qr");
+                        String label = switch (qr) {
+                            case 1 -> "Q1 (Jan-Mar), " + yr;
+                            case 2 -> "Q2 (Apr-Jun), " + yr;
+                            case 3 -> "Q3 (Jul-Sep), " + yr;
+                            default -> "Q4 (Oct-Dec), " + yr;
+                        };
+                        exportScopeValueCombo.getItems().add(label);
+                    }
+                }
+                case "Month" -> {
+                    java.sql.ResultSet rs = st.executeQuery(
+                            "SELECT DISTINCT YEAR(ingress_time) as yr, MONTH(ingress_time) as mn " +
+                                    "FROM student_device_logs ORDER BY yr DESC, mn DESC");
+                    String[] monthNames = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+                    while (rs.next()) {
+                        int yr = rs.getInt("yr"); int mn = rs.getInt("mn");
+                        exportScopeValueCombo.getItems().add(monthNames[mn - 1] + " " + yr);
+                    }
+                }
+            }
+        } catch (Exception e) { e.printStackTrace(); }
     }
 
     private static final DateTimeFormatter NAV_DATETIME_FORMATTER =
@@ -784,6 +877,23 @@ public class ReportsController {
         if (exportRentable != null) exportRentable.setSelected(state);
     }
 
+    @FXML
+    private void handleSelectAllCourses() {
+        if (exportAllCoursesCheckBox == null) return;
+        boolean state = exportAllCoursesCheckBox.isSelected();
+        if (exportBSECE != null) exportBSECE.setSelected(state);
+        if (exportBSBAHRM != null) exportBSBAHRM.setSelected(state);
+        if (exportBSBAMM != null) exportBSBAMM.setSelected(state);
+        if (exportBSEdEnglish != null) exportBSEdEnglish.setSelected(state);
+        if (exportBSEdFilipino != null) exportBSEdFilipino.setSelected(state);
+        if (exportBSEdMath != null) exportBSEdMath.setSelected(state);
+        if (exportBSIE != null) exportBSIE.setSelected(state);
+        if (exportBSIT != null) exportBSIT.setSelected(state);
+        if (exportBSPSY != null) exportBSPSY.setSelected(state);
+        if (exportBTLEdHE != null) exportBTLEdHE.setSelected(state);
+        if (exportBSMA != null) exportBSMA.setSelected(state);
+    }
+
     @FXML private void handleExportCsv()    { selectFormat("CSV");   showSuccessAlert("Selected Format changed to standard CSV Data stream."); }
     @FXML private void handleExportPdf()    { selectFormat("PDF");   showSuccessAlert("Selected Format changed to Adobe structural PDF compilation."); }
     @FXML private void handleExportXls()    { selectFormat("EXCEL"); showSuccessAlert("Selected Format changed to Microsoft Excel Spreadsheet cluster."); }
@@ -832,12 +942,26 @@ public class ReportsController {
         File targetedFile = fileChooser.showSaveDialog(activeStage);
 
         if (targetedFile != null) {
-            String exportStatusFilter = (statusFilterCombo != null) ? statusFilterCombo.getValue() : "All";
-            String exportPeriodFilter = (periodCombo != null) ? periodCombo.getValue() : "All";
-            if (exportStatusFilter == null || exportStatusFilter.isEmpty()) exportStatusFilter = "All";
-            if (exportPeriodFilter == null || exportPeriodFilter.isEmpty()) exportPeriodFilter = "All";
+            List<String[]> extractionDatabaseRows;
 
-            List<String[]> extractionDatabaseRows = byodService.fetchFilteredStudentsList(exportStatusFilter, exportPeriodFilter);
+            boolean usingPeriodScope = scopePeriodRadio != null && scopePeriodRadio.isSelected();
+            if (usingPeriodScope) {
+                String scopeType  = exportScopeTypeCombo != null ? exportScopeTypeCombo.getValue() : null;
+                String scopeValue = exportScopeValueCombo != null ? exportScopeValueCombo.getValue() : null;
+                if (scopeType == null || scopeType.equals("Select...")) {
+                    showAlert("Scope Error", "Please select a scope type.");
+                    return;
+                }
+                if (scopeValue == null || scopeValue.equals("Select...")) {
+                    showAlert("Scope Error", "Please select a scope value.");
+                    return;
+                }
+                extractionDatabaseRows = byodService.fetchExportByPeriodScope(scopeType, scopeValue);
+            } else {
+                LocalDate from = exportFromDate != null ? exportFromDate.getValue() : null;
+                LocalDate to   = exportToDate   != null ? exportToDate.getValue()   : null;
+                extractionDatabaseRows = byodService.fetchExportByDateRange(from, to);
+            }
             boolean isSuccess = false;
 
             try {

@@ -345,7 +345,11 @@ public class RegistrationController {
 
     @FXML
     private void handleBack() {
-        if (currentStep > 1) showStep(currentStep - 1);
+        if (currentStep > 1) {
+            if (currentStep == 2) step1Completed = false;
+            if (currentStep == 3) step2Completed = false;
+            showStep(currentStep - 1);
+        }
     }
 
     @FXML

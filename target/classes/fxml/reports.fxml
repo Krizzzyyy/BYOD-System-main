@@ -57,7 +57,7 @@
 
           <HBox alignment="CENTER_LEFT" spacing="12">
             <Label styleClass="card-title" text="Period:" />
-            <ComboBox fx:id="periodCombo" maxHeight="-Infinity" minHeight="-Infinity" prefWidth="200.0" styleClass="combo-box" />
+            <ComboBox fx:id="chartPeriodCombo" maxHeight="-Infinity" minHeight="-Infinity" prefWidth="200.0" styleClass="combo-box" />
             <Region HBox.hgrow="ALWAYS" />
             <Button onAction="#handleRefresh" styleClass="refresh-button" text="↻ Refresh" />
           </HBox>
@@ -84,10 +84,7 @@
           </HBox>
 
         <VBox spacing="12" styleClass="card">
-          <HBox alignment="CENTER_LEFT" spacing="12">
-            <Label fx:id="weeklyChartTitle" styleClass="chart-title" text="Ingress-egress by: Daily" HBox.hgrow="ALWAYS" />
-            <ComboBox fx:id="chartPeriodCombo" prefWidth="140" styleClass="combo-box" />
-          </HBox>
+          <Label fx:id="weeklyChartTitle" styleClass="chart-title" text="Ingress-egress by: Daily" />
             <BarChart fx:id="weeklyChart" animated="false" maxHeight="280" prefHeight="280" styleClass="chart">
               <xAxis>
                 <CategoryAxis animated="false" side="BOTTOM" />

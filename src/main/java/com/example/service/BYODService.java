@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.LinkedHashMap;
 
 public class BYODService {
     private static final String DB_URL = "jdbc:mysql://localhost:3306/byod_db";
@@ -410,6 +411,168 @@ public class BYODService {
         chartData.put("Ingress", ingressMap);
         chartData.put("Egress", egressMap);
         return chartData;
+    }
+
+    public Map<String, Map<String, Integer>> fetchDailyChartData() {
+        Map<String, Integer> ingressMap = new LinkedHashMap<>();
+        Map<String, Integer> egressMap  = new LinkedHashMap<>();
+        String[] hours = {
+                "12AM","1AM","2AM","3AM","4AM","5AM","6AM","7AM","8AM","9AM","10AM","11AM",
+                "12PM","1PM","2PM","3PM","4PM","5PM","6PM","7PM","8PM","9PM","10PM","11PM"
+        };
+        for (String h : hours) { ingressMap.put(h, 0); egressMap.put(h, 0); }
+
+        String sql = "SELECT DATE_FORMAT(ingress_time, '%l%p') as hr, COUNT(*) as ic, " +
+                "SUM(CASE WHEN egress_time IS NOT NULL THEN 1 ELSE 0 END) as ec " +
+                "FROM student_device_logs " +
+                "WHERE DATE(ingress_time) = CURDATE() " +
+                "GROUP BY hr";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                String key = rs.getString("hr");
+                if (ingressMap.containsKey(key)) {
+                    ingressMap.put(key, rs.getInt("ic"));
+                    egressMap.put(key, rs.getInt("ec"));
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+
+        Map<String, Map<String, Integer>> result = new LinkedHashMap<>();
+        result.put("Ingress", ingressMap);
+        result.put("Egress", egressMap);
+        return result;
+    }
+
+    public Map<String, Map<String, Integer>> fetchWeeklyByDayChartData() {
+        Map<String, Integer> ingressMap = new LinkedHashMap<>();
+        Map<String, Integer> egressMap  = new LinkedHashMap<>();
+        String[] days = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+        for (String d : days) { ingressMap.put(d, 0); egressMap.put(d, 0); }
+
+        String sql = "SELECT DAYNAME(ingress_time) as dn, COUNT(*) as ic, " +
+                "SUM(CASE WHEN egress_time IS NOT NULL THEN 1 ELSE 0 END) as ec " +
+                "FROM student_device_logs " +
+                "WHERE ingress_time >= DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY) " +
+                "AND ingress_time < DATE_ADD(DATE_SUB(CURDATE(), INTERVAL WEEKDAY(CURDATE()) DAY), INTERVAL 7 DAY) " +
+                "GROUP BY dn";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                String key = rs.getString("dn").substring(0, 3);
+                if (ingressMap.containsKey(key)) {
+                    ingressMap.put(key, rs.getInt("ic"));
+                    egressMap.put(key, rs.getInt("ec"));
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+
+        Map<String, Map<String, Integer>> result = new LinkedHashMap<>();
+        result.put("Ingress", ingressMap);
+        result.put("Egress", egressMap);
+        return result;
+    }
+
+    public Map<String, Map<String, Integer>> fetchMonthlyChartData() {
+        Map<String, Integer> ingressMap = new LinkedHashMap<>();
+        Map<String, Integer> egressMap  = new LinkedHashMap<>();
+        String[] months = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
+        for (String m : months) { ingressMap.put(m, 0); egressMap.put(m, 0); }
+
+        String sql = "SELECT DATE_FORMAT(ingress_time,'%b') as mn, COUNT(*) as ic, " +
+                "SUM(CASE WHEN egress_time IS NOT NULL THEN 1 ELSE 0 END) as ec " +
+                "FROM student_device_logs WHERE YEAR(ingress_time) = YEAR(CURDATE()) GROUP BY mn";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                String key = rs.getString("mn");
+                if (ingressMap.containsKey(key)) {
+                    ingressMap.put(key, rs.getInt("ic"));
+                    egressMap.put(key, rs.getInt("ec"));
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+
+        return Map.of("Ingress", ingressMap, "Egress", egressMap);
+    }
+
+    public Map<String, Map<String, Integer>> fetchQuarterlyChartData() {
+        Map<String, Integer> ingressMap = new LinkedHashMap<>();
+        Map<String, Integer> egressMap  = new LinkedHashMap<>();
+        String[] quarters = {"Q1 (Jan-Mar)", "Q2 (Apr-Jun)", "Q3 (Jul-Sep)", "Q4 (Oct-Dec)"};
+        for (String q : quarters) { ingressMap.put(q, 0); egressMap.put(q, 0); }
+
+        String sql = "SELECT CONCAT('Q', QUARTER(ingress_time), " +
+                "CASE QUARTER(ingress_time) WHEN 1 THEN ' (Jan-Mar)' WHEN 2 THEN ' (Apr-Jun)' " +
+                "WHEN 3 THEN ' (Jul-Sep)' ELSE ' (Oct-Dec)' END) as qn, " +
+                "COUNT(*) as ic, SUM(CASE WHEN egress_time IS NOT NULL THEN 1 ELSE 0 END) as ec " +
+                "FROM student_device_logs WHERE YEAR(ingress_time) = YEAR(CURDATE()) GROUP BY qn";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                String key = rs.getString("qn");
+                if (ingressMap.containsKey(key)) {
+                    ingressMap.put(key, rs.getInt("ic"));
+                    egressMap.put(key, rs.getInt("ec"));
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+
+        Map<String, Map<String, Integer>> result = new LinkedHashMap<>();
+        result.put("Ingress", ingressMap);
+        result.put("Egress", egressMap);
+        return result;
+    }
+
+    public Map<String, Map<String, Integer>> fetchAnnualChartData() {
+        Map<String, Integer> ingressMap = new LinkedHashMap<>();
+        Map<String, Integer> egressMap  = new LinkedHashMap<>();
+
+        String sqlYears = "SELECT DISTINCT YEAR(ingress_time) as yr FROM student_device_logs ORDER BY yr ASC";
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sqlYears)) {
+            while (rs.next()) {
+                String yr = String.valueOf(rs.getInt("yr"));
+                ingressMap.put(yr, 0);
+                egressMap.put(yr, 0);
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+
+        if (ingressMap.isEmpty()) {
+            String yr = String.valueOf(java.time.LocalDate.now().getYear());
+            ingressMap.put(yr, 0);
+            egressMap.put(yr, 0);
+        }
+
+        String sql = "SELECT YEAR(ingress_time) as yr, COUNT(*) as ic, " +
+                "SUM(CASE WHEN egress_time IS NOT NULL THEN 1 ELSE 0 END) as ec " +
+                "FROM student_device_logs GROUP BY yr ORDER BY yr ASC";
+
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             Statement stmt = conn.createStatement();
+             ResultSet rs = stmt.executeQuery(sql)) {
+            while (rs.next()) {
+                String key = String.valueOf(rs.getInt("yr"));
+                if (ingressMap.containsKey(key)) {
+                    ingressMap.put(key, rs.getInt("ic"));
+                    egressMap.put(key, rs.getInt("ec"));
+                }
+            }
+        } catch (SQLException e) { e.printStackTrace(); }
+
+        Map<String, Map<String, Integer>> result = new LinkedHashMap<>();
+        result.put("Ingress", ingressMap);
+        result.put("Egress", egressMap);
+        return result;
     }
 
     /* ════════════════════════════════════════════════════════════════════ */

@@ -27,6 +27,7 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
+import java.util.ArrayList;
 import javafx.animation.Animation;
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -66,6 +67,7 @@ public class ReportsController {
     @FXML private Label statDeviceInventory;
     @FXML private Label statFullExport;
     @FXML private BarChart<String, Number> weeklyChart;
+    @FXML private ComboBox<String> chartPeriodCombo;
     @FXML private Label weeklyChartTitle;
 
     /* ── Interactive CRUD Admin Fields ──────────────────── */
@@ -130,6 +132,12 @@ public class ReportsController {
         if (periodCombo != null) {
             periodCombo.getItems().addAll("All", "This Month", "Last Month", "Last 3 Months", "This Year");
             periodCombo.setValue("All");
+        }
+
+        if (chartPeriodCombo != null) {
+            chartPeriodCombo.getItems().addAll("Daily", "Weekly", "Monthly", "Quarterly", "Annually");
+            chartPeriodCombo.setValue("Daily");
+            chartPeriodCombo.setOnAction(e -> loadChartForPeriod(chartPeriodCombo.getValue()));
         }
 
         if (statusFilterCombo != null) {
@@ -480,34 +488,87 @@ public class ReportsController {
         } catch (Exception e) {
             System.err.println("Metric stream mapping error: " + e.getMessage());
         }
-        Platform.runLater(this::loadWeeklyChart);
+
+        javafx.animation.PauseTransition pause = new javafx.animation.PauseTransition(javafx.util.Duration.millis(300));
+        pause.setOnFinished(e -> loadChartForPeriod("Daily"));
+        pause.play();
         loadStudentsData();
     }
 
-    private void loadWeeklyChart() {
+    private void loadChartForPeriod(String period) {
         if (weeklyChart == null) return;
-
         weeklyChart.getData().clear();
-        CategoryAxis xAxis = (CategoryAxis) weeklyChart.getXAxis();
-        xAxis.setCategories(FXCollections.observableArrayList("Week 1", "Week 2", "Week 3", "Week 4"));
 
-        Map<String, Map<String, Integer>> weeklyData = byodService.fetchWeeklyChartData();
+        CategoryAxis xAxis = (CategoryAxis) weeklyChart.getXAxis();
+        javafx.scene.chart.NumberAxis yAxis = (javafx.scene.chart.NumberAxis) weeklyChart.getYAxis();
+        int currentYear = java.time.LocalDate.now().getYear();
+
+        Map<String, Map<String, Integer>> data;
+        List<String> labels = new ArrayList<>();
+        String title;
+
+        switch (period) {
+            case "Weekly" -> {
+                data = byodService.fetchWeeklyByDayChartData();
+                labels.addAll(List.of("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"));
+                String monthName = java.time.LocalDate.now().getMonth()
+                        .getDisplayName(java.time.format.TextStyle.FULL, java.util.Locale.ENGLISH);
+                title = "Ingress-egress by: Weekly · " + monthName + " " + currentYear;
+            }
+            case "Monthly" -> {
+                data = byodService.fetchMonthlyChartData();
+                labels.addAll(List.of("Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"));
+                title = "Ingress-egress by: Monthly · " + currentYear;
+            }
+            case "Quarterly" -> {
+                data = byodService.fetchQuarterlyChartData();
+                labels.addAll(List.of("Q1 (Jan-Mar)", "Q2 (Apr-Jun)", "Q3 (Jul-Sep)", "Q4 (Oct-Dec)"));
+                title = "Ingress-egress by: Quarterly · " + currentYear;
+            }
+            case "Annually" -> {
+                data = byodService.fetchAnnualChartData();
+                labels.addAll(data.get("Ingress").keySet());
+                title = "Ingress-egress by: Annually";
+            }
+            default -> {
+                data = byodService.fetchDailyChartData();
+                labels.addAll(List.of(
+                        "12AM","1AM","2AM","3AM","4AM","5AM","6AM","7AM","8AM","9AM","10AM","11AM",
+                        "12PM","1PM","2PM","3PM","4PM","5PM","6PM","7PM","8PM","9PM","10PM","11PM"
+                ));
+                title = "Ingress-egress by: Daily";
+            }
+        }
+
+        if (weeklyChartTitle != null) weeklyChartTitle.setText(title);
+
+        Map<String, Integer> ingressMap = data.get("Ingress");
+        Map<String, Integer> egressMap  = data.get("Egress");
+
+        int maxVal = Math.max(
+                ingressMap.values().stream().mapToInt(v -> v).max().orElse(0),
+                egressMap.values().stream().mapToInt(v -> v).max().orElse(0)
+        );
+
+        yAxis.setAutoRanging(false);
+        yAxis.setLowerBound(0);
+        yAxis.setUpperBound(Math.max(5, maxVal + 1));
+        yAxis.setTickUnit(1);
+        yAxis.setMinorTickCount(0);
 
         XYChart.Series<String, Number> ingressSeries = new XYChart.Series<>();
         ingressSeries.setName("Ingress");
-
         XYChart.Series<String, Number> egressSeries = new XYChart.Series<>();
         egressSeries.setName("Egress");
 
-        for (int i = 1; i <= 4; i++) {
-            String weekKey = "Week " + i;
-            Map<String, Integer> weekCounts = weeklyData.getOrDefault(weekKey, Map.of("Ingress", 0, "Egress", 0));
-
-            ingressSeries.getData().add(new XYChart.Data<>(weekKey, weekCounts.get("Ingress")));
-            egressSeries.getData().add(new XYChart.Data<>(weekKey, weekCounts.get("Egress")));
+        for (String label : labels) {
+            ingressSeries.getData().add(new XYChart.Data<>(label, ingressMap.getOrDefault(label, 0)));
+            egressSeries.getData().add(new XYChart.Data<>(label, egressMap.getOrDefault(label, 0)));
         }
 
         weeklyChart.getData().addAll(ingressSeries, egressSeries);
+        xAxis.setAutoRanging(false);
+        xAxis.setCategories(FXCollections.observableArrayList(labels));
     }
 
     private void loadStudentsData() {

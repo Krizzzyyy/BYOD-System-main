@@ -83,8 +83,11 @@
             </VBox>
           </HBox>
 
-          <VBox spacing="12" styleClass="card">
-            <Label fx:id="weeklyChartTitle" styleClass="chart-title" text="Ingress-egress by week · June 2026" />
+        <VBox spacing="12" styleClass="card">
+          <HBox alignment="CENTER_LEFT" spacing="12">
+            <Label fx:id="weeklyChartTitle" styleClass="chart-title" text="Ingress-egress by: Daily" HBox.hgrow="ALWAYS" />
+            <ComboBox fx:id="chartPeriodCombo" prefWidth="140" styleClass="combo-box" />
+          </HBox>
             <BarChart fx:id="weeklyChart" animated="false" maxHeight="280" prefHeight="280" styleClass="chart">
               <xAxis>
                 <CategoryAxis animated="false" side="BOTTOM" />

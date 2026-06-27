@@ -577,46 +577,7 @@ public class RegistrationController {
 
     @FXML private void handleDashboard()    { navigateTo("/fxml/dashboard.fxml"); }
     @FXML private void handleMonitoring()   { navigateTo("/fxml/monitoring.fxml"); }
-    @FXML
-    private void handleReports() {
-        if (Auth.reportUnlocked) {
-            navigateTo("/fxml/reports.fxml");
-            return;
-        }
-
-        Dialog<String> dialog = new Dialog<>();
-        dialog.setTitle("Reports Access");
-        dialog.setHeaderText("Faculty verification required to access Reports.");
-
-        ButtonType loginBtn = new ButtonType("Unlock", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(loginBtn, ButtonType.CANCEL);
-
-        PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("Enter faculty password");
-        passwordField.setPrefWidth(280);
-
-        Label errorLabel = new Label("");
-        errorLabel.setStyle("-fx-text-fill: #D32F2F; -fx-font-size: 12px;");
-
-        VBox vbox = new VBox(10, new Label("Password:"), passwordField, errorLabel);
-        vbox.setPadding(new Insets(20));
-        dialog.getDialogPane().setContent(vbox);
-
-
-        dialog.setResultConverter(btn -> {
-            if (btn == loginBtn) return passwordField.getText();
-            return null;
-        });
-
-        dialog.showAndWait().ifPresent(password -> {
-            if ("password".equals(password)) {
-                Auth.reportUnlocked = true;
-                navigateTo("/fxml/reports.fxml");
-            } else {
-                errorLabel.setText("Incorrect password. Access denied.");
-            }
-        });
-    }
+    @FXML private void handleReports() { navigateTo("/fxml/reports.fxml"); }
     @FXML private void handleRegistration() { /* already here */ }
 
     private void navigateTo(String fxml) {

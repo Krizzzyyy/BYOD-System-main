@@ -331,45 +331,7 @@ public class DashboardController {
     @FXML private void handleDashboard() { loadLiveDatabaseData(); }
     @FXML private void handleMonitoring() { navigateTo(MONITORING_FXML, "Monitoring - BYOD System"); }
     @FXML private void handleRegistration() { navigateTo(REGISTRATION_FXML, "Registration - BYOD System"); }
-    @FXML
-    private void handleReports() {
-        if (Auth.reportUnlocked) {
-            navigateTo(REPORTS_FXML, "Reports - BYOD System");
-            return;
-        }
-
-        Dialog<String> dialog = new Dialog<>();
-        dialog.setTitle("Reports Access");
-        dialog.setHeaderText("Faculty verification required to access Reports.");
-
-        ButtonType loginBtn = new ButtonType("Unlock", ButtonBar.ButtonData.OK_DONE);
-        dialog.getDialogPane().getButtonTypes().addAll(loginBtn, ButtonType.CANCEL);
-
-        PasswordField passwordField = new PasswordField();
-        passwordField.setPromptText("Enter faculty password");
-        passwordField.setPrefWidth(280);
-
-        Label errorLabel = new Label("");
-        errorLabel.setStyle("-fx-text-fill: #D32F2F; -fx-font-size: 12px;");
-
-        VBox content = new VBox(10, new Label("Password:"), passwordField, errorLabel);
-        content.setPadding(new Insets(20));
-        dialog.getDialogPane().setContent(content);
-
-        dialog.setResultConverter(btn -> {
-            if (btn == loginBtn) return passwordField.getText();
-            return null;
-        });
-
-        dialog.showAndWait().ifPresent(password -> {
-            if ("password".equals(password)) {
-                Auth.reportUnlocked = true;
-                navigateTo(REPORTS_FXML, "Reports - BYOD System");
-            } else {
-                errorLabel.setText("Incorrect password. Access denied.");
-            }
-        });
-    }
+    @FXML private void handleReports() { navigateTo(REPORTS_FXML, "Reports - BYOD System"); }
     @FXML private void handleAccount() { navigateTo(ACCOUNT_FXML, "Account - BYOD System"); }
 
     private void navigateTo(String fxmlPath, String title) {

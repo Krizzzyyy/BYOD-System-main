@@ -523,13 +523,13 @@
     -fx-padding: 0;
 }
 .step-active { -fx-background-color: -color-accent-border; -fx-text-fill: -color-fg-default; }
-.step-complete { -fx-background-color: -color-status-success; -fx-text-fill: white; }
+.step-complete { -fx-background-color: -color-accent; -fx-text-fill: white; }
 .step-inactive { -fx-background-color: -color-border-default; -fx-text-fill: -color-fg-muted; }
 .step-label { -fx-font-size: 16px; -fx-text-fill: -color-fg-muted; -fx-font-weight: normal; }
 .step-label.step-label-active { -fx-font-size: 16px; -fx-text-fill: -color-accent-border; -fx-font-weight: bold; }
-.step-label.step-label-complete { -fx-font-size: 16px; -fx-text-fill: -color-status-success; -fx-font-weight: bold; }
+.step-label.step-label-complete { -fx-font-size: 16px; -fx-text-fill: -color-accent; -fx-font-weight: bold; }
 .step-connector { -fx-background-color: -color-border-default; -fx-min-height: 2px; -fx-max-height: 2px; -fx-pref-height: 2px; }
-.step-connector-complete { -fx-background-color: -color-status-success; -fx-min-height: 2px; -fx-max-height: 2px; -fx-pref-height: 2px; }
+.step-connector-complete { -fx-background-color: -color-accent; -fx-min-height: 2px; -fx-max-height: 2px; -fx-pref-height: 2px; }
 
 /* Form Helper Text */
 .form-helper { -fx-font-size: 16px; -fx-text-fill: -color-fg-muted; -fx-font-style: italic; -fx-padding: 2 0 0 0; }

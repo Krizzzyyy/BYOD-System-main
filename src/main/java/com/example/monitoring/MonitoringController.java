@@ -399,45 +399,7 @@
         @FXML private void onDashboardClick() { navigateTo(DASHBOARD_FXML, "Dashboard - BYOD System"); }
         @FXML private void onMonitoringClick() { refreshMonitoringData(); }
         @FXML private void onRegistrationClick() { navigateTo(REGISTRATION_FXML, "Device Registration - BYOD System"); }
-        @FXML
-        private void onReportsClick() {
-            if (Auth.reportUnlocked) {
-                navigateTo(REPORTS_FXML, "Reports - BYOD System");
-                return;
-            }
-
-            Dialog<String> dialog = new Dialog<>();
-            dialog.setTitle("Reports Access");
-            dialog.setHeaderText("Faculty verification required to access Reports.");
-
-            ButtonType loginBtn = new ButtonType("Unlock", ButtonBar.ButtonData.OK_DONE);
-            dialog.getDialogPane().getButtonTypes().addAll(loginBtn, ButtonType.CANCEL);
-
-            PasswordField passwordField = new PasswordField();
-            passwordField.setPromptText("Enter faculty password");
-            passwordField.setPrefWidth(280);
-
-            Label errorLabel = new Label("");
-            errorLabel.setStyle("-fx-text-fill: #D32F2F; -fx-font-size: 12px;");
-
-            VBox content = new VBox(10, new Label("Password:"), passwordField, errorLabel);
-            content.setPadding(new Insets(20));
-            dialog.getDialogPane().setContent(content);
-
-            dialog.setResultConverter(btn -> {
-                if (btn == loginBtn) return passwordField.getText();
-                return null;
-            });
-
-            dialog.showAndWait().ifPresent(password -> {
-                if ("password".equals(password)) {
-                    Auth.reportUnlocked = true;
-                    navigateTo(REPORTS_FXML, "Reports - BYOD System");
-                } else {
-                    errorLabel.setText("Incorrect password. Access denied.");
-                }
-            });
-        }
+        @FXML private void onReportsClick() { navigateTo(REPORTS_FXML, "Reports - BYOD System"); }
         @FXML private void onAccountClick() { navigateTo(ACCOUNT_FXML, "Account Settings - BYOD System"); }
     
         @FXML private void handleLogout() {

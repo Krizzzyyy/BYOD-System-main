@@ -11,3 +11,6 @@ target/
 .DS_Store
 Thumbs.db
 
+# Local QR Codes
+QR_*.png
+

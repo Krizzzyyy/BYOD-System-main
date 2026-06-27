@@ -622,10 +622,10 @@ public class ReportsController {
         thread.start();
         loadingDialog.showAndWait();
     }
-    @FXML private void handleDashboard()    { confirmLeaveReports(() -> navigateTo("/fxml/dashboard.fxml")); }
-    @FXML private void handleMonitoring()   { confirmLeaveReports(() -> navigateTo("/fxml/monitoring.fxml")); }
-    @FXML private void handleRegistration() { confirmLeaveReports(() -> navigateTo("/fxml/registration.fxml")); }
-    @FXML private void handleReports(ActionEvent e) { showView(View.MAIN); }
+    @FXML private void handleDashboard()    { navigateTo("/fxml/dashboard.fxml"); }
+    @FXML private void handleMonitoring()   { navigateTo("/fxml/monitoring.fxml"); }
+    @FXML private void handleRegistration() { navigateTo("/fxml/registration.fxml"); }
+    @FXML private void handleReports(javafx.event.ActionEvent e) { showView(View.MAIN); }
 
     private void confirmLeaveReports(Runnable onProceed) {
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);

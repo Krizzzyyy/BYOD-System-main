@@ -82,7 +82,7 @@ public class ReportsController {
 
     /* ── Students Management Table ──────────────────────── */
     @FXML private TableView<StudentRow> studentsTable;
-    @FXML private TableColumn<StudentRow, String> colName, colStudentId, colDepartment, colDevice, colSerial, colPhone;
+    @FXML private TableColumn<StudentRow, String> colName, colStudentId, colDepartment, colDevice, colSerial, colPhone, colUserCategory;
     @FXML private TableColumn<StudentRow, String> colStatus, colRemarks;
 
     /* ── Filter Controls ────────────────────────────────── */
@@ -93,7 +93,7 @@ public class ReportsController {
     /* ── Trash Bin View ──────────────────────────────────── */
     @FXML private VBox trashView;
     @FXML private TableView<StudentRow> trashTable;
-    @FXML private TableColumn<StudentRow, String> trColName, trColStudentId, trColDepartment, trColDevice, trColSerial, trColPhone;
+    @FXML private TableColumn<StudentRow, String> trColName, trColStudentId, trColDepartment, trColDevice, trColSerial, trColPhone, trColUserCategory;
     @FXML private Label trashCountLabel;
 
     /* ── Wizard Export Views Variables ── */
@@ -344,6 +344,7 @@ public class ReportsController {
 
     private void setupTables() {
         if (studentsTable != null) {
+            colUserCategory.setCellValueFactory(new PropertyValueFactory<>("userCategory"));
             colStudentId.setCellValueFactory(new PropertyValueFactory<>("studentId"));
             colName.setCellValueFactory(new PropertyValueFactory<>("name"));
             colDepartment.setCellValueFactory(new PropertyValueFactory<>("department"));
@@ -413,6 +414,7 @@ public class ReportsController {
         }
 
         if (trashTable != null) {
+            trColUserCategory.setCellValueFactory(new PropertyValueFactory<>("userCategory"));
             trColStudentId.setCellValueFactory(new PropertyValueFactory<>("studentId"));
             trColName.setCellValueFactory(new PropertyValueFactory<>("name"));
             trColDepartment.setCellValueFactory(new PropertyValueFactory<>("department"));
@@ -771,9 +773,10 @@ public class ReportsController {
 
         for (String[] row : dataRows) {
             studentsTable.getItems().add(new StudentRow(
-                row[0], row[1], row[2], row[3], row[4], row.length > 5 ? row[5] : "",
-                row.length > 6 ? row[6] : "N/A",
-                row.length > 7 ? row[7] : ""
+                    row[0], row[1], row[2], row[3], row[4], row.length > 5 ? row[5] : "",
+                    row.length > 6 ? row[6] : "N/A",
+                    row.length > 7 ? row[7] : "",
+                    row.length > 8 ? row[8] : "N/A"
             ));
         }
 
@@ -1157,22 +1160,26 @@ public class ReportsController {
 
     /* ── Inner POJO Data Mapping Wrappers ── */
     public static class StudentRow {
-        private final String studentId, name, department, device, serial, phone, status, remarks;
+        private final String studentId, name, department, device, serial, phone, status, remarks, userCategory;
         public StudentRow(String id, String n, String d, String dv, String s, String p) {
-            this(id, n, d, dv, s, p, "N/A", "");
+            this(id, n, d, dv, s, p, "N/A", "", "N/A");
         }
         public StudentRow(String id, String n, String d, String dv, String s, String p, String st, String rm) {
-            this.studentId=id; this.name=n; this.department=d; this.device=dv; this.serial=s; this.phone=p;
-            this.status=st; this.remarks=rm;
+            this(id, n, d, dv, s, p, st, rm, "N/A");
         }
-        public String getStudentId()  { return studentId; }
-        public String getName()       { return name; }
-        public String getDepartment() { return department; }
-        public String getDevice()     { return device; }
-        public String getSerial()     { return serial; }
-        public String getPhone()      { return phone; }
-        public String getStatus()     { return status; }
-        public String getRemarks()    { return remarks; }
+        public StudentRow(String id, String n, String d, String dv, String s, String p, String st, String rm, String uc) {
+            this.studentId=id; this.name=n; this.department=d; this.device=dv; this.serial=s; this.phone=p;
+            this.status=st; this.remarks=rm; this.userCategory=uc;
+        }
+        public String getStudentId()    { return studentId; }
+        public String getName()         { return name; }
+        public String getDepartment()   { return department; }
+        public String getDevice()       { return device; }
+        public String getSerial()       { return serial; }
+        public String getPhone()        { return phone; }
+        public String getStatus()       { return status; }
+        public String getRemarks()      { return remarks; }
+        public String getUserCategory() { return userCategory; }
     }
 
     public static class ExportRow {

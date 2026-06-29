@@ -10,11 +10,12 @@ public class LogEntry {
     private final StringProperty status;
     private final StringProperty lastLog;
     private final StringProperty approvalStatus;
+    private final StringProperty userType;
     private final StringProperty scheduledEntryDate;
     private final int logId;
 
     public LogEntry(int logId, String studentName, String studentId, String deviceSerial,
-                    String status, String lastLog, String approvalStatus, String scheduledEntryDate) {
+                    String status, String lastLog, String approvalStatus, String scheduledEntryDate, String userType) {
         this.logId = logId;
         this.studentName = new SimpleStringProperty(studentName);
         this.studentId = new SimpleStringProperty(studentId);
@@ -22,6 +23,7 @@ public class LogEntry {
         this.status = new SimpleStringProperty(status);
         this.lastLog = new SimpleStringProperty(lastLog);
         this.approvalStatus = new SimpleStringProperty(approvalStatus != null ? approvalStatus : "Approved");
+        this.userType = new SimpleStringProperty(userType != null ? userType : "N/A");
         this.scheduledEntryDate = new SimpleStringProperty(scheduledEntryDate != null ? scheduledEntryDate : "-");
     }
 
@@ -39,5 +41,7 @@ public class LogEntry {
     public String getApprovalStatus() { return approvalStatus.get(); }
     public StringProperty approvalStatusProperty() { return approvalStatus; }
     public String getScheduledEntryDate() { return scheduledEntryDate.get(); }
+    public String getUserType() { return userType.get(); }
+    public StringProperty userTypeProperty() { return userType; }
     public StringProperty scheduledEntryDateProperty() { return scheduledEntryDate; }
 }

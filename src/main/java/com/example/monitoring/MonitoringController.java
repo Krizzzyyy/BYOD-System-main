@@ -65,6 +65,7 @@
         // ==================== TABLE & COLUMNS ====================
         @FXML private TableView<LogEntry> monitoringTableView;
         @FXML private TableColumn<LogEntry, String> studentNameColumn;
+        @FXML private TableColumn<LogEntry, String> userCategoryColumn;
         @FXML private TableColumn<LogEntry, String> studentIdColumn;
         @FXML private TableColumn<LogEntry, String> deviceSerialColumn;
         @FXML private TableColumn<LogEntry, String> statusColumn;
@@ -88,6 +89,7 @@
         @FXML private Label pendingCountLabel;
         @FXML private TableView<LogEntry> pendingTableView;
         @FXML private TableColumn<LogEntry, String> pendingNameColumn;
+        @FXML private TableColumn<LogEntry, String> pendingUserCategoryColumn;
         @FXML private TableColumn<LogEntry, String> pendingIdColumn;
         @FXML private TableColumn<LogEntry, String> pendingDeviceColumn;
         @FXML private TableColumn<LogEntry, String> pendingDateColumn;
@@ -155,6 +157,7 @@
     
         private void setupTableColumns() {
             studentNameColumn.setCellValueFactory(new PropertyValueFactory<>("studentName"));
+            userCategoryColumn.setCellValueFactory(new PropertyValueFactory<>("userType"));
             studentIdColumn.setCellValueFactory(new PropertyValueFactory<>("studentId"));
             deviceSerialColumn.setCellValueFactory(new PropertyValueFactory<>("deviceSerial"));
             lastLogColumn.setCellValueFactory(new PropertyValueFactory<>("lastLog"));
@@ -507,6 +510,7 @@
                     String timestamp = status.equals("Ingress") ? (String) row[4] : egress;
                     String approvalStatus = row.length > 6 ? (String) row[6] : "Approved";
                     String scheduledDate = row.length > 7 ? (String) row[7] : null;
+                    String userType = row.length > 8 ? (String) row[8] : "N/A";
 
                     allLogEntries.add(new LogEntry(
                             logId,
@@ -516,7 +520,8 @@
                             status,
                             timestamp,
                             approvalStatus,
-                            scheduledDate
+                            scheduledDate,
+                            userType
                     ));
                 }
             } catch (Exception e) {
@@ -569,6 +574,7 @@
         // ==================== PENDING APPROVALS TAB ====================
         private void setupPendingTableColumns() {
             pendingNameColumn.setCellValueFactory(new PropertyValueFactory<>("studentName"));
+            pendingUserCategoryColumn.setCellValueFactory(new PropertyValueFactory<>("userType"));
             pendingIdColumn.setCellValueFactory(new PropertyValueFactory<>("studentId"));
             pendingDeviceColumn.setCellValueFactory(new PropertyValueFactory<>("deviceSerial"));
             pendingDateColumn.setCellValueFactory(new PropertyValueFactory<>("scheduledEntryDate"));
@@ -612,7 +618,8 @@
                             "Pending",
                             (String) row[4],
                             "Pending",
-                            (String) row[4]
+                            (String) row[4],
+                            row.length > 7 ? (String) row[7] : "N/A"
                     ));
                 }
             } catch (Exception e) {

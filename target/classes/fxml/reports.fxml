@@ -346,6 +346,7 @@
             </HBox>
             <TableView fx:id="studentsTable" VBox.vgrow="ALWAYS">
               <columns>
+                <TableColumn fx:id="colUserCategory" prefWidth="130" text="User Category" />
                 <TableColumn fx:id="colStudentId" prefWidth="130" text="Student ID" />
                 <TableColumn fx:id="colName" prefWidth="180" text="Student Name" />
                 <TableColumn fx:id="colDepartment" prefWidth="180" text="Department" />
@@ -381,6 +382,7 @@
             </HBox>
             <TableView fx:id="trashTable" prefHeight="400" VBox.vgrow="ALWAYS">
               <columns>
+                <TableColumn fx:id="trColUserCategory" prefWidth="130" text="User Category" />
                 <TableColumn fx:id="trColStudentId" prefWidth="130" text="Student ID" />
                 <TableColumn fx:id="trColName" prefWidth="200" text="Student Name" />
                 <TableColumn fx:id="trColDepartment" prefWidth="220" text="Department" />

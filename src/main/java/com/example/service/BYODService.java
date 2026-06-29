@@ -54,7 +54,7 @@ public class BYODService {
                 "MAX(course_program) as course_program, " +
                 "GROUP_CONCAT(device_type SEPARATOR ', ') as device_type, " +
                 "GROUP_CONCAT(brand_model SEPARATOR ', ') as brand_model, " +
-                "MAX(contact_number) as contact_number " +
+                "MAX(contact_number) as contact_number, " +
                 "FROM student_device_logs " +
                 "WHERE student_id IS NOT NULL AND (is_deleted = 0 OR is_deleted IS NULL) " +
                 (targetDate != null ? "AND DATE(ingress_time) = ? " : "") +
@@ -126,7 +126,8 @@ public class BYODService {
                 "MAX(ingress_time) as ingress_time, " +
                 "CASE WHEN SUM(CASE WHEN egress_time IS NULL THEN 1 ELSE 0 END) > 0 THEN NULL ELSE MAX(egress_time) END as final_egress, " +
                 "MAX(approval_status) as approval_status, " +
-                "MAX(scheduled_entry_date) as scheduled_entry_date " +
+                "MAX(scheduled_entry_date) as scheduled_entry_date, " +
+                "MAX(user_type) as user_type " +
                 "FROM student_device_logs " +
                 "WHERE (approval_status = 'Approved' OR approval_status IS NULL) " +
                 "GROUP BY student_id, DATE(ingress_time) " +
@@ -144,7 +145,8 @@ public class BYODService {
                         rs.getString("ingress_time"),
                         rs.getString("final_egress"),
                         rs.getString("approval_status"),
-                        rs.getString("scheduled_entry_date")
+                        rs.getString("scheduled_entry_date"),
+                        rs.getString("user_type")
                 });
             }
         }
@@ -162,7 +164,8 @@ public class BYODService {
                 "GROUP_CONCAT(brand_model SEPARATOR ', ') as brand_models, " +
                 "MAX(scheduled_entry_date) as scheduled_entry_date, " +
                 "MAX(course_program) as course_program, " +
-                "MAX(contact_number) as contact_number " +
+                "MAX(contact_number) as contact_number, " +
+                "MAX(user_type) as user_type " +
                 "FROM student_device_logs " +
                 "WHERE approval_status = 'Pending' " +
                 "GROUP BY student_id " +
@@ -179,7 +182,8 @@ public class BYODService {
                         rs.getString("brand_models"),
                         rs.getString("scheduled_entry_date"),
                         rs.getString("course_program"),
-                        rs.getString("contact_number")
+                        rs.getString("contact_number"),
+                        rs.getString("user_type")
                 });
             }
         }
@@ -322,8 +326,9 @@ public class BYODService {
             "GROUP_CONCAT(DISTINCT brand_model SEPARATOR ', ') as brand_model, " +
             "MAX(contact_number) as contact_number, " +
             "MAX(approval_status) as approval_status, " +
-            "MAX(approval_remarks) as approval_remarks, " +
-            "MAX(ingress_time) as ingress_time " +
+                    "MAX(approval_remarks) as approval_remarks, " +
+                    "MAX(ingress_time) as ingress_time, " +
+                    "MAX(user_type) as user_type " +
             "FROM student_device_logs " +
             "WHERE student_id IS NOT NULL AND (is_deleted = 0 OR is_deleted IS NULL) "
         );
@@ -373,7 +378,8 @@ public class BYODService {
                             rs.getString("brand_model") != null ? rs.getString("brand_model") : "N/A",
                             rs.getString("contact_number") != null ? rs.getString("contact_number") : "N/A",
                             rs.getString("approval_status") != null ? rs.getString("approval_status") : "N/A",
-                            rs.getString("approval_remarks") != null ? rs.getString("approval_remarks") : ""
+                            rs.getString("approval_remarks") != null ? rs.getString("approval_remarks") : "",
+                            rs.getString("user_type") != null ? rs.getString("user_type") : "N/A"
                     });
                 }
             }
@@ -724,7 +730,7 @@ public class BYODService {
                 "MAX(course_program) as course_program, " +
                 "GROUP_CONCAT(device_type SEPARATOR ', ') as device_type, " +
                 "GROUP_CONCAT(brand_model SEPARATOR ', ') as brand_model, " +
-                "MAX(contact_number) as contact_number " +
+                "MAX(contact_number) as contact_number, " +
                 "FROM student_device_logs WHERE student_id IS NOT NULL AND is_deleted = 1 " +
                 "GROUP BY student_id " +
                 "ORDER BY last_name ASC";

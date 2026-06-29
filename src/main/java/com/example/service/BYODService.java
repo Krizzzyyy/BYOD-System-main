@@ -68,17 +68,23 @@ public class BYODService {
         List<String[]> students = new ArrayList<>();
 
         // Dynamic query: adds the date filter only if a date is provided
-        String sql = "SELECT student_id, " +
+        String sql = "SELECT form_id, student_id, " +
                 "MAX(first_name) as first_name, " +
                 "MAX(last_name) as last_name, " +
+                "MAX(user_type) as user_type, " +
                 "MAX(course_program) as course_program, " +
-                "GROUP_CONCAT(device_type SEPARATOR ', ') as device_type, " +
-                "GROUP_CONCAT(brand_model SEPARATOR ', ') as brand_model, " +
+                "MAX(year_section) as year_section, " +
                 "MAX(contact_number) as contact_number, " +
+                "GROUP_CONCAT(DISTINCT device_type SEPARATOR ', ') as device_type, " +
+                "GROUP_CONCAT(DISTINCT brand_model SEPARATOR ', ') as brand_model, " +
+                "MAX(color_description) as color_description, " +
+                "MAX(scheduled_entry_date) as scheduled_entry_date, " +
+                "MAX(approval_status) as approval_status, " +
+                "MAX(approval_remarks) as approval_remarks " +
                 "FROM student_device_logs " +
                 "WHERE student_id IS NOT NULL AND (is_deleted = 0 OR is_deleted IS NULL) " +
                 (targetDate != null ? "AND DATE(ingress_time) = ? " : "") +
-                "GROUP BY student_id " +
+                "GROUP BY form_id, student_id " +
                 "ORDER BY last_name ASC";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
@@ -92,12 +98,19 @@ public class BYODService {
                 while (rs.next()) {
                     String fullName = rs.getString("first_name") + " " + rs.getString("last_name");
                     students.add(new String[]{
-                            rs.getString("student_id"),
+                            rs.getString("form_id"),
                             fullName,
+                            rs.getString("user_type") != null ? rs.getString("user_type") : "N/A",
+                            rs.getString("student_id"),
                             rs.getString("course_program") != null ? rs.getString("course_program") : "N/A",
+                            rs.getString("year_section") != null ? rs.getString("year_section") : "N/A",
+                            rs.getString("contact_number") != null ? rs.getString("contact_number") : "N/A",
                             rs.getString("device_type") != null ? rs.getString("device_type") : "Unknown",
                             rs.getString("brand_model") != null ? rs.getString("brand_model") : "N/A",
-                            rs.getString("contact_number") != null ? rs.getString("contact_number") : "N/A"
+                            rs.getString("color_description") != null ? rs.getString("color_description") : "N/A",
+                            rs.getString("scheduled_entry_date") != null ? rs.getString("scheduled_entry_date") : "N/A",
+                            rs.getString("approval_status") != null ? rs.getString("approval_status") : "N/A",
+                            rs.getString("approval_remarks") != null ? rs.getString("approval_remarks") : ""
                     });
                 }
             }
@@ -342,19 +355,21 @@ public class BYODService {
         List<String[]> students = new ArrayList<>();
 
         StringBuilder sql = new StringBuilder(
-            "SELECT student_id, " +
-            "MAX(first_name) as first_name, " +
-            "MAX(last_name) as last_name, " +
-            "MAX(course_program) as course_program, " +
-            "GROUP_CONCAT(DISTINCT device_type SEPARATOR ', ') as device_type, " +
-            "GROUP_CONCAT(DISTINCT brand_model SEPARATOR ', ') as brand_model, " +
-            "MAX(contact_number) as contact_number, " +
-            "MAX(approval_status) as approval_status, " +
-                    "MAX(approval_remarks) as approval_remarks, " +
-                    "MAX(ingress_time) as ingress_time, " +
-                    "MAX(user_type) as user_type " +
-            "FROM student_device_logs " +
-            "WHERE student_id IS NOT NULL AND (is_deleted = 0 OR is_deleted IS NULL) "
+                "SELECT form_id, student_id, " +
+                        "MAX(first_name) as first_name, " +
+                        "MAX(last_name) as last_name, " +
+                        "MAX(user_type) as user_type, " +
+                        "MAX(course_program) as course_program, " +
+                        "MAX(year_section) as year_section, " +
+                        "MAX(contact_number) as contact_number, " +
+                        "GROUP_CONCAT(DISTINCT device_type SEPARATOR ', ') as device_type, " +
+                        "GROUP_CONCAT(DISTINCT brand_model SEPARATOR ', ') as brand_model, " +
+                        "MAX(color_description) as color_description, " +
+                        "MAX(scheduled_entry_date) as scheduled_entry_date, " +
+                        "MAX(approval_status) as approval_status, " +
+                        "MAX(approval_remarks) as approval_remarks " +
+                        "FROM student_device_logs " +
+                        "WHERE student_id IS NOT NULL AND (is_deleted = 0 OR is_deleted IS NULL) "
         );
 
         List<Object> params = new ArrayList<>();
@@ -382,7 +397,7 @@ public class BYODService {
             }
         }
 
-        sql.append("GROUP BY student_id ORDER BY last_name ASC");
+        sql.append("GROUP BY form_id, student_id ORDER BY last_name ASC");
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql.toString())) {
@@ -395,15 +410,19 @@ public class BYODService {
                 while (rs.next()) {
                     String fullName = rs.getString("first_name") + " " + rs.getString("last_name");
                     students.add(new String[]{
-                            rs.getString("student_id"),
+                            rs.getString("form_id"),
                             fullName,
+                            rs.getString("user_type") != null ? rs.getString("user_type") : "N/A",
+                            rs.getString("student_id"),
                             rs.getString("course_program") != null ? rs.getString("course_program") : "N/A",
+                            rs.getString("year_section") != null ? rs.getString("year_section") : "N/A",
+                            rs.getString("contact_number") != null ? rs.getString("contact_number") : "N/A",
                             rs.getString("device_type") != null ? rs.getString("device_type") : "Unknown",
                             rs.getString("brand_model") != null ? rs.getString("brand_model") : "N/A",
-                            rs.getString("contact_number") != null ? rs.getString("contact_number") : "N/A",
+                            rs.getString("color_description") != null ? rs.getString("color_description") : "N/A",
+                            rs.getString("scheduled_entry_date") != null ? rs.getString("scheduled_entry_date") : "N/A",
                             rs.getString("approval_status") != null ? rs.getString("approval_status") : "N/A",
-                            rs.getString("approval_remarks") != null ? rs.getString("approval_remarks") : "",
-                            rs.getString("user_type") != null ? rs.getString("user_type") : "N/A"
+                            rs.getString("approval_remarks") != null ? rs.getString("approval_remarks") : ""
                     });
                 }
             }
@@ -748,15 +767,21 @@ public class BYODService {
     public List<String[]> fetchDeletedStudentsList() {
         List<String[]> students = new ArrayList<>();
 
-        String sql = "SELECT student_id, " +
+        String sql = "SELECT form_id, student_id, " +
                 "MAX(first_name) as first_name, " +
                 "MAX(last_name) as last_name, " +
+                "MAX(user_type) as user_type, " +
                 "MAX(course_program) as course_program, " +
-                "GROUP_CONCAT(device_type SEPARATOR ', ') as device_type, " +
-                "GROUP_CONCAT(brand_model SEPARATOR ', ') as brand_model, " +
+                "MAX(year_section) as year_section, " +
                 "MAX(contact_number) as contact_number, " +
+                "GROUP_CONCAT(DISTINCT device_type SEPARATOR ', ') as device_type, " +
+                "GROUP_CONCAT(DISTINCT brand_model SEPARATOR ', ') as brand_model, " +
+                "MAX(color_description) as color_description, " +
+                "MAX(scheduled_entry_date) as scheduled_entry_date, " +
+                "MAX(approval_status) as approval_status, " +
+                "MAX(approval_remarks) as approval_remarks " +
                 "FROM student_device_logs WHERE student_id IS NOT NULL AND is_deleted = 1 " +
-                "GROUP BY student_id " +
+                "GROUP BY form_id, student_id " +
                 "ORDER BY last_name ASC";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
@@ -766,12 +791,19 @@ public class BYODService {
             while (rs.next()) {
                 String fullName = rs.getString("first_name") + " " + rs.getString("last_name");
                 students.add(new String[]{
-                        rs.getString("student_id"),
+                        rs.getString("form_id"),
                         fullName,
+                        rs.getString("user_type") != null ? rs.getString("user_type") : "N/A",
+                        rs.getString("student_id"),
                         rs.getString("course_program") != null ? rs.getString("course_program") : "N/A",
+                        rs.getString("year_section") != null ? rs.getString("year_section") : "N/A",
+                        rs.getString("contact_number") != null ? rs.getString("contact_number") : "N/A",
                         rs.getString("device_type") != null ? rs.getString("device_type") : "Unknown",
                         rs.getString("brand_model") != null ? rs.getString("brand_model") : "N/A",
-                        rs.getString("contact_number") != null ? rs.getString("contact_number") : "N/A"
+                        rs.getString("color_description") != null ? rs.getString("color_description") : "N/A",
+                        rs.getString("scheduled_entry_date") != null ? rs.getString("scheduled_entry_date") : "N/A",
+                        rs.getString("approval_status") != null ? rs.getString("approval_status") : "N/A",
+                        rs.getString("approval_remarks") != null ? rs.getString("approval_remarks") : ""
                 });
             }
         } catch (Exception e) {

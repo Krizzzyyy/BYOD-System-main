@@ -73,6 +73,10 @@ public class ReportsController {
     /* ── Interactive CRUD Admin Fields ──────────────────── */
     @FXML private TextField studentIdField;
     @FXML private TextField studentNameField;
+    @FXML private TextField yearSectionField;
+    @FXML private TextField colorDescField;
+    @FXML private ComboBox<String> userCategoryCombo;
+    @FXML private DatePicker entryDatePicker;
     @FXML private ComboBox<String> departmentCombo;
     @FXML private ComboBox<String> deviceCombo;
     @FXML private TextField serialField;
@@ -82,8 +86,7 @@ public class ReportsController {
 
     /* ── Students Management Table ──────────────────────── */
     @FXML private TableView<StudentRow> studentsTable;
-    @FXML private TableColumn<StudentRow, String> colName, colStudentId, colDepartment, colDevice, colSerial, colPhone, colUserCategory;
-    @FXML private TableColumn<StudentRow, String> colStatus, colRemarks;
+    @FXML private TableColumn<StudentRow, String> colFormId, colName, colUserCategory, colStudentId, colDepartment, colYearSection, colPhone, colDevice, colSerial, colColorDesc, colEntryDate, colStatus, colRemarks;
 
     /* ── Filter Controls ────────────────────────────────── */
     @FXML private ComboBox<String> statusFilterCombo;
@@ -93,7 +96,7 @@ public class ReportsController {
     /* ── Trash Bin View ──────────────────────────────────── */
     @FXML private VBox trashView;
     @FXML private TableView<StudentRow> trashTable;
-    @FXML private TableColumn<StudentRow, String> trColName, trColStudentId, trColDepartment, trColDevice, trColSerial, trColPhone, trColUserCategory;
+    @FXML private TableColumn<StudentRow, String> trColFormId, trColName, trColUserCategory, trColStudentId, trColDepartment, trColYearSection, trColPhone, trColDevice, trColSerial, trColColorDesc, trColEntryDate, trColStatus, trColRemarks;
     @FXML private Label trashCountLabel;
 
     /* ── Wizard Export Views Variables ── */
@@ -173,6 +176,17 @@ public class ReportsController {
             statusPeriodCombo.getItems().addAll("All", "This Month", "Last Month", "Last 3 Months", "This Year");
             statusPeriodCombo.setValue("All");
             statusPeriodCombo.setOnAction(e -> loadStudentsData());
+        }
+
+        if (userCategoryCombo != null) {
+            userCategoryCombo.getItems().addAll("Student", "Staff", "Guest");
+            userCategoryCombo.setValue("Student");
+            userCategoryCombo.setOnAction(e -> {
+                boolean isStudent = "Student".equals(userCategoryCombo.getValue());
+                if (studentIdField != null) { studentIdField.setDisable(!isStudent); if (!isStudent) studentIdField.setText("N/A"); else studentIdField.clear(); }
+                if (departmentCombo != null) { departmentCombo.setDisable(!isStudent); if (!isStudent) departmentCombo.setValue("N/A"); else departmentCombo.setValue("Select Course"); }
+                if (yearSectionField != null) { yearSectionField.setDisable(!isStudent); if (!isStudent) yearSectionField.setText("N/A"); else yearSectionField.clear(); }
+            });
         }
 
         if (departmentCombo != null) {
@@ -344,13 +358,17 @@ public class ReportsController {
 
     private void setupTables() {
         if (studentsTable != null) {
+            colFormId.setCellValueFactory(new PropertyValueFactory<>("formId"));
+            colName.setCellValueFactory(new PropertyValueFactory<>("name"));
             colUserCategory.setCellValueFactory(new PropertyValueFactory<>("userCategory"));
             colStudentId.setCellValueFactory(new PropertyValueFactory<>("studentId"));
-            colName.setCellValueFactory(new PropertyValueFactory<>("name"));
             colDepartment.setCellValueFactory(new PropertyValueFactory<>("department"));
+            colYearSection.setCellValueFactory(new PropertyValueFactory<>("yearSection"));
+            colPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));
             colDevice.setCellValueFactory(new PropertyValueFactory<>("device"));
             colSerial.setCellValueFactory(new PropertyValueFactory<>("serial"));
-            colPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));
+            colColorDesc.setCellValueFactory(new PropertyValueFactory<>("colorDesc"));
+            colEntryDate.setCellValueFactory(new PropertyValueFactory<>("entryDate"));
             if (colStatus != null) {
                 colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
                 colStatus.setCellFactory(col -> new TableCell<StudentRow, String>() {
@@ -392,15 +410,21 @@ public class ReportsController {
 
             studentsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal != null) {
-                    studentIdField.setText(newVal.getStudentId());
                     studentNameField.setText(newVal.getName());
-                    if (departmentCombo != null) departmentCombo.setValue(newVal.getDepartment());
+                    if (userCategoryCombo != null) userCategoryCombo.setValue(newVal.getUserCategory());
+                    boolean isStudent = "Student".equals(newVal.getUserCategory());
+                    if (studentIdField != null) { studentIdField.setText(newVal.getStudentId()); studentIdField.setDisable(!isStudent); studentIdField.setEditable(false); }
+                    if (departmentCombo != null) { departmentCombo.setValue(newVal.getDepartment()); departmentCombo.setDisable(!isStudent); }
+                    if (yearSectionField != null) { yearSectionField.setText(newVal.getYearSection()); yearSectionField.setDisable(!isStudent); }
+                    if (phoneField != null) phoneField.setText(newVal.getPhone());
                     if (deviceCombo != null) deviceCombo.setValue(newVal.getDevice());
-                    serialField.setText(newVal.getSerial());
-                    phoneField.setText(newVal.getPhone());
+                    if (serialField != null) serialField.setText(newVal.getSerial());
+                    if (colorDescField != null) colorDescField.setText(newVal.getColorDesc());
+                    if (entryDatePicker != null && newVal.getEntryDate() != null && !newVal.getEntryDate().equals("N/A")) {
+                        try { entryDatePicker.setValue(java.time.LocalDate.parse(newVal.getEntryDate())); } catch (Exception ignored) {}
+                    } else if (entryDatePicker != null) { entryDatePicker.setValue(null); }
                     if (formStatusCombo != null) formStatusCombo.setValue(newVal.getStatus());
                     if (remarksField != null) remarksField.setText(newVal.getRemarks());
-                    studentIdField.setEditable(false);
                 }
             });
         }
@@ -414,13 +438,19 @@ public class ReportsController {
         }
 
         if (trashTable != null) {
+            trColFormId.setCellValueFactory(new PropertyValueFactory<>("formId"));
+            trColName.setCellValueFactory(new PropertyValueFactory<>("name"));
             trColUserCategory.setCellValueFactory(new PropertyValueFactory<>("userCategory"));
             trColStudentId.setCellValueFactory(new PropertyValueFactory<>("studentId"));
-            trColName.setCellValueFactory(new PropertyValueFactory<>("name"));
             trColDepartment.setCellValueFactory(new PropertyValueFactory<>("department"));
+            trColYearSection.setCellValueFactory(new PropertyValueFactory<>("yearSection"));
+            trColPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));
             trColDevice.setCellValueFactory(new PropertyValueFactory<>("device"));
             trColSerial.setCellValueFactory(new PropertyValueFactory<>("serial"));
-            trColPhone.setCellValueFactory(new PropertyValueFactory<>("phone"));
+            trColColorDesc.setCellValueFactory(new PropertyValueFactory<>("colorDesc"));
+            trColEntryDate.setCellValueFactory(new PropertyValueFactory<>("entryDate"));
+            trColStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+            trColRemarks.setCellValueFactory(new PropertyValueFactory<>("remarks"));
             trashTable.setPlaceholder(new Label("Trash bin is empty."));
         }
     }
@@ -456,15 +486,18 @@ public class ReportsController {
     /* ── Core Admin Data Operations ── */
     @FXML
     private void handleClearForm() {
-        if (studentIdField != null) studentIdField.clear();
         if (studentNameField != null) studentNameField.clear();
-        if (departmentCombo != null) departmentCombo.setValue("Select Course");
-        if (deviceCombo != null) deviceCombo.setValue("Select Category:");
-        if (serialField != null) serialField.clear();
+        if (userCategoryCombo != null) userCategoryCombo.setValue("Student");
+        if (studentIdField != null) { studentIdField.clear(); studentIdField.setDisable(false); studentIdField.setEditable(true); }
+        if (departmentCombo != null) { departmentCombo.setValue("Select Course"); departmentCombo.setDisable(false); }
+        if (yearSectionField != null) { yearSectionField.clear(); yearSectionField.setDisable(false); }
         if (phoneField != null) phoneField.clear();
-        if (studentIdField != null) studentIdField.setEditable(true);
-        if (remarksField != null) remarksField.clear();
+        if (deviceCombo != null) deviceCombo.setValue("Select Items");
+        if (serialField != null) serialField.clear();
+        if (colorDescField != null) colorDescField.clear();
+        if (entryDatePicker != null) entryDatePicker.setValue(null);
         if (formStatusCombo != null) formStatusCombo.setValue("Select Status");
+        if (remarksField != null) remarksField.clear();
     }
 
     @FXML
@@ -508,22 +541,21 @@ public class ReportsController {
 
     @FXML
     private void handleUpdateStudent() {
-        String id = studentIdField.getText().trim();
         String name = studentNameField.getText().trim();
+        String userCategory = userCategoryCombo != null ? userCategoryCombo.getValue() : "Student";
+        String id = studentIdField.getText().trim();
         String dept = departmentCombo != null ? departmentCombo.getValue() : "";
+        String yearSection = yearSectionField != null ? yearSectionField.getText().trim() : "";
+        String phone = phoneField.getText().trim();
         String type = deviceCombo != null ? deviceCombo.getValue() : "";
         String serial = serialField.getText().trim();
-        String phone = phoneField.getText().trim();
-        String status  = formStatusCombo != null ? formStatusCombo.getValue() : "Pending";
+        String colorDesc = colorDescField != null ? colorDescField.getText().trim() : "";
+        String entryDate = entryDatePicker != null && entryDatePicker.getValue() != null ? entryDatePicker.getValue().toString() : "";
+        String status = formStatusCombo != null ? formStatusCombo.getValue() : "Pending";
         String remarks = remarksField != null ? remarksField.getText().trim() : "";
 
-        if (id.isEmpty()) {
-            showAlert("Validation Error", "No clear target primary index key selected to modify.");
-            return;
-        }
-
-        if (dept == null || dept.equals("Select Course")) {
-            showAlert("Validation Missing", "Please select a Department / Course.");
+        if (name.isEmpty()) {
+            showAlert("Validation Error", "No record selected to modify.");
             return;
         }
         if (type == null || type.equals("Select Items")) {
@@ -655,7 +687,17 @@ public class ReportsController {
         trashTable.getItems().clear();
         List<String[]> dataRows = byodService.fetchDeletedStudentsList();
         for (String[] row : dataRows) {
-            trashTable.getItems().add(new StudentRow(row[0], row[1], row[2], row[3], row[4], row.length > 5 ? row[5] : ""));
+            trashTable.getItems().add(new StudentRow(
+                    row[0], row[1], row[2], row[3], row[4],
+                    row.length > 5 ? row[5] : "N/A",
+                    row.length > 6 ? row[6] : "N/A",
+                    row.length > 7 ? row[7] : "Unknown",
+                    row.length > 8 ? row[8] : "N/A",
+                    row.length > 9 ? row[9] : "N/A",
+                    row.length > 10 ? row[10] : "N/A",
+                    row.length > 11 ? row[11] : "N/A",
+                    row.length > 12 ? row[12] : ""
+            ));
         }
         if (trashCountLabel != null) {
             trashCountLabel.setText(dataRows.size() + " record(s) in trash");
@@ -773,10 +815,15 @@ public class ReportsController {
 
         for (String[] row : dataRows) {
             studentsTable.getItems().add(new StudentRow(
-                    row[0], row[1], row[2], row[3], row[4], row.length > 5 ? row[5] : "",
+                    row[0], row[1], row[2], row[3], row[4],
+                    row.length > 5 ? row[5] : "N/A",
                     row.length > 6 ? row[6] : "N/A",
-                    row.length > 7 ? row[7] : "",
-                    row.length > 8 ? row[8] : "N/A"
+                    row.length > 7 ? row[7] : "Unknown",
+                    row.length > 8 ? row[8] : "N/A",
+                    row.length > 9 ? row[9] : "N/A",
+                    row.length > 10 ? row[10] : "N/A",
+                    row.length > 11 ? row[11] : "N/A",
+                    row.length > 12 ? row[12] : ""
             ));
         }
 
@@ -821,7 +868,15 @@ public class ReportsController {
                     studentsTable.getItems().clear();
                     for (String[] row : filteredData) {
                         studentsTable.getItems().add(new StudentRow(
-                                row[0], row[1], row[2], row[3], row[4], row[5]
+                                row[0], row[1], row[2], row[3], row[4],
+                                row.length > 5 ? row[5] : "N/A",
+                                row.length > 6 ? row[6] : "N/A",
+                                row.length > 7 ? row[7] : "Unknown",
+                                row.length > 8 ? row[8] : "N/A",
+                                row.length > 9 ? row[9] : "N/A",
+                                row.length > 10 ? row[10] : "N/A",
+                                row.length > 11 ? row[11] : "N/A",
+                                row.length > 12 ? row[12] : ""
                         ));
                     }
 
@@ -1160,26 +1215,26 @@ public class ReportsController {
 
     /* ── Inner POJO Data Mapping Wrappers ── */
     public static class StudentRow {
-        private final String studentId, name, department, device, serial, phone, status, remarks, userCategory;
-        public StudentRow(String id, String n, String d, String dv, String s, String p) {
-            this(id, n, d, dv, s, p, "N/A", "", "N/A");
+        private final String formId, name, userCategory, studentId, department, yearSection, phone, device, serial, colorDesc, entryDate, status, remarks;
+        public StudentRow(String formId, String name, String userCategory, String studentId, String department, String yearSection, String phone, String device, String serial, String colorDesc, String entryDate, String status, String remarks) {
+            this.formId=formId; this.name=name; this.userCategory=userCategory; this.studentId=studentId;
+            this.department=department; this.yearSection=yearSection; this.phone=phone;
+            this.device=device; this.serial=serial; this.colorDesc=colorDesc;
+            this.entryDate=entryDate; this.status=status; this.remarks=remarks;
         }
-        public StudentRow(String id, String n, String d, String dv, String s, String p, String st, String rm) {
-            this(id, n, d, dv, s, p, st, rm, "N/A");
-        }
-        public StudentRow(String id, String n, String d, String dv, String s, String p, String st, String rm, String uc) {
-            this.studentId=id; this.name=n; this.department=d; this.device=dv; this.serial=s; this.phone=p;
-            this.status=st; this.remarks=rm; this.userCategory=uc;
-        }
-        public String getStudentId()    { return studentId; }
+        public String getFormId()       { return formId; }
         public String getName()         { return name; }
+        public String getUserCategory() { return userCategory; }
+        public String getStudentId()    { return studentId; }
         public String getDepartment()   { return department; }
+        public String getYearSection()  { return yearSection; }
+        public String getPhone()        { return phone; }
         public String getDevice()       { return device; }
         public String getSerial()       { return serial; }
-        public String getPhone()        { return phone; }
+        public String getColorDesc()    { return colorDesc; }
+        public String getEntryDate()    { return entryDate; }
         public String getStatus()       { return status; }
         public String getRemarks()      { return remarks; }
-        public String getUserCategory() { return userCategory; }
     }
 
     public static class ExportRow {

@@ -286,44 +286,60 @@
             <Button onAction="#handleRefresh" styleClass="refresh-button" text="&#x21BB; Refresh" />
           </HBox>
 
-          <VBox spacing="14" styleClass="card">
-            <Label styleClass="chart-title" text="🛠  Data Modification Entry Form" />
-            <HBox alignment="BOTTOM_LEFT" spacing="12">
-              <VBox spacing="4" HBox.hgrow="ALWAYS">
-                <Label styleClass="form-label-sm" text="STUDENT ID" />
-                <TextField fx:id="studentIdField" promptText="e.g., 2024-00123-SR-0" />
-              </VBox>
-              <VBox spacing="4" HBox.hgrow="ALWAYS">
-                <Label styleClass="form-label-sm" text="FULL NAME" />
-                <TextField fx:id="studentNameField" promptText="e.g., Juan Dela Cruz" />
-              </VBox>
-              <VBox spacing="4" HBox.hgrow="ALWAYS">
-                <Label styleClass="form-label-sm" text="BRAND / MODEL" />
-                <TextField fx:id="serialField" promptText="e.g., Lenovo ThinkPad E14" />
-              </VBox>
-              <VBox spacing="4" HBox.hgrow="ALWAYS">
-                <Label styleClass="form-label-sm" text="CONTACT NUMBER" />
-                <TextField fx:id="phoneField" promptText="e.g., 09123456789" />
-              </VBox>
-              <VBox spacing="4" HBox.hgrow="ALWAYS">
-                <Label styleClass="form-label-sm" text="REMARKS" />
-                <TextField fx:id="remarksField" promptText="e.g., For approval" />
-              </VBox>
-            </HBox>
-            <HBox alignment="BOTTOM_LEFT" spacing="12">
-              <VBox spacing="4" HBox.hgrow="ALWAYS">
-                <Label styleClass="form-label-sm" text="DEPARTMENT / COURSE" />
-                <ComboBox fx:id="departmentCombo" maxWidth="Infinity" styleClass="combo-box" />
-              </VBox>
-              <VBox spacing="4" HBox.hgrow="ALWAYS">
-                <Label styleClass="form-label-sm" text="ITEM CATEGORY" />
-                <ComboBox fx:id="deviceCombo" maxWidth="Infinity" styleClass="combo-box" />
-              </VBox>
-              <VBox spacing="4" HBox.hgrow="ALWAYS">
-                <Label styleClass="form-label-sm" text="STATUS" />
-                <ComboBox fx:id="formStatusCombo" maxWidth="Infinity" styleClass="combo-box" />
-              </VBox>
-            </HBox>
+        <VBox spacing="14" styleClass="card">
+          <Label styleClass="chart-title" text="🛠  Data Modification Entry Form" />
+          <HBox alignment="BOTTOM_LEFT" spacing="12">
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+              <Label styleClass="form-label-sm" text="FULL NAME" />
+              <TextField fx:id="studentNameField" promptText="e.g., Juan Dela Cruz" />
+            </VBox>
+            <VBox spacing="4" minWidth="140" maxWidth="140">
+              <Label styleClass="form-label-sm" text="USER CATEGORY" />
+              <ComboBox fx:id="userCategoryCombo" maxWidth="Infinity" styleClass="combo-box" />
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+              <Label styleClass="form-label-sm" text="STUDENT ID" />
+              <TextField fx:id="studentIdField" promptText="e.g., 2024-00123-SR-0" />
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+              <Label styleClass="form-label-sm" text="PROGRAM / COURSE" />
+              <ComboBox fx:id="departmentCombo" maxWidth="Infinity" styleClass="combo-box" />
+            </VBox>
+            <VBox spacing="4" minWidth="100" maxWidth="100">
+              <Label styleClass="form-label-sm" text="YEAR &amp; SECTION" />
+              <TextField fx:id="yearSectionField" promptText="e.g., 3-A" />
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+              <Label styleClass="form-label-sm" text="CONTACT NUMBER" />
+              <TextField fx:id="phoneField" promptText="e.g., 09123456789" />
+            </VBox>
+          </HBox>
+          <HBox alignment="BOTTOM_LEFT" spacing="12">
+            <VBox spacing="4" minWidth="140" maxWidth="140">
+              <Label styleClass="form-label-sm" text="ITEM CATEGORY" />
+              <ComboBox fx:id="deviceCombo" maxWidth="Infinity" styleClass="combo-box" />
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+              <Label styleClass="form-label-sm" text="BRAND / MODEL" />
+              <TextField fx:id="serialField" promptText="e.g., Lenovo ThinkPad E14" />
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+              <Label styleClass="form-label-sm" text="COLOR / DESCRIPTION" />
+              <TextField fx:id="colorDescField" promptText="e.g., Black" />
+            </VBox>
+            <VBox spacing="4" minWidth="130" maxWidth="130">
+              <Label styleClass="form-label-sm" text="ENTRY DATE" />
+              <DatePicker fx:id="entryDatePicker" maxWidth="Infinity" />
+            </VBox>
+            <VBox spacing="4" minWidth="130" maxWidth="130">
+              <Label styleClass="form-label-sm" text="STATUS" />
+              <ComboBox fx:id="formStatusCombo" maxWidth="Infinity" styleClass="combo-box" />
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
+              <Label styleClass="form-label-sm" text="REMARKS" />
+              <TextField fx:id="remarksField" promptText="e.g., For approval" />
+            </VBox>
+          </HBox>
 
             <HBox alignment="CENTER_RIGHT" spacing="12">
               <Button onAction="#handleClearForm" styleClass="btn-grey" text="&#x2715; Clear Fields" />
@@ -346,15 +362,19 @@
             </HBox>
             <TableView fx:id="studentsTable" VBox.vgrow="ALWAYS">
               <columns>
-                <TableColumn fx:id="colUserCategory" prefWidth="130" text="User Category" />
+                <TableColumn fx:id="colFormId" prefWidth="150" text="Form ID" />
+                <TableColumn fx:id="colName" prefWidth="180" text="Full Name" />
+                <TableColumn fx:id="colUserCategory" prefWidth="120" text="User Category" />
                 <TableColumn fx:id="colStudentId" prefWidth="130" text="Student ID" />
-                <TableColumn fx:id="colName" prefWidth="180" text="Student Name" />
-                <TableColumn fx:id="colDepartment" prefWidth="180" text="Department" />
-                <TableColumn fx:id="colDevice" prefWidth="140" text="Registered Devices" />
-                <TableColumn fx:id="colSerial" prefWidth="150" text="Brand / Model" />
-                <TableColumn fx:id="colPhone" prefWidth="120" text="Contact Number" />
-                <TableColumn fx:id="colRemarks" prefWidth="180" text="Remarks" />
+                <TableColumn fx:id="colDepartment" prefWidth="180" text="Program/Course" />
+                <TableColumn fx:id="colYearSection" prefWidth="130" text="Year and Section" />
+                <TableColumn fx:id="colPhone" prefWidth="130" text="Contact Number" />
+                <TableColumn fx:id="colDevice" prefWidth="140" text="Item Category" />
+                <TableColumn fx:id="colSerial" prefWidth="150" text="Brand/Model" />
+                <TableColumn fx:id="colColorDesc" prefWidth="150" text="Color/Description" />
+                <TableColumn fx:id="colEntryDate" prefWidth="120" text="Entry Date" />
                 <TableColumn fx:id="colStatus" prefWidth="100" text="Status" />
+                <TableColumn fx:id="colRemarks" prefWidth="180" text="Remarks" />
               </columns>
               <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY" /></columnResizePolicy>
             </TableView>
@@ -382,13 +402,19 @@
             </HBox>
             <TableView fx:id="trashTable" prefHeight="400" VBox.vgrow="ALWAYS">
               <columns>
-                <TableColumn fx:id="trColUserCategory" prefWidth="130" text="User Category" />
+                <TableColumn fx:id="trColFormId" prefWidth="150" text="Form ID" />
+                <TableColumn fx:id="trColName" prefWidth="180" text="Full Name" />
+                <TableColumn fx:id="trColUserCategory" prefWidth="120" text="User Category" />
                 <TableColumn fx:id="trColStudentId" prefWidth="130" text="Student ID" />
-                <TableColumn fx:id="trColName" prefWidth="200" text="Student Name" />
-                <TableColumn fx:id="trColDepartment" prefWidth="220" text="Department" />
-                <TableColumn fx:id="trColDevice" prefWidth="160" text="Registered Devices" />
-                <TableColumn fx:id="trColSerial" prefWidth="180" text="Brand / Model" />
-                <TableColumn fx:id="trColPhone" prefWidth="150" text="Contact Number" />
+                <TableColumn fx:id="trColDepartment" prefWidth="180" text="Program/Course" />
+                <TableColumn fx:id="trColYearSection" prefWidth="130" text="Year and Section" />
+                <TableColumn fx:id="trColPhone" prefWidth="130" text="Contact Number" />
+                <TableColumn fx:id="trColDevice" prefWidth="140" text="Item Category" />
+                <TableColumn fx:id="trColSerial" prefWidth="150" text="Brand/Model" />
+                <TableColumn fx:id="trColColorDesc" prefWidth="150" text="Color/Description" />
+                <TableColumn fx:id="trColEntryDate" prefWidth="120" text="Entry Date" />
+                <TableColumn fx:id="trColStatus" prefWidth="100" text="Status" />
+                <TableColumn fx:id="trColRemarks" prefWidth="180" text="Remarks" />
               </columns>
               <columnResizePolicy><TableView fx:constant="CONSTRAINED_RESIZE_POLICY" /></columnResizePolicy>
             </TableView>

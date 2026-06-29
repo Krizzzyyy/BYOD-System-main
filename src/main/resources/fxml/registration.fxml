@@ -78,47 +78,72 @@
                         <Label styleClass="section-icon" text="i" />
                         <Label styleClass="section-title" text="Student information" />
                     </HBox>
-                    <GridPane hgap="20" maxWidth="Infinity" vgap="14">
-                        <columnConstraints>
-                            <ColumnConstraints fillWidth="true" hgrow="ALWAYS" percentWidth="50" />
-                            <ColumnConstraints fillWidth="true" hgrow="ALWAYS" percentWidth="50" />
-                        </columnConstraints>
-                        <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="0">
-                            <Label styleClass="form-label-sm" text="LAST NAME" />
-                            <TextField fx:id="lastNameField" maxWidth="Infinity" />
-                        </VBox>
-                        <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="0">
-                            <Label styleClass="form-label-sm" text="FIRST NAME" />
-                            <TextField fx:id="firstNameField" maxWidth="Infinity" />
-                        </VBox>
-                        <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="1">
-                            <Label styleClass="form-label-sm" text="STUDENT ID" />
-                            <TextField fx:id="studentIdField" maxWidth="Infinity" />
-                        </VBox>
-                        <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                            <Label styleClass="form-label-sm" text="YEAR &amp; SECTION" />
-                            <TextField fx:id="yearSectionField" maxWidth="Infinity" />
-                        </VBox>
-                        <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="2">
-                            <Label styleClass="form-label-sm" text="COURSE / PROGRAM" />
-                            <ComboBox fx:id="courseCombo" maxWidth="Infinity" promptText="Select Course/Program" />
-                        </VBox>
-                        <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                            <Label styleClass="form-label-sm" text="CONTACT NUMBER" />
-                            <TextField fx:id="contactField" maxWidth="Infinity" />
-                        </VBox>
-                        <VBox spacing="4" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="3">
-                            <Label styleClass="form-label-sm" text="SCHEDULED ENTRY DATE" />
-                            <DatePicker fx:id="scheduledEntryDate" maxWidth="Infinity" promptText="Select your planned entry date" />
-                            <Label styleClass="form-helper" text="You must be approved at least 1 day before this date to enter campus" />
-                        </VBox>
-                        <rowConstraints>
-                            <RowConstraints />
-                            <RowConstraints />
-                            <RowConstraints />
-                            <RowConstraints />
-                        </rowConstraints>
-                    </GridPane>
+                        <GridPane hgap="20" maxWidth="Infinity" vgap="14">
+                            <columnConstraints>
+                                <ColumnConstraints fillWidth="true" hgrow="ALWAYS" percentWidth="50" />
+                                <ColumnConstraints fillWidth="true" hgrow="ALWAYS" percentWidth="50" />
+                            </columnConstraints>
+
+                            <!-- Row 0: User Type (full width) -->
+                            <VBox spacing="4" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="0">
+                                <Label styleClass="form-label-sm" text="USER TYPE" />
+                                <ComboBox fx:id="userTypeCombo" maxWidth="Infinity" promptText="Select user type" />
+                            </VBox>
+
+                            <!-- Row 1: Last Name / First Name -->
+                            <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                <Label styleClass="form-label-sm" text="LAST NAME" />
+                                <TextField fx:id="lastNameField" maxWidth="Infinity" />
+                            </VBox>
+                            <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                <Label styleClass="form-label-sm" text="FIRST NAME" />
+                                <TextField fx:id="firstNameField" maxWidth="Infinity" />
+                            </VBox>
+
+                            <!-- Row 2: Contact Number / Scheduled Entry Date -->
+                            <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="2">
+                                <Label styleClass="form-label-sm" text="CONTACT NUMBER" />
+                                <TextField fx:id="contactField" maxWidth="Infinity" />
+                            </VBox>
+                            <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                <Label styleClass="form-label-sm" text="SCHEDULED ENTRY DATE" />
+                                <DatePicker fx:id="scheduledEntryDate" maxWidth="Infinity" promptText="Select your planned entry date" />
+                                <Label styleClass="form-helper" text="At least 1 day from today" />
+                            </VBox>
+
+                            <!-- Row 3: Student-only fields (hidden for Staff/Guest) -->
+                            <VBox fx:id="studentOnlyFields" spacing="14" GridPane.columnIndex="0" GridPane.columnSpan="2" GridPane.rowIndex="3">
+                                <GridPane hgap="20" maxWidth="Infinity" vgap="14">
+                                    <columnConstraints>
+                                        <ColumnConstraints fillWidth="true" hgrow="ALWAYS" percentWidth="50" />
+                                        <ColumnConstraints fillWidth="true" hgrow="ALWAYS" percentWidth="50" />
+                                    </columnConstraints>
+                                    <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="0">
+                                        <Label styleClass="form-label-sm" text="STUDENT ID" />
+                                        <TextField fx:id="studentIdField" maxWidth="Infinity" />
+                                    </VBox>
+                                    <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="0">
+                                        <Label styleClass="form-label-sm" text="YEAR &amp; SECTION" />
+                                        <TextField fx:id="yearSectionField" maxWidth="Infinity" />
+                                    </VBox>
+                                    <VBox spacing="4" GridPane.columnIndex="0" GridPane.rowIndex="1">
+                                        <Label styleClass="form-label-sm" text="COURSE / PROGRAM" />
+                                        <ComboBox fx:id="courseCombo" maxWidth="Infinity" promptText="Select Course/Program" />
+                                    </VBox>
+                                    <rowConstraints>
+                                        <RowConstraints />
+                                        <RowConstraints />
+                                    </rowConstraints>
+                                </GridPane>
+                            </VBox>
+
+                            <rowConstraints>
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                                <RowConstraints />
+                            </rowConstraints>
+                        </GridPane>
                 </VBox>
 
                 <!-- ══════════════════════════════════════════ -->

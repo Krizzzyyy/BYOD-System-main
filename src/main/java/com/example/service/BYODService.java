@@ -19,24 +19,26 @@ public class BYODService {
     private static final String DB_USER = "root";
     private static final String DB_PASS = "";
 
-    public String validate(String sid, String fn, String ln, String contact, String yearSec) {
-        return RegistrationValidator.validate(sid, fn, ln, contact, yearSec);
-    }
 
     // FIXED: Added ingress_time = CURRENT_TIMESTAMP so new registrations appear on the dashboard today
-    public void registerStudent(String sid, String ln, String fn, String ys, String cp,
-                                String cn, String dt, String bm, String cd, String sn,
-                                String scheduledDate) throws Exception {
-        String sql = "INSERT INTO student_device_logs (student_id, last_name, first_name, year_section, course_program, contact_number, device_type, brand_model, color_description, serial_number, scheduled_entry_date, approval_status, ingress_time) VALUES (?,?,?,?,?,?,?,?,?,?,?,'Pending', CURRENT_TIMESTAMP)";
+    public int registerStudent(String sid, String ln, String fn, String ys, String cp,
+                               String cn, String dt, String bm, String cd, String sn,
+                               String scheduledDate, String userType) throws Exception {
+        String sql = "INSERT INTO student_device_logs (student_id, last_name, first_name, year_section, course_program, contact_number, device_type, brand_model, color_description, serial_number, scheduled_entry_date, approval_status, ingress_time, user_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,'Pending', CURRENT_TIMESTAMP, ?)";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-             PreparedStatement ps = conn.prepareStatement(sql)) {
+             PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, sid); ps.setString(2, ln); ps.setString(3, fn);
             ps.setString(4, ys); ps.setString(5, cp); ps.setString(6, cn);
             ps.setString(7, dt); ps.setString(8, bm); ps.setString(9, cd);
             ps.setString(10, (sn != null && !sn.isBlank()) ? sn : null);
             ps.setString(11, (scheduledDate != null && !scheduledDate.isBlank()) ? scheduledDate : null);
+            ps.setString(12, userType);
             ps.executeUpdate();
+            try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
+                if (generatedKeys.next()) return generatedKeys.getInt(1);
+            }
         }
+        return -1;
     }
     /**
      * Fetches registered student profiles filtered by a specific date.
@@ -245,8 +247,13 @@ public class BYODService {
         return metrics;
     }
 
-    public String generateQR(String payload, String studentId, String outputDir) throws Exception {
-        String path = outputDir + File.separator + "QR_" + studentId + ".png";
+    public String generateQR(String payload, int logId, String outputDir) throws Exception {
+        String qrDir = System.getProperty("user.home") + File.separator + "BYOD_QR_Codes";
+        java.nio.file.Path dirPath = FileSystems.getDefault().getPath(qrDir);
+        if (!java.nio.file.Files.exists(dirPath)) {
+            java.nio.file.Files.createDirectories(dirPath);
+        }
+        String path = qrDir + File.separator + "QR_" + logId + ".png";
         BitMatrix matrix = new MultiFormatWriter().encode(payload, BarcodeFormat.QR_CODE, 400, 400);
         MatrixToImageWriter.writeToPath(matrix, "PNG", FileSystems.getDefault().getPath(path));
         return path;

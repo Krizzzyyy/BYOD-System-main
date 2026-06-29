@@ -38,6 +38,8 @@ public class RegistrationController {
     @FXML private TextField yearSectionField;
     @FXML private TextField studentIdField;
     @FXML private TextField contactField;
+    @FXML private ComboBox<String> userTypeCombo;
+    @FXML private VBox studentOnlyFields;
 
     @FXML private DatePicker scheduledEntryDate;
 
@@ -120,8 +122,11 @@ public class RegistrationController {
             deviceTypeCombo.getItems().addAll(REGISTERED_ITEM_CATEGORIES);
         if (courseCombo != null)
             courseCombo.getItems().addAll(COURSE_LIST);
+        if (userTypeCombo != null) {
+            userTypeCombo.getItems().addAll("Student", "Staff", "Guest");
+            userTypeCombo.valueProperty().addListener((obs, o, n) -> handleUserTypeChange(n));
+        }
 
-        // Live-update Add Device button state as the user fills in step 2 fields
         if (deviceTypeCombo != null)
             deviceTypeCombo.valueProperty().addListener((obs, o, n) -> {
                 updateSaveDeviceBtnState();
@@ -148,6 +153,19 @@ public class RegistrationController {
             if (!showSerial && serialNumberField != null) {
                 serialNumberField.clear();
             }
+        }
+    }
+
+    private void handleUserTypeChange(String userType) {
+        boolean isStudent = "Student".equals(userType);
+        if (studentOnlyFields != null) {
+            studentOnlyFields.setVisible(isStudent);
+            studentOnlyFields.setManaged(isStudent);
+        }
+        if (!isStudent) {
+            if (studentIdField   != null) studentIdField.clear();
+            if (yearSectionField != null) yearSectionField.clear();
+            if (courseCombo      != null) courseCombo.setValue(null);
         }
     }
 
@@ -260,30 +278,30 @@ public class RegistrationController {
     }
 
     private boolean isStep1Valid() {
-        String lastName    = lastNameField   != null ? lastNameField.getText().trim()   : "";
-        String firstName   = firstNameField  != null ? firstNameField.getText().trim()  : "";
-        String studentId   = studentIdField  != null ? studentIdField.getText().trim()  : "";
-        String yearSection = yearSectionField!= null ? yearSectionField.getText().trim() : "";
-        String contact     = contactField    != null ? contactField.getText().trim()    : "";
-        String course      = courseCombo     != null ? courseCombo.getValue()           : null;
+        String userType    = userTypeCombo    != null ? userTypeCombo.getValue()            : null;
+        String lastName    = lastNameField    != null ? lastNameField.getText().trim()       : "";
+        String firstName   = firstNameField   != null ? firstNameField.getText().trim()      : "";
+        String studentId   = studentIdField   != null ? studentIdField.getText().trim()      : "";
+        String yearSection = yearSectionField != null ? yearSectionField.getText().trim()    : "";
+        String contact     = contactField     != null ? contactField.getText().trim()        : "";
+        String course      = courseCombo      != null ? courseCombo.getValue()              : null;
+        String scheduledDate = scheduledEntryDate != null && scheduledEntryDate.getValue() != null
+                ? scheduledEntryDate.getValue().toString() : null;
 
-        if (lastName.isEmpty() || firstName.isEmpty() || studentId.isEmpty()
-                || yearSection.isEmpty() || contact.isEmpty()) {
-            showAlert("Missing Information", "Please fill in all student information fields.");
-            return false;
-        }
-        if (course == null || course.isBlank()) {
+        boolean isStudent = "Student".equals(userType);
+
+        if (isStudent && (course == null || course.isBlank())) {
             showAlert("Missing Information", "Please select a Course / Program.");
             return false;
         }
-        if (scheduledEntryDate != null && scheduledEntryDate.getValue() != null) {
-            if (scheduledEntryDate.getValue().isBefore(LocalDate.now())) {
-                showAlert("Invalid Date", "Scheduled entry date cannot be in the past.");
-                return false;
-            }
-        }
 
-        String validation = RegistrationValidator.validate(studentId, firstName, lastName, contact, yearSection);
+        String sid  = isStudent ? studentId   : "N/A";
+        String ys   = isStudent ? yearSection : "N/A";
+
+        String validation = RegistrationValidator.validate(
+                userType == null ? "" : userType,
+                sid, firstName, lastName, contact, ys, scheduledDate);
+
         if (!validation.equals("VALID")) {
             showAlert("Invalid Input", validation);
             return false;
@@ -526,13 +544,18 @@ public class RegistrationController {
             return;
         }
 
-        String sid = studentIdField.getText().trim();
-        String course = courseCombo != null && courseCombo.getValue() != null ? courseCombo.getValue() : "";
+        String userType = userTypeCombo != null && userTypeCombo.getValue() != null ? userTypeCombo.getValue() : "Guest";
+        boolean isStudent = "Student".equals(userType);
+
+        String sid     = isStudent && studentIdField   != null ? studentIdField.getText().trim()   : "N/A";
+        String ys      = isStudent && yearSectionField != null ? yearSectionField.getText().trim()  : "N/A";
+        String course  = isStudent && courseCombo != null && courseCombo.getValue() != null ? courseCombo.getValue() : "N/A";
         String scheduledDate = scheduledEntryDate.getValue().toString();
 
-        String validation = byodService.validate(sid, firstNameField.getText().trim(),
+        String validation = RegistrationValidator.validate(
+                userType, sid, firstNameField.getText().trim(),
                 lastNameField.getText().trim(), contactField.getText().trim(),
-                yearSectionField.getText().trim());
+                ys, scheduledDate);
 
         if (!validation.equals("VALID")) {
             showAlert("Invalid Input", validation);
@@ -540,25 +563,27 @@ public class RegistrationController {
         }
 
         try {
+            int lastLogId = -1;
             for (DeviceEntry d : savedDevices) {
-                byodService.registerStudent(
+                lastLogId = byodService.registerStudent(
                         sid,
                         lastNameField.getText().trim(),
                         firstNameField.getText().trim(),
-                        yearSectionField.getText().trim(),
+                        ys,
                         course,
                         contactField.getText().trim(),
                         d.type,
                         d.brand,
                         d.color,
                         d.serial,
-                        scheduledDate
+                        scheduledDate,
+                        userType
                 );
             }
 
             String payload = String.join("|", sid, lastNameField.getText(), firstNameField.getText(),
                     yearSectionField.getText(), course, contactField.getText());
-            String qrPath = byodService.generateQR(payload, sid, System.getProperty("user.dir"));
+            String qrPath = byodService.generateQR(payload, lastLogId, System.getProperty("user.dir"));
 
             Stage activeStage = (Stage) cancelBtn.getScene().getWindow();
             com.example.monitoring.QRRegistrationSuccessWindow.show(activeStage, sid, qrPath);

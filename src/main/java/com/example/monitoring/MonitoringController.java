@@ -486,11 +486,11 @@
     
             QRScannerWindow.openScanner(currentStage, qrPayload -> {
                 try {
-                    String studentId = qrPayload;
+                    String formId = qrPayload;
                     if (qrPayload.contains("|")) {
-                        studentId = qrPayload.split("\\|")[0];
+                        formId = qrPayload.split("\\|")[0];
                     }
-                    byodService.updateEgress(studentId);
+                    byodService.updateEgress(formId);
                     showSuccessAlert("QR Scanned! You can now exit the Campus.");
                     refreshMonitoringData();
                 } catch (Exception ex) {
@@ -504,19 +504,20 @@
             allLogEntries.clear();
             try {
                 for (Object[] row : byodService.fetchLogs()) {
-                    int logId = (int) row[0];
-                    String egress = (String) row[5];
+                    String formId = (String) row[0];
+                    int logId = (int) row[1];
+                    String egress = (String) row[6];
                     String status = (egress == null) ? "Ingress" : "Egress";
-                    String timestamp = status.equals("Ingress") ? (String) row[4] : egress;
-                    String approvalStatus = row.length > 6 ? (String) row[6] : "Approved";
-                    String scheduledDate = row.length > 7 ? (String) row[7] : null;
-                    String userType = row.length > 8 ? (String) row[8] : "N/A";
+                    String timestamp = status.equals("Ingress") ? (String) row[5] : egress;
+                    String approvalStatus = row.length > 7 ? (String) row[7] : "Approved";
+                    String scheduledDate = row.length > 8 ? (String) row[8] : null;
+                    String userType = row.length > 9 ? (String) row[9] : "N/A";
 
                     allLogEntries.add(new LogEntry(
                             logId,
-                            (String) row[2],
-                            (String) row[1],
                             (String) row[3],
+                            formId,
+                            (String) row[4],
                             status,
                             timestamp,
                             approvalStatus,
@@ -611,15 +612,15 @@
             try {
                 for (Object[] row : byodService.fetchPendingApprovals()) {
                     pendingEntries.add(new LogEntry(
-                            (int) row[0],
-                            (String) row[2],
-                            (String) row[1],
+                            (int) row[1],
                             (String) row[3],
-                            "Pending",
+                            (String) row[0],
                             (String) row[4],
                             "Pending",
-                            (String) row[4],
-                            row.length > 7 ? (String) row[7] : "N/A"
+                            (String) row[5],
+                            "Pending",
+                            (String) row[5],
+                            row.length > 8 ? (String) row[8] : "N/A"
                     ));
                 }
             } catch (Exception e) {
@@ -649,7 +650,7 @@
             confirm.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
                     try {
-                        byodService.approveRegistration(entry.getLogId(), entry.getStudentId(), "Faculty");
+                        byodService.approveRegistration(entry.getFormId(), "Faculty");
                         refreshMonitoringData();
                     } catch (Exception ex) {
                         showAlert("Approval Error", ex.getMessage());

@@ -116,8 +116,10 @@ public class RegistrationController {
 
     @FXML
     public void initialize() {
-        if (formIdLabel != null)
-            formIdLabel.setText("Form ID: BYOD-2026-" + String.format("%05d", (int)(Math.random()*99999)));
+        if (formIdLabel != null) {
+            try { formIdLabel.setText("Form ID: " + byodService.generateFormId()); }
+            catch (Exception e) { formIdLabel.setText("Form ID: Generating..."); }
+        }
         if (deviceTypeCombo != null)
             deviceTypeCombo.getItems().addAll(REGISTERED_ITEM_CATEGORIES);
         if (courseCombo != null)
@@ -563,9 +565,11 @@ public class RegistrationController {
         }
 
         try {
+            String formId = byodService.generateFormId();
             int lastLogId = -1;
             for (DeviceEntry d : savedDevices) {
                 lastLogId = byodService.registerStudent(
+                        formId,
                         sid,
                         lastNameField.getText().trim(),
                         firstNameField.getText().trim(),
@@ -581,12 +585,12 @@ public class RegistrationController {
                 );
             }
 
-            String payload = String.join("|", sid, lastNameField.getText(), firstNameField.getText(),
+            String payload = String.join("|", formId, lastNameField.getText(), firstNameField.getText(),
                     yearSectionField.getText(), course, contactField.getText());
-            String qrPath = byodService.generateQR(payload, lastLogId, System.getProperty("user.dir"));
+            String qrPath = byodService.generateQR(payload, formId, System.getProperty("user.dir"));
 
             Stage activeStage = (Stage) cancelBtn.getScene().getWindow();
-            com.example.monitoring.QRRegistrationSuccessWindow.show(activeStage, sid, qrPath);
+            com.example.monitoring.QRRegistrationSuccessWindow.show(activeStage, formId, qrPath);
 
             navigateTo("/fxml/dashboard.fxml");
 

@@ -56,9 +56,9 @@
                             <VBox styleClass="card" VBox.vgrow="ALWAYS">
                                 <TableView fx:id="pendingTableView" maxWidth="1.7976931348623157E308" VBox.vgrow="ALWAYS">
                                     <columns>
-                                        <TableColumn fx:id="pendingNameColumn" prefWidth="200.0" text="Student Name" />
+                                        <TableColumn fx:id="pendingNameColumn" prefWidth="200.0" text="Full Name" />
                                         <TableColumn fx:id="pendingUserCategoryColumn" prefWidth="130.0" text="User Category" />
-                                        <TableColumn fx:id="pendingIdColumn" prefWidth="150.0" text="Student ID" />
+                                        <TableColumn fx:id="pendingIdColumn" prefWidth="150.0" text="Form ID" />
                                         <TableColumn fx:id="pendingDeviceColumn" prefWidth="250.0" text="Registered Items" />
                                         <TableColumn fx:id="pendingDateColumn" prefWidth="150.0" text="Scheduled Entry Date" />
                                         <TableColumn fx:id="pendingActionsColumn" prefWidth="200.0" text="Status" />
@@ -87,9 +87,9 @@
                             <VBox styleClass="card" VBox.vgrow="ALWAYS">
                                 <TableView fx:id="monitoringTableView" maxWidth="1.7976931348623157E308" styleClass="monitoring-table" VBox.vgrow="ALWAYS">
                                     <columns>
-                                        <TableColumn fx:id="studentNameColumn" minWidth="75.0" prefWidth="350.0" text="Student name" />
+                                        <TableColumn fx:id="studentNameColumn" minWidth="75.0" prefWidth="350.0" text="Full Name" />
                                         <TableColumn fx:id="userCategoryColumn" prefWidth="130.0" text="User Category" />
-                                        <TableColumn fx:id="studentIdColumn" prefWidth="150.0" text="Student ID" />
+                                        <TableColumn fx:id="studentIdColumn" prefWidth="150.0" text="Form ID" />
                                         <TableColumn fx:id="deviceSerialColumn" prefWidth="200.0" text="Brand/Model" />
                                         <TableColumn fx:id="statusColumn" prefWidth="100.0" text="Status" />
                                         <TableColumn fx:id="lastLogColumn" prefWidth="100.0" text="Last log" />

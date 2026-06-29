@@ -21,24 +21,44 @@ public class BYODService {
 
 
     // FIXED: Added ingress_time = CURRENT_TIMESTAMP so new registrations appear on the dashboard today
-    public int registerStudent(String sid, String ln, String fn, String ys, String cp,
+    public int registerStudent(String formId, String sid, String ln, String fn, String ys, String cp,
                                String cn, String dt, String bm, String cd, String sn,
                                String scheduledDate, String userType) throws Exception {
-        String sql = "INSERT INTO student_device_logs (student_id, last_name, first_name, year_section, course_program, contact_number, device_type, brand_model, color_description, serial_number, scheduled_entry_date, approval_status, ingress_time, user_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,'Pending', CURRENT_TIMESTAMP, ?)";
+        String sql = "INSERT INTO student_device_logs (form_id, student_id, last_name, first_name, year_section, course_program, contact_number, device_type, brand_model, color_description, serial_number, scheduled_entry_date, approval_status, ingress_time, user_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'Pending', CURRENT_TIMESTAMP, ?)";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
-            ps.setString(1, sid); ps.setString(2, ln); ps.setString(3, fn);
-            ps.setString(4, ys); ps.setString(5, cp); ps.setString(6, cn);
-            ps.setString(7, dt); ps.setString(8, bm); ps.setString(9, cd);
-            ps.setString(10, (sn != null && !sn.isBlank()) ? sn : null);
-            ps.setString(11, (scheduledDate != null && !scheduledDate.isBlank()) ? scheduledDate : null);
-            ps.setString(12, userType);
+            ps.setString(1, formId);
+            ps.setString(2, sid);
+            ps.setString(3, ln);
+            ps.setString(4, fn);
+            ps.setString(5, ys);
+            ps.setString(6, cp);
+            ps.setString(7, cn);
+            ps.setString(8, dt);
+            ps.setString(9, bm);
+            ps.setString(10, cd);
+            ps.setString(11, (sn != null && !sn.isBlank()) ? sn : null);
+            ps.setString(12, (scheduledDate != null && !scheduledDate.isBlank()) ? scheduledDate : null);
+            ps.setString(13, userType);
             ps.executeUpdate();
             try (ResultSet generatedKeys = ps.getGeneratedKeys()) {
                 if (generatedKeys.next()) return generatedKeys.getInt(1);
             }
         }
         return -1;
+    }
+
+    public String generateFormId() throws Exception {
+        java.time.LocalDate today = java.time.LocalDate.now();
+        String datePart = String.format("%04d-%02d%02d",
+                today.getYear(), today.getMonthValue(), today.getDayOfMonth());
+        String sql = "SELECT COUNT(*) FROM student_device_logs WHERE DATE(ingress_time) = CURDATE()";
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             Statement st = conn.createStatement();
+             ResultSet rs = st.executeQuery(sql)) {
+            int count = rs.next() ? rs.getInt(1) : 0;
+            return datePart + "-" + String.format("%04d", count + 1);
+        }
     }
     /**
      * Fetches registered student profiles filtered by a specific date.
@@ -87,11 +107,11 @@ public class BYODService {
         return students;
     }
     // Explicitly updates a student's active logs to set an Egress timestamp for ALL devices at once
-    public void updateEgress(String sid) throws Exception {
-        String sql = "UPDATE student_device_logs SET egress_time = CURRENT_TIMESTAMP WHERE student_id = ? AND egress_time IS NULL";
+    public void updateEgress(String formId) throws Exception {
+        String sql = "UPDATE student_device_logs SET egress_time = CURRENT_TIMESTAMP WHERE form_id = ? AND egress_time IS NULL";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, sid);
+            ps.setString(1, formId);
             ps.executeUpdate();
         }
     }
@@ -118,8 +138,9 @@ public class BYODService {
     public List<Object[]> fetchLogs() throws Exception {
         List<Object[]> logs = new ArrayList<>();
         String sql = "SELECT " +
+                "form_id, " +
                 "MIN(log_id) as log_id, " +
-                "student_id, " +
+                "MAX(student_id) as student_id, " +
                 "MAX(last_name) as last_name, " +
                 "MAX(first_name) as first_name, " +
                 "GROUP_CONCAT(brand_model SEPARATOR ', ') as brand_models, " +
@@ -130,7 +151,7 @@ public class BYODService {
                 "MAX(user_type) as user_type " +
                 "FROM student_device_logs " +
                 "WHERE (approval_status = 'Approved' OR approval_status IS NULL) " +
-                "GROUP BY student_id, DATE(ingress_time) " +
+                "GROUP BY form_id " +
                 "ORDER BY MAX(ingress_time) DESC";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
@@ -138,6 +159,7 @@ public class BYODService {
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 logs.add(new Object[]{
+                        rs.getString("form_id"),
                         rs.getInt("log_id"),
                         rs.getString("student_id"),
                         rs.getString("last_name") + ", " + rs.getString("first_name"),
@@ -157,8 +179,9 @@ public class BYODService {
     public List<Object[]> fetchPendingApprovals() throws Exception {
         List<Object[]> pending = new ArrayList<>();
         String sql = "SELECT " +
+                "form_id, " +
                 "MIN(log_id) as log_id, " +
-                "student_id, " +
+                "MAX(student_id) as student_id, " +
                 "MAX(last_name) as last_name, " +
                 "MAX(first_name) as first_name, " +
                 "GROUP_CONCAT(brand_model SEPARATOR ', ') as brand_models, " +
@@ -168,7 +191,7 @@ public class BYODService {
                 "MAX(user_type) as user_type " +
                 "FROM student_device_logs " +
                 "WHERE approval_status = 'Pending' " +
-                "GROUP BY student_id " +
+                "GROUP BY form_id " +
                 "ORDER BY MAX(scheduled_entry_date) ASC";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
@@ -176,6 +199,7 @@ public class BYODService {
              ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 pending.add(new Object[]{
+                        rs.getString("form_id"),
                         rs.getInt("log_id"),
                         rs.getString("student_id"),
                         rs.getString("last_name") + ", " + rs.getString("first_name"),
@@ -191,36 +215,36 @@ public class BYODService {
     }
 
     // Approves a pending registration
-    public void approveRegistration(int logId, String studentId, String approvedBy) throws Exception {
-        String sql = "UPDATE student_device_logs SET approval_status = 'Approved', approved_by = ?, approval_date = CURRENT_TIMESTAMP WHERE student_id = ? AND approval_status = 'Pending'";
+    public void approveRegistration(String formId, String approvedBy) throws Exception {
+        String sql = "UPDATE student_device_logs SET approval_status = 'Approved', approved_by = ?, approval_date = CURRENT_TIMESTAMP WHERE form_id = ? AND approval_status = 'Pending'";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, approvedBy);
-            ps.setString(2, studentId);
+            ps.setString(2, formId);
             ps.executeUpdate();
         }
     }
 
     // Disapproves a pending registration with a reason
-    public void disapproveRegistration(String studentId, String reason, String approvedBy) throws Exception {
-        String sql = "UPDATE student_device_logs SET approval_status = 'Disapproved', approval_remarks = ?, approved_by = ?, approval_date = CURRENT_TIMESTAMP WHERE student_id = ? AND approval_status = 'Pending'";
+    public void disapproveRegistration(String formId, String reason, String approvedBy) throws Exception {
+        String sql = "UPDATE student_device_logs SET approval_status = 'Disapproved', approval_remarks = ?, approved_by = ?, approval_date = CURRENT_TIMESTAMP WHERE form_id = ? AND approval_status = 'Pending'";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, reason);
             ps.setString(2, approvedBy);
-            ps.setString(3, studentId);
+            ps.setString(3, formId);
             ps.executeUpdate();
         }
     }
 
     // Cancels a registration with a reason
-    public void cancelRegistration(String studentId, String reason, String cancelledBy) throws Exception {
-        String sql = "UPDATE student_device_logs SET approval_status = 'Cancelled', approval_remarks = ?, approved_by = ?, approval_date = CURRENT_TIMESTAMP WHERE student_id = ? AND approval_status IN ('Pending', 'Approved')";
+    public void cancelRegistration(String formId, String reason, String cancelledBy) throws Exception {
+        String sql = "UPDATE student_device_logs SET approval_status = 'Cancelled', approval_remarks = ?, approved_by = ?, approval_date = CURRENT_TIMESTAMP WHERE form_id = ? AND approval_status IN ('Pending', 'Approved')";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, reason);
             ps.setString(2, cancelledBy);
-            ps.setString(3, studentId);
+            ps.setString(3, formId);
             ps.executeUpdate();
         }
     }
@@ -251,13 +275,13 @@ public class BYODService {
         return metrics;
     }
 
-    public String generateQR(String payload, int logId, String outputDir) throws Exception {
+    public String generateQR(String payload, String formId, String outputDir) throws Exception {
         String qrDir = System.getProperty("user.home") + File.separator + "BYOD_QR_Codes";
         java.nio.file.Path dirPath = FileSystems.getDefault().getPath(qrDir);
         if (!java.nio.file.Files.exists(dirPath)) {
             java.nio.file.Files.createDirectories(dirPath);
         }
-        String path = qrDir + File.separator + "QR_" + logId + ".png";
+        String path = qrDir + File.separator + "QR_" + formId + ".png";
         BitMatrix matrix = new MultiFormatWriter().encode(payload, BarcodeFormat.QR_CODE, 400, 400);
         MatrixToImageWriter.writeToPath(matrix, "PNG", FileSystems.getDefault().getPath(path));
         return path;

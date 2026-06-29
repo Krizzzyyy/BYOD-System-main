@@ -18,7 +18,7 @@ import java.io.File;
 
 public class QRRegistrationSuccessWindow {
 
-    public static void show(Stage ownerStage, String studentId, String qrFilePath) {
+    public static void show(Stage ownerStage, String formId, String qrFilePath) {
         Stage popupStage = new Stage();
         popupStage.initModality(Modality.WINDOW_MODAL);
         popupStage.initOwner(ownerStage);
@@ -38,7 +38,7 @@ public class QRRegistrationSuccessWindow {
         messageLabel.setMinHeight(Region.USE_PREF_SIZE);
         messageLabel.setStyle("-fx-font-size: 15px; -fx-text-fill: #333333; -fx-line-spacing: 5px;");
 
-        Label idLabel = new Label("Student ID: " + studentId);
+        Label idLabel = new Label("Form ID: " + formId);
         idLabel.setWrapText(true);
         idLabel.setTextOverrun(OverrunStyle.CLIP);
         idLabel.setMaxWidth(Double.MAX_VALUE);

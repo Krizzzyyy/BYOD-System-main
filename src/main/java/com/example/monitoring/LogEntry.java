@@ -13,12 +13,14 @@ public class LogEntry {
     private final StringProperty userType;
     private final StringProperty scheduledEntryDate;
     private final int logId;
+    private final String formId;
 
-    public LogEntry(int logId, String studentName, String studentId, String deviceSerial,
+    public LogEntry(int logId, String studentName, String formId, String deviceSerial,
                     String status, String lastLog, String approvalStatus, String scheduledEntryDate, String userType) {
         this.logId = logId;
+        this.formId = formId;
         this.studentName = new SimpleStringProperty(studentName);
-        this.studentId = new SimpleStringProperty(studentId);
+        this.studentId = new SimpleStringProperty(formId);
         this.deviceSerial = new SimpleStringProperty(deviceSerial);
         this.status = new SimpleStringProperty(status);
         this.lastLog = new SimpleStringProperty(lastLog);
@@ -28,6 +30,7 @@ public class LogEntry {
     }
 
     public int getLogId() { return logId; }
+    public String getFormId() { return formId; }
     public String getStudentName() { return studentName.get(); }
     public StringProperty studentNameProperty() { return studentName; }
     public String getStudentId() { return studentId.get(); }

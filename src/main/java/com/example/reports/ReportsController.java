@@ -1031,11 +1031,42 @@ public class ReportsController {
                     showAlert("Validation Missing", "Please select a scope value.");
                     return;
                 }
-                extractionDatabaseRows = byodService.fetchExportByPeriodScope(scopeType, scopeValue);
+                java.util.List<String> userTypes = new java.util.ArrayList<>();
+                if (exportAllCategoriesCheckBox == null || !exportAllCategoriesCheckBox.isSelected()) {
+                    if (exportStudent != null && exportStudent.isSelected()) userTypes.add("Student");
+                    if (exportStaff != null && exportStaff.isSelected()) userTypes.add("Staff");
+                    if (exportGuest != null && exportGuest.isSelected()) userTypes.add("Guest");
+                }
+                java.util.List<String> deviceTypes = new java.util.ArrayList<>();
+                if (exportAllCheckBox == null || !exportAllCheckBox.isSelected()) {
+                    if (exportDisplayDevices != null && exportDisplayDevices.isSelected()) deviceTypes.add("Display devices");
+                    if (exportAppliances != null && exportAppliances.isSelected()) deviceTypes.add("Appliances");
+                    if (exportSoundsLight != null && exportSoundsLight.isSelected()) deviceTypes.add("Sounds and light equipment");
+                    if (exportProjectPrototypes != null && exportProjectPrototypes.isSelected()) deviceTypes.add("Other project prototypes");
+                    if (exportRentable != null && exportRentable.isSelected()) deviceTypes.add("Rentable items (DDMI)");
+                }
+
+                extractionDatabaseRows = byodService.fetchExportByPeriodScope(scopeType, scopeValue, userTypes, deviceTypes);
             } else {
                 LocalDate from = exportFromDate != null ? exportFromDate.getValue() : null;
                 LocalDate to   = exportToDate   != null ? exportToDate.getValue()   : null;
-                extractionDatabaseRows = byodService.fetchExportByDateRange(from, to);
+
+                java.util.List<String> userTypes = new java.util.ArrayList<>();
+                if (exportAllCategoriesCheckBox == null || !exportAllCategoriesCheckBox.isSelected()) {
+                    if (exportStudent != null && exportStudent.isSelected()) userTypes.add("Student");
+                    if (exportStaff != null && exportStaff.isSelected()) userTypes.add("Staff");
+                    if (exportGuest != null && exportGuest.isSelected()) userTypes.add("Guest");
+                }
+                java.util.List<String> deviceTypes = new java.util.ArrayList<>();
+                if (exportAllCheckBox == null || !exportAllCheckBox.isSelected()) {
+                    if (exportDisplayDevices != null && exportDisplayDevices.isSelected()) deviceTypes.add("Display devices");
+                    if (exportAppliances != null && exportAppliances.isSelected()) deviceTypes.add("Appliances");
+                    if (exportSoundsLight != null && exportSoundsLight.isSelected()) deviceTypes.add("Sounds and light equipment");
+                    if (exportProjectPrototypes != null && exportProjectPrototypes.isSelected()) deviceTypes.add("Other project prototypes");
+                    if (exportRentable != null && exportRentable.isSelected()) deviceTypes.add("Rentable items (DDMI)");
+                }
+
+                extractionDatabaseRows = byodService.fetchExportByDateRange(from, to, userTypes, deviceTypes);
             }
             boolean isSuccess = false;
 
@@ -1086,7 +1117,7 @@ public class ReportsController {
     // 1. Native CSV Compiler (No external libraries needed)
     private boolean exportToCSV(File file, List<String[]> data) throws IOException {
         try (FileWriter writer = new FileWriter(file)) {
-            writer.write("Student ID,Full Name,Department,Device Type,Brand/Model,Contact Number,Status,Remarks\n");
+            writer.write("Form ID,Student ID,Full Name,User Category,Program/Course,Year and Section,Item Category,Brand/Model,Color/Description,Contact Number,Entry Date,Status,Remarks\n");
             for (String[] row : data) {
                 StringBuilder line = new StringBuilder();
                 for (int i = 0; i < row.length; i++) {
@@ -1107,7 +1138,7 @@ public class ReportsController {
 
         // Create Header
         XSSFRow headerRow = sheet.createRow(0);
-        String[] headers = {"Student ID", "Full Name", "Department", "Device Type", "Brand/Model", "Phone", "Status", "Remarks"};
+        String[] headers = {"Form ID", "Student ID", "Full Name", "User Category", "Program/Course", "Year and Section", "Item Category", "Brand/Model", "Color/Description", "Phone", "Entry Date", "Status", "Remarks"};
         for (int i = 0; i < headers.length; i++) {
             headerRow.createCell(i).setCellValue(headers[i]);
         }
@@ -1139,11 +1170,11 @@ public class ReportsController {
         document.add(new Paragraph("Generated on: " + LocalDateTime.now().toString()));
         document.add(new Paragraph(" ")); // spacing
 
-        PdfPTable table = new PdfPTable(8); // 8 columns
+        PdfPTable table = new PdfPTable(13); // 13 columns
         table.setWidthPercentage(100);
 
         // Add Headers
-        String[] headers = {"Student ID", "Full Name", "Department", "Device", "Brand/Model", "Phone", "Status", "Remarks"};
+        String[] headers = {"Form ID", "Student ID", "Full Name", "User Category", "Program/Course", "Year and Section", "Item Category", "Brand/Model", "Color/Description", "Phone", "Entry Date", "Status", "Remarks"};
         for (String header : headers) {
             table.addCell(header);
         }

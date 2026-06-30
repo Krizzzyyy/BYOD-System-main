@@ -535,6 +535,15 @@ public class RegistrationController {
         a.showAndWait();
     }
 
+    private void showSuccessAlert(String msg) {
+        Alert a = new Alert(Alert.AlertType.INFORMATION);
+        a.setTitle("Registration Submitted");
+        a.setHeaderText(null);
+        a.setContentText(msg);
+
+        a.showAndWait();
+    }
+
     private final BYODService byodService = new BYODService();
 
     @FXML
@@ -585,12 +594,7 @@ public class RegistrationController {
                 );
             }
 
-            String payload = String.join("|", formId, lastNameField.getText(), firstNameField.getText(),
-                    yearSectionField.getText(), course, contactField.getText());
-            String qrPath = byodService.generateQR(payload, formId, System.getProperty("user.dir"));
-
-            Stage activeStage = (Stage) cancelBtn.getScene().getWindow();
-            com.example.monitoring.QRRegistrationSuccessWindow.show(activeStage, formId, qrPath);
+            showSuccessAlert("Your registration (Form ID: " + formId + ") has been submitted and is now Pending approval. You will be notified once it is approved.");
 
             navigateTo("/fxml/dashboard.fxml");
 

@@ -24,7 +24,7 @@ public class BYODService {
     public int registerStudent(String formId, String sid, String ln, String fn, String ys, String cp,
                                String cn, String dt, String bm, String cd, String sn,
                                String scheduledDate, String userType) throws Exception {
-        String sql = "INSERT INTO student_device_logs (form_id, student_id, last_name, first_name, year_section, course_program, contact_number, device_type, brand_model, color_description, serial_number, scheduled_entry_date, approval_status, ingress_time, user_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'Pending', CURRENT_TIMESTAMP, ?)";
+        String sql = "INSERT INTO student_device_logs (form_id, student_id, last_name, first_name, year_section, course_program, contact_number, device_type, brand_model, color_description, serial_number, scheduled_entry_date, approval_status, submitted_time, user_type) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,'Pending', CURRENT_TIMESTAMP, ?)";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             ps.setString(1, formId);
@@ -52,12 +52,21 @@ public class BYODService {
         java.time.LocalDate today = java.time.LocalDate.now();
         String datePart = String.format("%04d-%02d%02d",
                 today.getYear(), today.getMonthValue(), today.getDayOfMonth());
-        String sql = "SELECT COUNT(*) FROM student_device_logs WHERE DATE(ingress_time) = CURDATE()";
+
+        // Finds the highest sequence number already used today and adds 1; starts at 1 if none exist
+        String sql = "SELECT MAX(CAST(SUBSTRING_INDEX(form_id, '-', -1) AS UNSIGNED)) as max_seq " +
+                "FROM student_device_logs WHERE form_id LIKE ?";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
-             Statement st = conn.createStatement();
-             ResultSet rs = st.executeQuery(sql)) {
-            int count = rs.next() ? rs.getInt(1) : 0;
-            return datePart + "-" + String.format("%04d", count + 1);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, datePart + "-%");
+            try (ResultSet rs = ps.executeQuery()) {
+                int nextSeq = 1;
+                if (rs.next()) {
+                    int maxSeq = rs.getInt("max_seq");
+                    if (!rs.wasNull()) nextSeq = maxSeq + 1;
+                }
+                return datePart + "-" + String.format("%04d", nextSeq);
+            }
         }
     }
     /**
@@ -119,9 +128,43 @@ public class BYODService {
         }
         return students;
     }
+
+    // Auto-promotes Approved entries to Ready for Entry once their scheduled date arrives
+    public void checkAndUpdateReadyForEntry() throws Exception {
+        String sql = "UPDATE student_device_logs SET approval_status = 'Ready for Entry' WHERE approval_status = 'Approved' AND scheduled_entry_date IS NOT NULL AND scheduled_entry_date <= CURRENT_DATE";
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             Statement stmt = conn.createStatement()) {
+            stmt.executeUpdate(sql);
+        }
+    }
+
+    // Returns the current approval_status for a given formId
+    public String getStatusByFormId(String formId) throws Exception {
+        String sql = "SELECT approval_status FROM student_device_logs WHERE form_id = ? LIMIT 1";
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, formId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getString("approval_status");
+            }
+        }
+        return null;
+    }
+
     // Explicitly updates a student's active logs to set an Egress timestamp for ALL devices at once
     public void updateEgress(String formId) throws Exception {
-        String sql = "UPDATE student_device_logs SET egress_time = CURRENT_TIMESTAMP WHERE form_id = ? AND egress_time IS NULL";
+        String sql = "UPDATE student_device_logs SET egress_time = CURRENT_TIMESTAMP, approval_status = 'Checked Out' WHERE form_id = ? AND egress_time IS NULL";
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, formId);
+            ps.executeUpdate();
+        }
+    }
+
+
+    // Sets ingress_time and status to Checked In once the QR is scanned at entry
+    public void updateIngressByFormId(String formId) throws Exception {
+        String sql = "UPDATE student_device_logs SET ingress_time = CURRENT_TIMESTAMP, approval_status = 'Checked In' WHERE form_id = ? AND ingress_time IS NULL";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, formId);
@@ -163,7 +206,7 @@ public class BYODService {
                 "MAX(scheduled_entry_date) as scheduled_entry_date, " +
                 "MAX(user_type) as user_type " +
                 "FROM student_device_logs " +
-                "WHERE (approval_status = 'Approved' OR approval_status IS NULL) " +
+                "WHERE approval_status IN ('Approved', 'Ready for Entry', 'Checked In', 'Checked Out') " +
                 "GROUP BY form_id " +
                 "ORDER BY MAX(ingress_time) DESC";
 
@@ -227,8 +270,8 @@ public class BYODService {
         return pending;
     }
 
-    // Approves a pending registration
-    public void approveRegistration(String formId, String approvedBy) throws Exception {
+    // Approves a pending registration and generates the QR code for it
+    public String approveRegistration(String formId, String approvedBy) throws Exception {
         String sql = "UPDATE student_device_logs SET approval_status = 'Approved', approved_by = ?, approval_date = CURRENT_TIMESTAMP WHERE form_id = ? AND approval_status = 'Pending'";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -236,6 +279,20 @@ public class BYODService {
             ps.setString(2, formId);
             ps.executeUpdate();
         }
+
+        String payloadSql = "SELECT MAX(last_name) as last_name, MAX(first_name) as first_name, MAX(year_section) as year_section, MAX(course_program) as course_program, MAX(contact_number) as contact_number FROM student_device_logs WHERE form_id = ?";
+        String payload = formId;
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
+             PreparedStatement ps = conn.prepareStatement(payloadSql)) {
+            ps.setString(1, formId);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    payload = String.join("|", formId, rs.getString("last_name"), rs.getString("first_name"),
+                            rs.getString("year_section"), rs.getString("course_program"), rs.getString("contact_number"));
+                }
+            }
+        }
+        return generateQR(payload, formId, System.getProperty("user.dir"));
     }
 
     // Disapproves a pending registration with a reason

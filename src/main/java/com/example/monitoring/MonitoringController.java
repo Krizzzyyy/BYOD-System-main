@@ -480,18 +480,26 @@
                 showAlert("Database Ingress Error", e.getMessage());
             }
         }
-    
+
         private void triggerQRCameraEgress() {
             Stage currentStage = (Stage) monitoringTableView.getScene().getWindow();
-    
+
             QRScannerWindow.openScanner(currentStage, qrPayload -> {
                 try {
                     String formId = qrPayload;
                     if (qrPayload.contains("|")) {
                         formId = qrPayload.split("\\|")[0];
                     }
-                    byodService.updateEgress(formId);
-                    showSuccessAlert("QR Scanned! You can now exit the Campus.");
+                    String currentStatus = byodService.getStatusByFormId(formId);
+                    if ("Ready for Entry".equals(currentStatus)) {
+                        byodService.updateIngressByFormId(formId);
+                        showSuccessAlert("Checked In! You may now bring in your item.");
+                    } else if ("Checked In".equals(currentStatus)) {
+                        byodService.updateEgress(formId);
+                        showSuccessAlert("Checked Out! You may now exit the Campus.");
+                    } else {
+                        showAlert("Invalid Scan", "This QR is not eligible for entry/exit.\nCurrent status: " + currentStatus);
+                    }
                     refreshMonitoringData();
                 } catch (Exception ex) {
                     showAlert("Scanner Database Error", "Failed to process scanned code:\n" + ex.getMessage());
@@ -503,13 +511,14 @@
         private void loadInitialData() {
             allLogEntries.clear();
             try {
+                byodService.checkAndUpdateReadyForEntry();
                 for (Object[] row : byodService.fetchLogs()) {
                     String formId = (String) row[0];
                     int logId = (int) row[1];
                     String egress = (String) row[6];
-                    String status = (egress == null) ? "Ingress" : "Egress";
-                    String timestamp = status.equals("Ingress") ? (String) row[5] : egress;
                     String approvalStatus = row.length > 7 ? (String) row[7] : "Approved";
+                    String status = approvalStatus;
+                    String timestamp = (egress != null) ? egress : (String) row[5];
                     String scheduledDate = row.length > 8 ? (String) row[8] : null;
                     String userType = row.length > 9 ? (String) row[9] : "N/A";
 
@@ -650,8 +659,10 @@
             confirm.showAndWait().ifPresent(response -> {
                 if (response == ButtonType.OK) {
                     try {
-                        byodService.approveRegistration(entry.getFormId(), "Faculty");
+                        String qrPath = byodService.approveRegistration(entry.getFormId(), "Faculty");
                         refreshMonitoringData();
+                        Stage currentStage = (Stage) monitoringTableView.getScene().getWindow();
+                        com.example.monitoring.QRRegistrationSuccessWindow.show(currentStage, entry.getFormId(), qrPath);
                     } catch (Exception ex) {
                         showAlert("Approval Error", ex.getMessage());
                     }

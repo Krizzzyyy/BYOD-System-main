@@ -72,6 +72,7 @@ public class ReportsController {
 
     /* ── Interactive CRUD Admin Fields ──────────────────── */
     @FXML private TextField studentIdField;
+    @FXML private TextField formIdField;
     @FXML private TextField studentNameField;
     @FXML private TextField yearSectionField;
     @FXML private TextField colorDescField;
@@ -223,7 +224,7 @@ public class ReportsController {
 
         if (formStatusCombo != null) {
             formStatusCombo.getItems().add("Select Status");
-            formStatusCombo.getItems().addAll("Approved", "Pending", "Disapproved", "Cancelled");
+            formStatusCombo.getItems().addAll("Approved", "Pending", "Disapproved", "Cancelled", "Ready for Entry", "Checked In", "Checked Out");
             formStatusCombo.setValue("Select Status");
         }
 
@@ -407,7 +408,8 @@ public class ReportsController {
                     studentNameField.setText(newVal.getName());
                     if (userCategoryCombo != null) userCategoryCombo.setValue(newVal.getUserCategory());
                     boolean isStudent = "Student".equals(newVal.getUserCategory());
-                    if (studentIdField != null) { studentIdField.setText(newVal.getStudentId()); studentIdField.setDisable(!isStudent); studentIdField.setEditable(false); }
+                    if (studentIdField != null) { studentIdField.setText(newVal.getStudentId()); studentIdField.setDisable(!isStudent); studentIdField.setEditable(true); }
+                    if (formIdField != null) formIdField.setText(newVal.getFormId());
                     if (departmentCombo != null) { departmentCombo.setValue(newVal.getDepartment()); departmentCombo.setDisable(!isStudent); }
                     if (yearSectionField != null) { yearSectionField.setText(newVal.getYearSection()); yearSectionField.setDisable(!isStudent); }
                     if (phoneField != null) phoneField.setText(newVal.getPhone());
@@ -491,7 +493,7 @@ public class ReportsController {
     private void handleClearForm() {
         if (studentNameField != null) studentNameField.clear();
         if (userCategoryCombo != null) userCategoryCombo.setValue("Student");
-        if (studentIdField != null) { studentIdField.clear(); studentIdField.setDisable(false); studentIdField.setEditable(true); }
+        if (formIdField != null) formIdField.clear();
         if (departmentCombo != null) { departmentCombo.setValue("Select Course"); departmentCombo.setDisable(false); }
         if (yearSectionField != null) { yearSectionField.clear(); yearSectionField.setDisable(false); }
         if (phoneField != null) phoneField.clear();
@@ -546,7 +548,11 @@ public class ReportsController {
     private void handleUpdateStudent() {
         String name = studentNameField.getText().trim();
         String userCategory = userCategoryCombo != null ? userCategoryCombo.getValue() : "Student";
-        String id = studentIdField.getText().trim();
+        String id = formIdField != null ? formIdField.getText().trim() : "";
+        if (id.isEmpty()) {
+            showAlert("Validation Missing", "Please select a record from the table to update.");
+            return;
+        }
         String dept = departmentCombo != null ? departmentCombo.getValue() : "";
         String yearSection = yearSectionField != null ? yearSectionField.getText().trim() : "";
         String phone = phoneField.getText().trim();
@@ -570,7 +576,7 @@ public class ReportsController {
             return;
         }
 
-        boolean success = byodService.updateRegisteredStudent(id, name, dept, type, serial, phone, status, remarks);
+        boolean success = byodService.updateRegisteredStudent(id, name, dept, type, serial, phone, status, remarks, userCategory, yearSection, colorDesc, entryDate);
         if (success) {
             loadStudentsData();
             handleClearForm();
@@ -582,7 +588,11 @@ public class ReportsController {
 
     @FXML
     private void handleDeleteStudent() {
-        String id = studentIdField.getText().trim();
+        String id = formIdField != null ? formIdField.getText().trim() : "";
+        if (id.isEmpty()) {
+            showAlert("Validation Missing", "Please select a record from the table.");
+            return;
+        }
         if (id.isEmpty()) {
             showAlert("Reference Target Void", "Select a clean entry target inside the table row index context to move to trash.");
             return;

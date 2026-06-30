@@ -173,18 +173,12 @@ public class BYODService {
     }
 
     // Adds a clean new Ingress log item for an existing student context
-    public void updateIngress(String sid, String studentName, String brandModel) throws Exception {
-        String[] nameParts = studentName.split(", ");
-        String ln = nameParts[0];
-        String fn = nameParts.length > 1 ? nameParts[1] : "";
-
-        String sql = "INSERT INTO student_device_logs (student_id, last_name, first_name, brand_model, ingress_time, egress_time) VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP, NULL)";
+    public void updateIngress(String formId) throws Exception {
+        checkAndUpdateReadyForEntry();
+        String sql = "UPDATE student_device_logs SET ingress_time = CURRENT_TIMESTAMP, approval_status = 'Checked In' WHERE form_id = ? AND ingress_time IS NULL";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, sid);
-            ps.setString(2, ln);
-            ps.setString(3, fn);
-            ps.setString(4, brandModel);
+            ps.setString(1, formId);
             ps.executeUpdate();
         }
     }
@@ -707,12 +701,15 @@ public class BYODService {
             ln = parts[1];
         }
 
-        String sql = "INSERT INTO student_device_logs (student_id, first_name, last_name, course_program, device_type, brand_model, contact_number, approval_status, approval_remarks, ingress_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
+        String formId;
+        try { formId = generateFormId(); } catch (Exception e) { return false; }
+
+        String sql = "INSERT INTO student_device_logs (form_id, first_name, last_name, course_program, device_type, brand_model, contact_number, approval_status, approval_remarks, ingress_time) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, id);
+            ps.setString(1, formId);
             ps.setString(2, fn);
             ps.setString(3, ln);
             ps.setString(4, dept);
@@ -731,7 +728,7 @@ public class BYODService {
     }
 
     // 2. UPDATE: Modifies an existing student's record based on their Student ID
-    public boolean updateRegisteredStudent(String id, String name, String dept, String type, String brandModel, String phone, String status, String remarks) {
+    public boolean updateRegisteredStudent(String id, String name, String dept, String type, String brandModel, String phone, String status, String remarks, String userCategory, String yearSection, String colorDesc, String entryDate) {
         String fn = "";
         String ln = name;
 
@@ -745,7 +742,7 @@ public class BYODService {
             ln = parts[1];
         }
 
-        String sql = "UPDATE student_device_logs SET first_name = ?, last_name = ?, course_program = ?, device_type = ?, brand_model = ?, contact_number = ?, approval_status = ?, approval_remarks = ? WHERE student_id = ?";
+        String sql = "UPDATE student_device_logs SET first_name = ?, last_name = ?, course_program = ?, device_type = ?, brand_model = ?, contact_number = ?, approval_status = ?, approval_remarks = ?, user_type = ?, year_section = ?, color_description = ?, scheduled_entry_date = ? WHERE form_id = ?";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -758,8 +755,11 @@ public class BYODService {
             ps.setString(6, phone);
             ps.setString(7, status);
             ps.setString(8, remarks);
-            ps.setString(9, id);
-
+            ps.setString(9, userCategory);
+            ps.setString(10, yearSection);
+            ps.setString(11, colorDesc);
+            ps.setString(12, (entryDate != null && !entryDate.isBlank()) ? entryDate : null);
+            ps.setString(13, id);
 
             return ps.executeUpdate() > 0;
 
@@ -771,7 +771,7 @@ public class BYODService {
 
     // 3. SOFT DELETE: Marks a student's records as deleted (trash bin logic)
     public boolean deleteRegisteredStudent(String id) {
-        String sql = "UPDATE student_device_logs SET is_deleted = 1 WHERE student_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)";
+        String sql = "UPDATE student_device_logs SET is_deleted = 1 WHERE form_id = ? AND (is_deleted = 0 OR is_deleted IS NULL)";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -788,7 +788,7 @@ public class BYODService {
 
     // Restore a soft-deleted student from trash
     public boolean restoreRegisteredStudent(String id) {
-        String sql = "UPDATE student_device_logs SET is_deleted = 0 WHERE student_id = ? AND is_deleted = 1";
+        String sql = "UPDATE student_device_logs SET is_deleted = 0 WHERE form_id = ? AND is_deleted = 1";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -805,7 +805,7 @@ public class BYODService {
 
     // Permanently delete (empty trash)
     public boolean permanentlyDeleteStudent(String id) {
-        String sql = "DELETE FROM student_device_logs WHERE student_id = ? AND is_deleted = 1";
+        String sql = "DELETE FROM student_device_logs WHERE form_id = ? AND is_deleted = 1";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {

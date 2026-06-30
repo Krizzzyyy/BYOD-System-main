@@ -495,7 +495,7 @@
 
             private void onMarkIngress(LogEntry entry) {
                 try {
-                    byodService.updateIngress(entry.getStudentId(), entry.getStudentName(), entry.getDeviceSerial());
+                    byodService.updateIngress(entry.getStudentId());
                     refreshMonitoringData();
                 } catch (Exception e) {
                     showAlert("Database Ingress Error", e.getMessage());
@@ -511,6 +511,7 @@
                         if (qrPayload.contains("|")) {
                             formId = qrPayload.split("\\|")[0];
                         }
+                        byodService.checkAndUpdateReadyForEntry();
                         String currentStatus = byodService.getStatusByFormId(formId);
                         if ("Ready for Entry".equals(currentStatus)) {
                             byodService.updateIngressByFormId(formId);

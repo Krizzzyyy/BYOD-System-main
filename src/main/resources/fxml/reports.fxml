@@ -304,6 +304,10 @@
               <ComboBox fx:id="userCategoryCombo" maxWidth="Infinity" styleClass="combo-box" />
             </VBox>
             <VBox spacing="4" HBox.hgrow="ALWAYS">
+              <Label styleClass="form-label-sm" text="FORM ID" />
+              <TextField fx:id="formIdField" promptText="Auto-generated" editable="false" />
+            </VBox>
+            <VBox spacing="4" HBox.hgrow="ALWAYS">
               <Label styleClass="form-label-sm" text="STUDENT ID" />
               <TextField fx:id="studentIdField" promptText="e.g., 2024-00123-SR-0" />
             </VBox>

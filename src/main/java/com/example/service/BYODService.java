@@ -140,7 +140,7 @@ public class BYODService {
 
     // Returns the current approval_status for a given formId
     public String getStatusByFormId(String formId) throws Exception {
-        String sql = "SELECT approval_status FROM student_device_logs WHERE form_id = ? LIMIT 1";
+        String sql = "SELECT approval_status, COUNT(*) as cnt FROM student_device_logs WHERE form_id = ? GROUP BY approval_status ORDER BY cnt DESC LIMIT 1";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, formId);
@@ -164,7 +164,7 @@ public class BYODService {
 
     // Sets ingress_time and status to Checked In once the QR is scanned at entry
     public void updateIngressByFormId(String formId) throws Exception {
-        String sql = "UPDATE student_device_logs SET ingress_time = CURRENT_TIMESTAMP, approval_status = 'Checked In' WHERE form_id = ? AND ingress_time IS NULL";
+        String sql = "UPDATE student_device_logs SET ingress_time = CURRENT_TIMESTAMP, approval_status = 'Checked In' WHERE form_id = ?";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, formId);

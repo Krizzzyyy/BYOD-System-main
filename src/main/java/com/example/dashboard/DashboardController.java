@@ -180,12 +180,12 @@ public class DashboardController {
             int displayLimit = Math.min(databaseLogs.size(), 5);
             for (int i = 0; i < displayLimit; i++) {
                 Object[] row = databaseLogs.get(i);
-                String studentId = (String) row[1];
-                String studentName = (String) row[2];
-                String egressTime = (String) row[5];
+                String studentId = (String) row[2];
+                String studentName = (String) row[3];
+                String egressTime = (String) row[6];
 
                 String statusText = (egressTime == null) ? "In" : "Out";
-                String timestampText = (egressTime == null) ? (String) row[4] : egressTime;
+                String timestampText = (egressTime == null) ? (String) row[5] : egressTime;
 
                 if (timestampText != null && timestampText.contains(" ")) {
                     String[] parts = timestampText.split(" ");

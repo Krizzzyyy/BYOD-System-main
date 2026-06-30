@@ -94,6 +94,7 @@
                                         <TableColumn fx:id="statusColumn" prefWidth="100.0" text="Status" />
                                         <TableColumn fx:id="lastLogColumn" prefWidth="100.0" text="Last log" />
                                         <TableColumn fx:id="editColumn" prefWidth="100.0" text="Ingress/Egress" />
+                                        <TableColumn fx:id="qrColumn" prefWidth="100.0" text="QR Code" />
                                     </columns>
                                     <columnResizePolicy>
                                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />

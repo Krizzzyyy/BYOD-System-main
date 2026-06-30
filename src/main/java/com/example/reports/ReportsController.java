@@ -131,9 +131,9 @@ public class ReportsController {
 
     /* ── Inventory Metric Breakdown Variables ── */
     @FXML private Label totalDevicesLabel;
-    @FXML private ProgressBar laptopsBar, tabletsBar, smartphonesBar, othersBar;
-    @FXML private Label laptopsPct, tabletsPct, smartphonesPct, othersPct;
-    @FXML private Label laptopsCount, tabletsCount, smartphonesCount, othersCount;
+    @FXML private ProgressBar displayDevicesBar, appliancesBar, soundsLightBar, projectPrototypesBar, rentableBar;
+    @FXML private Label displayDevicesPct, appliancesPct, soundsLightPct, projectPrototypesPct, rentablePct;
+    @FXML private Label displayDevicesCount, appliancesCount, soundsLightCount, projectPrototypesCount, rentableCount;
 
     private enum View { MAIN, EXPORT, INVENTORY, STUDENTS, TRASH }
     private final BYODService byodService = new BYODService();
@@ -141,6 +141,16 @@ public class ReportsController {
 
     @FXML
     public void initialize() {
+        if (exportDisplayDevices != null) exportDisplayDevices.selectedProperty().addListener((o, ov, nv) -> syncItemCategoryAllCheckbox());
+        if (exportAppliances != null) exportAppliances.selectedProperty().addListener((o, ov, nv) -> syncItemCategoryAllCheckbox());
+        if (exportSoundsLight != null) exportSoundsLight.selectedProperty().addListener((o, ov, nv) -> syncItemCategoryAllCheckbox());
+        if (exportProjectPrototypes != null) exportProjectPrototypes.selectedProperty().addListener((o, ov, nv) -> syncItemCategoryAllCheckbox());
+        if (exportRentable != null) exportRentable.selectedProperty().addListener((o, ov, nv) -> syncItemCategoryAllCheckbox());
+
+        if (exportStudent != null) exportStudent.selectedProperty().addListener((o, ov, nv) -> syncUserCategoryAllCheckbox());
+        if (exportStaff != null) exportStaff.selectedProperty().addListener((o, ov, nv) -> syncUserCategoryAllCheckbox());
+        if (exportGuest != null) exportGuest.selectedProperty().addListener((o, ov, nv) -> syncUserCategoryAllCheckbox());
+
         if (weeklyChart != null) {
             weeklyChart.setAnimated(false);
             if (weeklyChart.getXAxis() != null) weeklyChart.getXAxis().setAnimated(false);
@@ -441,27 +451,36 @@ public class ReportsController {
 
     private void updateInventoryMetricsDisplay() {
         try {
-            Map<String, Integer> metrics = byodService.fetchDashboardMetrics();
-            int total = metrics.getOrDefault("totalDevices", 5); // Fallback mock values if DB empty
-            if (total == 0) total = 1;
+            Map<String, Integer> breakdown = byodService.fetchInventoryBreakdown();
+
+            int displayDevices = breakdown.getOrDefault("Display devices", 0);
+            int appliances = breakdown.getOrDefault("Appliances", 0);
+            int soundsLight = breakdown.getOrDefault("Sounds and light equipment", 0);
+            int projectPrototypes = breakdown.getOrDefault("Other project prototypes", 0);
+            int rentable = breakdown.getOrDefault("Rentable items (DDMI)", 0);
+
+            int total = displayDevices + appliances + soundsLight + projectPrototypes + rentable;
+            int safeTotal = total == 0 ? 1 : total;
 
             if (totalDevicesLabel != null) totalDevicesLabel.setText("Total: " + total + " Devices");
 
-            // Populate metric card calculations
-            if (laptopsCount != null) laptopsCount.setText("3");
-            if (tabletsCount != null) tabletsCount.setText("1");
-            if (smartphonesCount != null) smartphonesCount.setText("1");
-            if (othersCount != null) othersCount.setText("0");
+            if (displayDevicesCount != null) displayDevicesCount.setText(String.valueOf(displayDevices));
+            if (appliancesCount != null) appliancesCount.setText(String.valueOf(appliances));
+            if (soundsLightCount != null) soundsLightCount.setText(String.valueOf(soundsLight));
+            if (projectPrototypesCount != null) projectPrototypesCount.setText(String.valueOf(projectPrototypes));
+            if (rentableCount != null) rentableCount.setText(String.valueOf(rentable));
 
-            if (laptopsBar != null) laptopsBar.setProgress(3.0 / total);
-            if (tabletsBar != null) tabletsBar.setProgress(1.0 / total);
-            if (smartphonesBar != null) smartphonesBar.setProgress(1.0 / total);
-            if (othersBar != null) othersBar.setProgress(0.0);
+            if (displayDevicesBar != null) displayDevicesBar.setProgress((double) displayDevices / safeTotal);
+            if (appliancesBar != null) appliancesBar.setProgress((double) appliances / safeTotal);
+            if (soundsLightBar != null) soundsLightBar.setProgress((double) soundsLight / safeTotal);
+            if (projectPrototypesBar != null) projectPrototypesBar.setProgress((double) projectPrototypes / safeTotal);
+            if (rentableBar != null) rentableBar.setProgress((double) rentable / safeTotal);
 
-            if (laptopsPct != null) laptopsPct.setText("60%");
-            if (tabletsPct != null) tabletsPct.setText("20%");
-            if (smartphonesPct != null) smartphonesPct.setText("20%");
-            if (othersPct != null) othersPct.setText("0%");
+            if (displayDevicesPct != null) displayDevicesPct.setText(Math.round(100.0 * displayDevices / safeTotal) + "%");
+            if (appliancesPct != null) appliancesPct.setText(Math.round(100.0 * appliances / safeTotal) + "%");
+            if (soundsLightPct != null) soundsLightPct.setText(Math.round(100.0 * soundsLight / safeTotal) + "%");
+            if (projectPrototypesPct != null) projectPrototypesPct.setText(Math.round(100.0 * projectPrototypes / safeTotal) + "%");
+            if (rentablePct != null) rentablePct.setText(Math.round(100.0 * rentable / safeTotal) + "%");
         } catch (Exception e) {
             System.err.println("Failed to build visualization metrics: " + e.getMessage());
         }
@@ -940,6 +959,17 @@ public class ReportsController {
         if (exportRentable != null) exportRentable.setSelected(state);
     }
 
+    private void syncItemCategoryAllCheckbox() {
+        if (exportAllCheckBox == null) return;
+        boolean allChecked =
+                (exportDisplayDevices == null || exportDisplayDevices.isSelected()) &&
+                        (exportAppliances == null || exportAppliances.isSelected()) &&
+                        (exportSoundsLight == null || exportSoundsLight.isSelected()) &&
+                        (exportProjectPrototypes == null || exportProjectPrototypes.isSelected()) &&
+                        (exportRentable == null || exportRentable.isSelected());
+        exportAllCheckBox.setSelected(allChecked);
+    }
+
     @FXML
     private void handleSelectAllCategories() {
         if (exportAllCategoriesCheckBox == null) return;
@@ -947,6 +977,15 @@ public class ReportsController {
         if (exportStudent != null) exportStudent.setSelected(state);
         if (exportStaff != null) exportStaff.setSelected(state);
         if (exportGuest != null) exportGuest.setSelected(state);
+    }
+
+    private void syncUserCategoryAllCheckbox() {
+        if (exportAllCategoriesCheckBox == null) return;
+        boolean allChecked =
+                (exportStudent == null || exportStudent.isSelected()) &&
+                        (exportStaff == null || exportStaff.isSelected()) &&
+                        (exportGuest == null || exportGuest.isSelected());
+        exportAllCategoriesCheckBox.setSelected(allChecked);
     }
 
     @FXML private void handleExportCsv()    { selectFormat("CSV");   showSuccessAlert("Selected Format changed to standard CSV Data stream."); }

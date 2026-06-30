@@ -211,24 +211,29 @@
                 <Label fx:id="totalDevicesLabel" styleClass="description" text="Total: 0 Devices" />
                 <VBox spacing="10">
                   <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label prefWidth="110" styleClass="card-description" text="Laptops" />
-                    <ProgressBar fx:id="laptopsBar" prefHeight="16" styleClass="prog-red" HBox.hgrow="ALWAYS" />
-                    <Label fx:id="laptopsPct" prefWidth="44" styleClass="card-description" text="0%" />
+                    <Label prefWidth="160" styleClass="card-description" text="Display devices" />
+                    <ProgressBar fx:id="displayDevicesBar" prefHeight="16" styleClass="prog-red" HBox.hgrow="ALWAYS" />
+                    <Label fx:id="displayDevicesPct" prefWidth="44" styleClass="card-description" text="0%" />
                   </HBox>
                   <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label prefWidth="110" styleClass="card-description" text="Tablets" />
-                    <ProgressBar fx:id="tabletsBar" prefHeight="16" styleClass="prog-gold" HBox.hgrow="ALWAYS" />
-                    <Label fx:id="tabletsPct" prefWidth="44" styleClass="card-description" text="0%" />
+                    <Label prefWidth="160" styleClass="card-description" text="Appliances" />
+                    <ProgressBar fx:id="appliancesBar" prefHeight="16" styleClass="prog-gold" HBox.hgrow="ALWAYS" />
+                    <Label fx:id="appliancesPct" prefWidth="44" styleClass="card-description" text="0%" />
                   </HBox>
                   <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label prefWidth="110" styleClass="card-description" text="Smartphones" />
-                    <ProgressBar fx:id="smartphonesBar" prefHeight="16" styleClass="prog-pink" HBox.hgrow="ALWAYS" />
-                    <Label fx:id="smartphonesPct" prefWidth="44" styleClass="card-description" text="0%" />
+                    <Label prefWidth="160" styleClass="card-description" text="Sounds and light equip." />
+                    <ProgressBar fx:id="soundsLightBar" prefHeight="16" styleClass="prog-pink" HBox.hgrow="ALWAYS" />
+                    <Label fx:id="soundsLightPct" prefWidth="44" styleClass="card-description" text="0%" />
                   </HBox>
                   <HBox alignment="CENTER_LEFT" spacing="10">
-                    <Label prefWidth="110" styleClass="card-description" text="Others" />
-                    <ProgressBar fx:id="othersBar" prefHeight="16" styleClass="prog-gray" HBox.hgrow="ALWAYS" />
-                    <Label fx:id="othersPct" prefWidth="44" styleClass="card-description" text="0%" />
+                    <Label prefWidth="160" styleClass="card-description" text="Other project prototypes" />
+                    <ProgressBar fx:id="projectPrototypesBar" prefHeight="16" styleClass="prog-gray" HBox.hgrow="ALWAYS" />
+                    <Label fx:id="projectPrototypesPct" prefWidth="44" styleClass="card-description" text="0%" />
+                  </HBox>
+                  <HBox alignment="CENTER_LEFT" spacing="10">
+                    <Label prefWidth="160" styleClass="card-description" text="Rentable items (DDMI)" />
+                    <ProgressBar fx:id="rentableBar" prefHeight="16" styleClass="prog-blue" HBox.hgrow="ALWAYS" />
+                    <Label fx:id="rentablePct" prefWidth="44" styleClass="card-description" text="0%" />
                   </HBox>
                 </VBox>
               </VBox>
@@ -236,31 +241,38 @@
 
             <VBox prefWidth="280" spacing="12">
               <VBox spacing="8" styleClass="mini-stat-card">
-                <Label styleClass="card-description" text="Laptops" />
+                <Label styleClass="card-description" text="Display devices" />
                 <HBox alignment="CENTER_RIGHT" spacing="12">
-                  <Label styleClass="emoji-icon" text="💻" />
-                  <Label fx:id="laptopsCount" styleClass="card-number" text="0" />
+                  <Label styleClass="emoji-icon" text="🖥" />
+                  <Label fx:id="displayDevicesCount" styleClass="card-number" text="0" />
                 </HBox>
               </VBox>
               <VBox spacing="8" styleClass="mini-stat-card">
-                <Label styleClass="card-description" text="Tablets" />
+                <Label styleClass="card-description" text="Appliances" />
                 <HBox alignment="CENTER_RIGHT" spacing="12">
-                  <Label styleClass="emoji-icon" text="📱" />
-                  <Label fx:id="tabletsCount" styleClass="card-number" text="0" />
+                  <Label styleClass="emoji-icon" text="🔌" />
+                  <Label fx:id="appliancesCount" styleClass="card-number" text="0" />
                 </HBox>
               </VBox>
               <VBox spacing="8" styleClass="mini-stat-card">
-                <Label styleClass="card-description" text="Smartphones" />
+                <Label styleClass="card-description" text="Sounds and light" />
                 <HBox alignment="CENTER_RIGHT" spacing="12">
-                  <Label styleClass="emoji-icon" text="📲" />
-                  <Label fx:id="smartphonesCount" styleClass="card-number" text="0" />
+                  <Label styleClass="emoji-icon" text="🔊" />
+                  <Label fx:id="soundsLightCount" styleClass="card-number" text="0" />
                 </HBox>
               </VBox>
               <VBox spacing="8" styleClass="mini-stat-card">
-                <Label styleClass="card-description" text="Others" />
+                <Label styleClass="card-description" text="Project prototypes" />
                 <HBox alignment="CENTER_RIGHT" spacing="12">
-                  <Label styleClass="emoji-icon" text="💡" />
-                  <Label fx:id="othersCount" styleClass="card-number" text="0" />
+                  <Label styleClass="emoji-icon" text="🧪" />
+                  <Label fx:id="projectPrototypesCount" styleClass="card-number" text="0" />
+                </HBox>
+              </VBox>
+              <VBox spacing="8" styleClass="mini-stat-card">
+                <Label styleClass="card-description" text="Rentable items" />
+                <HBox alignment="CENTER_RIGHT" spacing="12">
+                  <Label styleClass="emoji-icon" text="📦" />
+                  <Label fx:id="rentableCount" styleClass="card-number" text="0" />
                 </HBox>
               </VBox>
             </VBox>

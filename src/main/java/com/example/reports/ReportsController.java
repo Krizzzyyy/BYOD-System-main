@@ -224,7 +224,7 @@ public class ReportsController {
 
         if (formStatusCombo != null) {
             formStatusCombo.getItems().add("Select Status");
-            formStatusCombo.getItems().addAll("Approved", "Pending", "Disapproved", "Cancelled", "Ready for Entry", "Checked In", "Checked Out");
+            formStatusCombo.getItems().addAll("Approved", "Pending", "Disapproved", "Cancelled");
             formStatusCombo.setValue("Select Status");
         }
 
@@ -416,10 +416,29 @@ public class ReportsController {
                     if (deviceCombo != null) deviceCombo.setValue(newVal.getDevice());
                     if (serialField != null) serialField.setText(newVal.getSerial());
                     if (colorDescField != null) colorDescField.setText(newVal.getColorDesc());
+                    boolean entryDateReached = false;
                     if (entryDatePicker != null && newVal.getEntryDate() != null && !newVal.getEntryDate().equals("N/A")) {
-                        try { entryDatePicker.setValue(java.time.LocalDate.parse(newVal.getEntryDate())); } catch (Exception ignored) {}
+                        try {
+                            java.time.LocalDate parsedEntryDate = java.time.LocalDate.parse(newVal.getEntryDate());
+                            entryDatePicker.setValue(parsedEntryDate);
+                            entryDateReached = !java.time.LocalDate.now().isBefore(parsedEntryDate);
+                        } catch (Exception ignored) {}
                     } else if (entryDatePicker != null) { entryDatePicker.setValue(null); }
-                    if (formStatusCombo != null) formStatusCombo.setValue(newVal.getStatus());
+                    if (entryDatePicker != null) entryDatePicker.setDisable(entryDateReached);
+
+                    String currentStatusForLock = newVal.getStatus();
+                    boolean lifecycleLocked = entryDateReached &&
+                            ("Ready for Entry".equals(currentStatusForLock) || "Checked In".equals(currentStatusForLock) || "Checked Out".equals(currentStatusForLock));
+
+                    if (formStatusCombo != null) {
+                        formStatusCombo.getItems().clear();
+                        if (lifecycleLocked) {
+                            formStatusCombo.getItems().addAll(currentStatusForLock, "Cancelled");
+                        } else {
+                            formStatusCombo.getItems().addAll("Approved", "Pending", "Disapproved", "Cancelled");
+                        }
+                        formStatusCombo.setValue(currentStatusForLock);
+                    }
                     if (remarksField != null) remarksField.setText(newVal.getRemarks());
                 }
             });
@@ -500,8 +519,12 @@ public class ReportsController {
         if (deviceCombo != null) deviceCombo.setValue("Select Items");
         if (serialField != null) serialField.clear();
         if (colorDescField != null) colorDescField.clear();
-        if (entryDatePicker != null) entryDatePicker.setValue(null);
-        if (formStatusCombo != null) formStatusCombo.setValue("Select Status");
+        if (entryDatePicker != null) { entryDatePicker.setValue(null); entryDatePicker.setDisable(false); }
+        if (formStatusCombo != null) {
+            formStatusCombo.getItems().clear();
+            formStatusCombo.getItems().addAll("Approved", "Pending", "Disapproved", "Cancelled");
+            formStatusCombo.setValue("Select Status");
+        }
         if (remarksField != null) remarksField.clear();
     }
 
@@ -574,6 +597,25 @@ public class ReportsController {
         if (status == null || status.equals("Select Status")) {
             showAlert("Validation Missing", "Please select a Status.");
             return;
+        }
+
+        StudentRow selectedRowForLockCheck = studentsTable != null ? studentsTable.getSelectionModel().getSelectedItem() : null;
+        if (selectedRowForLockCheck != null && !entryDate.isEmpty()) {
+            try {
+                java.time.LocalDate parsedEntryDate = java.time.LocalDate.parse(entryDate);
+                boolean entryDateReached = !java.time.LocalDate.now().isBefore(parsedEntryDate);
+                String currentStatusForLockCheck = selectedRowForLockCheck.getStatus();
+                boolean lifecycleLocked = entryDateReached &&
+                        ("Ready for Entry".equals(currentStatusForLockCheck) || "Checked In".equals(currentStatusForLockCheck) || "Checked Out".equals(currentStatusForLockCheck));
+                if (lifecycleLocked && !status.equals(currentStatusForLockCheck) && !status.equals("Cancelled")) {
+                    showAlert("Status Locked", "Entry date has been reached. You may only keep the current status (" + currentStatusForLockCheck + ") or cancel this registration.");
+                    return;
+                }
+                if (entryDateReached && !entryDate.equals(selectedRowForLockCheck.getEntryDate())) {
+                    showAlert("Date Locked", "The entry date cannot be changed once it is today or already past.");
+                    return;
+                }
+            } catch (Exception ignored) {}
         }
 
         boolean success = byodService.updateRegisteredStudent(id, name, dept, type, serial, phone, status, remarks, userCategory, yearSection, colorDesc, entryDate);

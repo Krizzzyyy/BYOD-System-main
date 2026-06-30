@@ -107,9 +107,10 @@
             </VBox>
           </HBox>
 
-          <HBox spacing="20" VBox.vgrow="ALWAYS">
-            <VBox minWidth="300" prefWidth="380" spacing="14" styleClass="card">
-              <Label styleClass="chart-title" text="🔧  Export Parameters" />
+        <HBox spacing="20" VBox.vgrow="ALWAYS">
+          <ScrollPane fitToWidth="true" minWidth="300" prefWidth="380" maxHeight="700" styleClass="transparent-scroll" hbarPolicy="NEVER" vbarPolicy="AS_NEEDED">
+          <VBox spacing="14" styleClass="card">
+            <Label styleClass="chart-title" text="🔧  Export Parameters" />
 
               <HBox alignment="CENTER_LEFT" spacing="8">
                 <RadioButton fx:id="scopePeriodRadio" onAction="#handleScopeToggle" styleClass="scope-radio" />
@@ -131,21 +132,13 @@
                 <Label text="—" />
                 <DatePicker fx:id="exportToDate" prefWidth="160" />
               </HBox>
-              <Label styleClass="form-label-sm" text="STUDENT COURSE" />
+              <Label styleClass="form-label-sm" text="USER CATEGORY" />
               <VBox spacing="6">
-                <CheckBox fx:id="exportAllCoursesCheckBox" onAction="#handleSelectAllCourses" styleClass="label-bold" text="All" />
+                <CheckBox fx:id="exportAllCategoriesCheckBox" onAction="#handleSelectAllCategories" styleClass="label-bold" text="All" />
                 <GridPane hgap="8" vgap="6">
-                  <CheckBox fx:id="exportBSECE" text="BSECE" GridPane.columnIndex="0" GridPane.rowIndex="0" />
-                  <CheckBox fx:id="exportBSBAHRM" text="BSBA-HRM" GridPane.columnIndex="1" GridPane.rowIndex="0" />
-                  <CheckBox fx:id="exportBSBAMM" text="BSBA-MM" GridPane.columnIndex="0" GridPane.rowIndex="1" />
-                  <CheckBox fx:id="exportBSEdEnglish" text="BSEd-English" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                  <CheckBox fx:id="exportBSEdFilipino" text="BSEd-Filipino" GridPane.columnIndex="0" GridPane.rowIndex="2" />
-                  <CheckBox fx:id="exportBSEdMath" text="BSEd-Math" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                  <CheckBox fx:id="exportBSIE" text="BSIE" GridPane.columnIndex="0" GridPane.rowIndex="3" />
-                  <CheckBox fx:id="exportBSIT" text="BSIT" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                  <CheckBox fx:id="exportBSPSY" text="BSPSY" GridPane.columnIndex="0" GridPane.rowIndex="4" />
-                  <CheckBox fx:id="exportBTLEdHE" text="BTLEd-HE" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                  <CheckBox fx:id="exportBSMA" text="BSMA" GridPane.columnIndex="0" GridPane.rowIndex="5" />
+                  <CheckBox fx:id="exportStudent" text="Student" GridPane.columnIndex="0" GridPane.rowIndex="0" />
+                  <CheckBox fx:id="exportStaff" text="Staff" GridPane.columnIndex="1" GridPane.rowIndex="0" />
+                  <CheckBox fx:id="exportGuest" text="Guest" GridPane.columnIndex="0" GridPane.rowIndex="1" />
                 </GridPane>
               </VBox>
 
@@ -174,12 +167,13 @@
                   <Label styleClass="form-label-sm" text="EXCEL" />
                 </VBox>
               </HBox>
-              <Button fx:id="generateExportBtn" maxWidth="Infinity" onAction="#handleGenerateExport" prefHeight="46" styleClass="btn-dark" text="☁  Generate secure export" />
-            </VBox>
+            <Button fx:id="generateExportBtn" maxWidth="Infinity" onAction="#handleGenerateExport" prefHeight="46" styleClass="btn-dark" text="☁  Generate secure export" />
+          </VBox>
+          </ScrollPane>
 
-            <VBox spacing="14" styleClass="card" HBox.hgrow="ALWAYS">
-              <HBox alignment="CENTER_LEFT" spacing="12">
-                <Label styleClass="card-title" text="Recent Exports" />
+          <VBox spacing="14" styleClass="card" HBox.hgrow="ALWAYS">
+            <HBox alignment="CENTER_LEFT" spacing="12">
+              <Label styleClass="card-title" text="Recent Exports" />
                 <Region HBox.hgrow="ALWAYS" />
                 <Button onAction="#handleRefresh" styleClass="refresh-button" text="&#x21BB; Refresh" />
               </HBox>

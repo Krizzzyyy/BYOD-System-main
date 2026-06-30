@@ -103,18 +103,10 @@ public class ReportsController {
     @FXML private DatePicker exportFromDate;
     @FXML private DatePicker exportToDate;
     @FXML private TextField exportCourseField;
-    @FXML private CheckBox exportAllCoursesCheckBox;
-    @FXML private CheckBox exportBSECE;
-    @FXML private CheckBox exportBSBAHRM;
-    @FXML private CheckBox exportBSBAMM;
-    @FXML private CheckBox exportBSEdEnglish;
-    @FXML private CheckBox exportBSEdFilipino;
-    @FXML private CheckBox exportBSEdMath;
-    @FXML private CheckBox exportBSIE;
-    @FXML private CheckBox exportBSIT;
-    @FXML private CheckBox exportBSPSY;
-    @FXML private CheckBox exportBTLEdHE;
-    @FXML private CheckBox exportBSMA;
+    @FXML private CheckBox exportAllCategoriesCheckBox;
+    @FXML private CheckBox exportStudent;
+    @FXML private CheckBox exportStaff;
+    @FXML private CheckBox exportGuest;
     @FXML private RadioButton scopePeriodRadio;
     @FXML private RadioButton scopeTemporalRadio;
     @FXML private Label scopePeriodLabel;
@@ -237,18 +229,10 @@ public class ReportsController {
         if (exportSoundsLight != null) exportSoundsLight.setSelected(true);
         if (exportProjectPrototypes != null) exportProjectPrototypes.setSelected(true);
         if (exportRentable != null) exportRentable.setSelected(true);
-        if (exportAllCoursesCheckBox != null) exportAllCoursesCheckBox.setSelected(true);
-        if (exportBSECE != null) exportBSECE.setSelected(true);
-        if (exportBSBAHRM != null) exportBSBAHRM.setSelected(true);
-        if (exportBSBAMM != null) exportBSBAMM.setSelected(true);
-        if (exportBSEdEnglish != null) exportBSEdEnglish.setSelected(true);
-        if (exportBSEdFilipino != null) exportBSEdFilipino.setSelected(true);
-        if (exportBSEdMath != null) exportBSEdMath.setSelected(true);
-        if (exportBSIE != null) exportBSIE.setSelected(true);
-        if (exportBSIT != null) exportBSIT.setSelected(true);
-        if (exportBSPSY != null) exportBSPSY.setSelected(true);
-        if (exportBTLEdHE != null) exportBTLEdHE.setSelected(true);
-        if (exportBSMA != null) exportBSMA.setSelected(true);
+        if (exportAllCategoriesCheckBox != null) exportAllCategoriesCheckBox.setSelected(true);
+        if (exportStudent != null) exportStudent.setSelected(true);
+        if (exportStaff != null) exportStaff.setSelected(true);
+        if (exportGuest != null) exportGuest.setSelected(true);
 
         if (scopePeriodRadio != null && scopeTemporalRadio != null) {
             scopePeriodRadio.setToggleGroup(scopeToggleGroup);
@@ -957,20 +941,12 @@ public class ReportsController {
     }
 
     @FXML
-    private void handleSelectAllCourses() {
-        if (exportAllCoursesCheckBox == null) return;
-        boolean state = exportAllCoursesCheckBox.isSelected();
-        if (exportBSECE != null) exportBSECE.setSelected(state);
-        if (exportBSBAHRM != null) exportBSBAHRM.setSelected(state);
-        if (exportBSBAMM != null) exportBSBAMM.setSelected(state);
-        if (exportBSEdEnglish != null) exportBSEdEnglish.setSelected(state);
-        if (exportBSEdFilipino != null) exportBSEdFilipino.setSelected(state);
-        if (exportBSEdMath != null) exportBSEdMath.setSelected(state);
-        if (exportBSIE != null) exportBSIE.setSelected(state);
-        if (exportBSIT != null) exportBSIT.setSelected(state);
-        if (exportBSPSY != null) exportBSPSY.setSelected(state);
-        if (exportBTLEdHE != null) exportBTLEdHE.setSelected(state);
-        if (exportBSMA != null) exportBSMA.setSelected(state);
+    private void handleSelectAllCategories() {
+        if (exportAllCategoriesCheckBox == null) return;
+        boolean state = exportAllCategoriesCheckBox.isSelected();
+        if (exportStudent != null) exportStudent.setSelected(state);
+        if (exportStaff != null) exportStaff.setSelected(state);
+        if (exportGuest != null) exportGuest.setSelected(state);
     }
 
     @FXML private void handleExportCsv()    { selectFormat("CSV");   showSuccessAlert("Selected Format changed to standard CSV Data stream."); }
@@ -1021,18 +997,10 @@ public class ReportsController {
         File targetedFile = fileChooser.showSaveDialog(activeStage);
 
         if (targetedFile != null) {
-            boolean noCourseSelected = exportAllCoursesCheckBox != null && !exportAllCoursesCheckBox.isSelected()
-                    && (exportBSECE == null || !exportBSECE.isSelected())
-                    && (exportBSBAHRM == null || !exportBSBAHRM.isSelected())
-                    && (exportBSBAMM == null || !exportBSBAMM.isSelected())
-                    && (exportBSEdEnglish == null || !exportBSEdEnglish.isSelected())
-                    && (exportBSEdFilipino == null || !exportBSEdFilipino.isSelected())
-                    && (exportBSEdMath == null || !exportBSEdMath.isSelected())
-                    && (exportBSIE == null || !exportBSIE.isSelected())
-                    && (exportBSIT == null || !exportBSIT.isSelected())
-                    && (exportBSPSY == null || !exportBSPSY.isSelected())
-                    && (exportBTLEdHE == null || !exportBTLEdHE.isSelected())
-                    && (exportBSMA == null || !exportBSMA.isSelected());
+            boolean noCourseSelected = exportAllCategoriesCheckBox != null && !exportAllCategoriesCheckBox.isSelected()
+                    && (exportStudent == null || !exportStudent.isSelected())
+                    && (exportStaff == null || !exportStaff.isSelected())
+                    && (exportGuest == null || !exportGuest.isSelected());
             if (noCourseSelected) {
                 showAlert("Validation Missing", "Please select at least one Student Course.");
                 return;

@@ -7,7 +7,7 @@
 
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="800.0" prefWidth="1280.0" styleClass="background" stylesheets="@../css/stylesheet.css" xmlns="http://javafx.com/javafx/17.0.12" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.registration.RegistrationController">
     <top>
-        <HBox id="navbar" alignment="CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" spacing="10.0" styleClass="navbar">
+        <HBox id="navbar" alignment="CENTER" maxHeight="-Infinity" maxWidth="1.7976931348623157E308" minHeight="-Infinity" minWidth="-Infinity" spacing="10.0" styleClass="navbar" BorderPane.alignment="CENTER">
             <children>
                 <ImageView fx:id="logoImage" fitHeight="60.0" fitWidth="60.0" pickOnBounds="true" preserveRatio="true">
                     <image><Image url="@../assets/byod-logo.png" /></image>
@@ -15,10 +15,10 @@
                         <Insets left="60.0" />
                     </HBox.margin>
                 </ImageView>
-                <Button fx:id="dashboardButton" maxHeight="-Infinity" maxWidth="-Infinity" onAction="#handleDashboard" prefHeight="50.0" styleClass="nav-button" text="Dashboard" />
-                <Button fx:id="monitoringButton" maxHeight="-Infinity" maxWidth="-Infinity" onAction="#handleMonitoring" prefHeight="50.0" styleClass="nav-button" text="Monitoring" />
-                <Button fx:id="registrationButton" maxHeight="-Infinity" maxWidth="-Infinity" onAction="#handleRegistration" prefHeight="50.0" styleClass="nav-button-active" text="Registration" />
-                <Button fx:id="reportsButton" maxHeight="-Infinity" maxWidth="-Infinity" onAction="#handleReports" prefHeight="50.0" styleClass="nav-button" text="Reports" />
+                <Button fx:id="dashboardButton" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#handleDashboard" prefHeight="50.0" styleClass="nav-button" text="Dashboard" />
+                <Button fx:id="monitoringButton" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#handleMonitoring" prefHeight="50.0" styleClass="nav-button" text="Monitoring" />
+                <Button fx:id="registrationButton" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#handleRegistration" prefHeight="50.0" styleClass="nav-button-active" text="Registration" />
+                <Button fx:id="reportsButton" maxHeight="-Infinity" maxWidth="-Infinity" mnemonicParsing="false" onAction="#handleReports" prefHeight="50.0" styleClass="nav-button" text="Reports" />
                 <Region fx:id="spacer" HBox.hgrow="ALWAYS" />
                 <Label fx:id="navDateTimeLabel" styleClass="nav-datetime" text="MM/DD/YYYY HH:MM:SS">
                     <HBox.margin>
@@ -108,7 +108,7 @@
                             <VBox spacing="4" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                 <Label styleClass="form-label-sm" text="SCHEDULED ENTRY DATE" />
                                 <DatePicker fx:id="scheduledEntryDate" maxWidth="Infinity" promptText="Select your planned entry date" />
-                                <Label styleClass="form-helper" text="At least 1 day from today" />
+                                <Label styleClass="form-helper" text="Must be at least 1 day after submitting this form." />
                             </VBox>
 
                             <!-- Row 3: Student-only fields (hidden for Staff/Guest) -->

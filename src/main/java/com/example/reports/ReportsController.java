@@ -46,11 +46,12 @@ import com.itextpdf.text.pdf.PdfPTable;
 
 public class ReportsController {
 
-    private boolean isAdminLoggedIn = false;
-
     /* ── Navbar ─────────────────────────────────────────── */
     @FXML private Button scheduleBtn;
     @FXML private Button exportAllBtn;
+    @FXML private Button dashboardButton;
+    @FXML private Button monitoringButton;
+    @FXML private Button registrationButton;
     @FXML private Button reportsButton;
     @FXML private Label navDateTimeLabel;
 
@@ -277,7 +278,12 @@ public class ReportsController {
         if (exportScopeValueCombo == null || exportScopeTypeCombo == null) return;
         exportScopeValueCombo.getItems().clear();
         String type = exportScopeTypeCombo.getValue();
-        if (type == null) return;
+        if (type == null) {
+            exportScopeValueCombo.setDisable(true);
+            exportScopeValueCombo.setPromptText("Select...");
+            return;
+        }
+        exportScopeValueCombo.setDisable(false);
 
         try (java.sql.Connection conn = java.sql.DriverManager.getConnection(
                 byodService.getDbUrl(), byodService.getDbUser(), byodService.getDbPass());
@@ -970,11 +976,13 @@ public class ReportsController {
         javafx.concurrent.Task<Void> task = new javafx.concurrent.Task<>() {
             @Override protected Void call() throws Exception {
                 Thread.sleep(400);
-                loadData();
                 return null;
             }
         };
-        task.setOnSucceeded(e -> loadingDialog.close());
+        task.setOnSucceeded(e -> {
+            loadData();
+            loadingDialog.close();
+        });
         task.setOnFailed(e -> loadingDialog.close());
 
         Thread thread = new Thread(task);
@@ -986,19 +994,6 @@ public class ReportsController {
     @FXML private void handleMonitoring()   { navigateTo("/fxml/monitoring.fxml"); }
     @FXML private void handleRegistration() { navigateTo("/fxml/registration.fxml"); }
     @FXML private void handleReports(javafx.event.ActionEvent e) { showView(View.MAIN); }
-
-    private void confirmLeaveReports(Runnable onProceed) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Confirm Navigation");
-        alert.setHeaderText(null);
-        alert.setContentText("Going back to the Reports Tab will require you to login again. Proceed?");
-        alert.showAndWait().ifPresent(response -> {
-            if (response == ButtonType.OK) {
-                Auth.reportUnlocked = false;
-                onProceed.run();
-            }
-        });
-    }
 
     @FXML
     private void handleSelectAllToggle() {
@@ -1046,13 +1041,13 @@ public class ReportsController {
 
     private void selectFormat(String format) {
         this.selectedFormat = format;
-        exportCsvBtn.getStyleClass().remove("format-btn-selected");
-        exportPdfBtn.getStyleClass().remove("format-btn-selected");
-        exportXlsBtn.getStyleClass().remove("format-btn-selected");
+        if (exportCsvBtn != null) exportCsvBtn.getStyleClass().remove("format-btn-selected");
+        if (exportPdfBtn != null) exportPdfBtn.getStyleClass().remove("format-btn-selected");
+        if (exportXlsBtn != null) exportXlsBtn.getStyleClass().remove("format-btn-selected");
         switch (format) {
-            case "CSV":   exportCsvBtn.getStyleClass().add("format-btn-selected"); break;
-            case "PDF":   exportPdfBtn.getStyleClass().add("format-btn-selected"); break;
-            case "EXCEL": exportXlsBtn.getStyleClass().add("format-btn-selected"); break;
+            case "CSV":   if (exportCsvBtn != null) exportCsvBtn.getStyleClass().add("format-btn-selected"); break;
+            case "PDF":   if (exportPdfBtn != null) exportPdfBtn.getStyleClass().add("format-btn-selected"); break;
+            case "EXCEL": if (exportXlsBtn != null) exportXlsBtn.getStyleClass().add("format-btn-selected"); break;
         }
     }
 

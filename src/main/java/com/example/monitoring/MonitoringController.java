@@ -38,7 +38,6 @@
             private static final String DASHBOARD_FXML = "/fxml/dashboard.fxml";
             private static final String REGISTRATION_FXML = "/fxml/registration.fxml";
             private static final String REPORTS_FXML = "/fxml/reports.fxml";
-            private static final String ACCOUNT_FXML = "/fxml/account.fxml";
             private static final String LOGIN_FXML = "/fxml/login.fxml";
 
             private static final String STATUS_INGRESS = "Ingress";
@@ -60,6 +59,7 @@
             @FXML private ComboBox<String> statusFilter;
             @FXML private DatePicker dateFilter;
             @FXML private Button exportLogButton;
+            @FXML private Button scanQREgressButton;
 
 
             // ==================== TABLE & COLUMNS ====================
@@ -424,7 +424,6 @@
             @FXML private void onMonitoringClick() { refreshMonitoringData(); }
             @FXML private void onRegistrationClick() { navigateTo(REGISTRATION_FXML, "Device Registration - BYOD System"); }
             @FXML private void onReportsClick() { navigateTo(REPORTS_FXML, "Reports - BYOD System"); }
-            @FXML private void onAccountClick() { navigateTo(ACCOUNT_FXML, "Account Settings - BYOD System"); }
 
             @FXML private void handleLogout() {
                 Auth.isLoggedIn = false;
@@ -453,7 +452,6 @@
             @FXML private void onSearch() { filterAndPaginate(); }
             @FXML private void onFilterChanged() { currentPage = 1; filterAndPaginate(); }
             @FXML private void onExportLog() { LOGGER.info("Export CSV handling triggered"); }
-            @FXML private void onLogEntry() { LOGGER.info("Manual row creation requested"); }
 
             @FXML private void onPrevPage() { if (currentPage > 1) { currentPage--; updatePagination(); } }
             @FXML private void onPage1() {
@@ -537,6 +535,7 @@
                     for (Object[] row : byodService.fetchLogs()) {
                         String formId = (String) row[0];
                         int logId = (int) row[1];
+                        String studentId = (String) row[2];
                         String egress = (String) row[6];
                         String approvalStatus = row.length > 7 ? (String) row[7] : "Approved";
                         String status = approvalStatus;
@@ -548,6 +547,7 @@
                                 logId,
                                 (String) row[3],
                                 formId,
+                                studentId,
                                 (String) row[4],
                                 status,
                                 timestamp,
@@ -646,6 +646,7 @@
                                 (int) row[1],
                                 (String) row[3],
                                 (String) row[0],
+                                (String) row[2],
                                 (String) row[4],
                                 "Pending",
                                 (String) row[5],

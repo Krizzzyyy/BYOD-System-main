@@ -73,7 +73,9 @@ public class RegistrationController {
     @FXML private Button saveBtn;
     @FXML private Button cancelBtn;
     @FXML private Label  formIdLabel;
+    @FXML private Button dashboardButton;
     @FXML private Button monitoringButton;
+    @FXML private Button registrationButton;
     @FXML private Button reportsButton;
 
     private static final int TOTAL_STEPS = 3;
@@ -622,8 +624,8 @@ public class RegistrationController {
             Parent root = FXMLLoader.load(getClass().getResource(fxml.toLowerCase()));
             Stage stage = (Stage) cancelBtn.getScene().getWindow();
             Scene current = stage.getScene();
-            current.getStylesheets().clear();
-            current.getStylesheets().add(getClass().getResource("/css/stylesheet.css").toExternalForm());
+            String cssPath = getClass().getResource("/css/stylesheet.css").toExternalForm();
+            if (!current.getStylesheets().contains(cssPath)) current.getStylesheets().add(cssPath);
             current.setRoot(root);
         } catch (IOException e) {
             e.printStackTrace();

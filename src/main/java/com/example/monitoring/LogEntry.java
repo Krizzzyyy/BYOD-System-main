@@ -15,12 +15,12 @@ public class LogEntry {
     private final int logId;
     private final String formId;
 
-    public LogEntry(int logId, String studentName, String formId, String deviceSerial,
+    public LogEntry(int logId, String studentName, String formId, String studentId, String deviceSerial,
                     String status, String lastLog, String approvalStatus, String scheduledEntryDate, String userType) {
         this.logId = logId;
         this.formId = formId;
         this.studentName = new SimpleStringProperty(studentName);
-        this.studentId = new SimpleStringProperty(formId);
+        this.studentId = new SimpleStringProperty(studentId != null ? studentId : formId);
         this.deviceSerial = new SimpleStringProperty(deviceSerial);
         this.status = new SimpleStringProperty(status);
         this.lastLog = new SimpleStringProperty(lastLog);

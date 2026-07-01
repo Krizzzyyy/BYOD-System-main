@@ -269,8 +269,8 @@
 .action-button:focused { -fx-focus-color: -color-accent-border; -fx-faint-focus-color: -color-accent-border-alpha; }
 
 /* ── Action Button Variants ──────────────────────────────── */
-.btn-grey { -fx-background-color: #6c757d; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-radius: 12px; -fx-padding: 10px 20px; -fx-cursor: hand; }
-.btn-grey:hover { -fx-background-color: derive(#6c757d, -15%); }
+.btn-grey { -fx-background-color: derive(-color-border-default, -20%); -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-radius: 12px; -fx-padding: 10px 20px; -fx-cursor: hand; }
+.btn-grey:hover { -fx-background-color: derive(-color-border-default, -35%); }
 
 .btn-green { -fx-background-color: -color-status-success; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-radius: 12px; -fx-padding: 10px 20px; -fx-cursor: hand; }
 .btn-green:hover { -fx-background-color: derive(-color-status-success, -15%); }
@@ -280,7 +280,7 @@
 
 .scope-radio .radio {
     -fx-background-color: white, white;
-    -fx-border-color: #aaaaaa;
+    -fx-border-color: -color-border-default;
     -fx-border-radius: 50%;
     -fx-background-radius: 50%;
 }
@@ -288,14 +288,18 @@
     -fx-background-color: transparent;
 }
 .scope-radio:selected .radio {
-    -fx-background-color: #D4AF37, white, #D4AF37;
+    -fx-background-color: -color-status-error, white, -color-status-error;
     -fx-background-insets: 0, 2, 4;
     -fx-background-radius: 50%;
-    -fx-border-color: #D4AF37;
+    -fx-border-color: -color-status-error;
     -fx-border-radius: 50%;
 }
 .scope-radio:selected .radio .dot {
     -fx-background-color: transparent;
+}
+.scope-radio:selected {
+    -fx-text-fill: -color-status-error;
+    -fx-font-weight: bold;
 }
 
 .btn-red { -fx-background-color: -color-status-error; -fx-text-fill: white; -fx-font-weight: bold; -fx-font-size: 16px; -fx-background-radius: 12px; -fx-padding: 10px 20px; -fx-cursor: hand; }
@@ -563,19 +567,20 @@
    REPORTS
    ═══════════════════════════════════════════════════════════ */
 
-.prog-red .bar, .prog-gold .bar, .prog-pink .bar, .prog-gray .bar { -fx-background-radius: 8px; }
+.prog-red .bar, .prog-gold .bar, .prog-pink .bar, .prog-gray .bar, .prog-blue .bar { -fx-background-radius: 8px; }
 .prog-red .bar { -fx-background-color: -color-accent; }
 .prog-gold .bar { -fx-background-color: -color-accent-border; }
-.prog-pink .bar { -fx-background-color: #c47a7a; }
+.prog-pink .bar { -fx-background-color: derive(-color-status-error, 50%); }
 .prog-gray .bar { -fx-background-color: -color-border-default; }
+.prog-blue .bar { -fx-background-color: -color-blue; }
 .progress-bar { -fx-background-color: -color-bg-default; -fx-background-radius: 8px; }
 .progress-bar .track { -fx-background-color: -color-bg-default; -fx-background-radius: 8px; }
 
 /* ═══════════════════════════════════════════════════════════
    APPROVAL STATUS BADGES
    ═══════════════════════════════════════════════════════════ */
-.status-pending { -fx-background-color: rgba(255, 166, 77, 0.15); -fx-text-fill: #b37400; -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
-.status-approved { -fx-background-color: rgba(98, 184, 111, 0.15); -fx-text-fill: #3d7a47; -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
+.status-pending { -fx-background-color: -color-status-warning-alpha; -fx-text-fill: derive(-color-status-warning, -30%); -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
+.status-approved { -fx-background-color: -color-status-success-alpha; -fx-text-fill: derive(-color-status-success, -30%); -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
 .status-disapproved { -fx-background-color: rgba(211, 47, 47, 0.15); -fx-text-fill: -color-status-error; -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
 .status-cancelled { -fx-background-color: rgba(185, 187, 190, 0.15); -fx-text-fill: -color-fg-muted; -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
 

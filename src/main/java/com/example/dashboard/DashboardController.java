@@ -42,7 +42,6 @@ public class DashboardController {
     private static final String MONITORING_FXML = "/fxml/monitoring.fxml";
     private static final String REGISTRATION_FXML = "/fxml/registration.fxml";
     private static final String REPORTS_FXML = "/fxml/reports.fxml";
-    private static final String ACCOUNT_FXML = "/fxml/account.fxml";
 
     private static final String SYNC_STATUS_LIVE = "Live";
     private static final String SYNC_STATUS_OFFLINE = "Offline";
@@ -294,11 +293,13 @@ public class DashboardController {
         Task<Void> task = new Task<>() {
             @Override protected Void call() throws Exception {
                 Thread.sleep(400);
-                loadDashboardData();
                 return null;
             }
         };
-        task.setOnSucceeded(e -> loadingDialog.close());
+        task.setOnSucceeded(e -> {
+            loadDashboardData();
+            loadingDialog.close();
+        });
         task.setOnFailed(e -> loadingDialog.close());
 
         Thread thread = new Thread(task);
@@ -332,7 +333,6 @@ public class DashboardController {
     @FXML private void handleMonitoring() { navigateTo(MONITORING_FXML, "Monitoring - BYOD System"); }
     @FXML private void handleRegistration() { navigateTo(REGISTRATION_FXML, "Registration - BYOD System"); }
     @FXML private void handleReports() { navigateTo(REPORTS_FXML, "Reports - BYOD System"); }
-    @FXML private void handleAccount() { navigateTo(ACCOUNT_FXML, "Account - BYOD System"); }
 
     private void navigateTo(String fxmlPath, String title) {
         try {

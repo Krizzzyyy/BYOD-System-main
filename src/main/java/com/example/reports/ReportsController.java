@@ -444,7 +444,9 @@ public class ReportsController {
 
                     if (formStatusCombo != null) {
                         formStatusCombo.getItems().clear();
-                        if (lifecycleLocked) {
+                        if ("Checked Out".equals(currentStatusForLock)) {
+                            formStatusCombo.getItems().add("Checked Out");
+                        } else if (lifecycleLocked) {
                             formStatusCombo.getItems().addAll(currentStatusForLock, "Cancelled");
                         } else {
                             formStatusCombo.getItems().addAll("Approved", "Pending", "Disapproved", "Cancelled");

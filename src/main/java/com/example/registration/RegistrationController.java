@@ -145,6 +145,31 @@ public class RegistrationController {
         showStep(1);
         startNavClock();
         applyRoleRestrictions();
+        javafx.application.Platform.runLater(this::showDataPrivacyConsent);
+    }
+
+    private void showDataPrivacyConsent() {
+        try {
+            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(
+                    getClass().getResource("/fxml/privacy.fxml"));
+            javafx.scene.Parent root = loader.load();
+            PrivacyController controller = loader.getController();
+
+            javafx.stage.Stage stage = new javafx.stage.Stage();
+            stage.initModality(javafx.stage.Modality.APPLICATION_MODAL);
+            stage.initOwner(cancelBtn.getScene().getWindow());
+            stage.setTitle("Data Privacy Consent");
+            stage.setResizable(false);
+            stage.setScene(new javafx.scene.Scene(root));
+            stage.showAndWait();
+
+            if (!controller.isAgreed()) {
+                navigateTo("/fxml/dashboard.fxml");
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            navigateTo("/fxml/dashboard.fxml");
+        }
     }
 
     /** Hides serial number field for categories that don't apply (e.g., project prototypes). */

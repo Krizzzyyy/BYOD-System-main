@@ -319,11 +319,11 @@ public class BYODService {
         Map<String, Integer> metrics = new HashMap<>();
 
         String sql = "SELECT " +
-                "  (SELECT COUNT(DISTINCT student_id) FROM student_device_logs WHERE approval_status = 'Approved' OR approval_status IS NULL) as total_students, " +
-                "  (SELECT COUNT(*) FROM student_device_logs WHERE approval_status = 'Approved' OR approval_status IS NULL) as total_devices, " +
-                "  (SELECT COUNT(*) FROM student_device_logs WHERE egress_time IS NULL AND (approval_status = 'Approved' OR approval_status IS NULL)) as devices_inside, " +
-                "  (SELECT COUNT(*) FROM student_device_logs WHERE DATE(ingress_time) = CURRENT_DATE AND (approval_status = 'Approved' OR approval_status IS NULL)) as ingress_today, " +
-                "  (SELECT COUNT(*) FROM student_device_logs WHERE DATE(egress_time) = CURRENT_DATE AND (approval_status = 'Approved' OR approval_status IS NULL)) as egress_today";
+                "  (SELECT COUNT(DISTINCT form_id) FROM student_device_logs WHERE approval_date IS NOT NULL AND (is_deleted = 0 OR is_deleted IS NULL)) as total_students, " +
+                "  (SELECT COUNT(*) FROM student_device_logs WHERE approval_date IS NOT NULL AND (is_deleted = 0 OR is_deleted IS NULL)) as total_devices, " +
+                "  (SELECT COUNT(*) FROM student_device_logs WHERE approval_status = 'Checked In' AND (is_deleted = 0 OR is_deleted IS NULL)) as devices_inside, " +
+                "  (SELECT COUNT(*) FROM student_device_logs WHERE DATE(ingress_time) = CURRENT_DATE AND (is_deleted = 0 OR is_deleted IS NULL)) as ingress_today, " +
+                "  (SELECT COUNT(*) FROM student_device_logs WHERE DATE(egress_time) = CURRENT_DATE AND (is_deleted = 0 OR is_deleted IS NULL)) as egress_today";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              Statement stmt = conn.createStatement();

@@ -359,7 +359,6 @@
               </HBox>
               <HBox alignment="CENTER_RIGHT" spacing="10">
                 <Button onAction="#handleClearForm" styleClass="btn-grey" text="&#x2715; Clear Fields" />
-                <Button onAction="#handleInsertStudent" styleClass="btn-green" text="&#x2795; Insert Record" />
                 <Button onAction="#handleUpdateStudent" styleClass="btn-gold" text="&#x270F; Update Selected" />
                 <Button onAction="#handleDeleteStudent" styleClass="btn-red" text="&#x1F5D1; Move to Trash" />
               </HBox>

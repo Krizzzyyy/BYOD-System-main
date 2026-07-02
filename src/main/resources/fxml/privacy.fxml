@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+
+<VBox prefWidth="500" spacing="0"
+      styleClass="background"
+      stylesheets="@../css/stylesheet.css"
+      xmlns="http://javafx.com/javafx/26"
+      xmlns:fx="http://javafx.com/fxml/1"
+      fx:controller="com.example.registration.PrivacyController">
+
+    <!-- Header -->
+    <VBox alignment="CENTER" spacing="6">
+        <padding><Insets top="28" right="24" bottom="20" left="24" /></padding>
+        <Label text="🛡" styleClass="title-2" />
+        <Label text="Data Privacy Act of 2012" styleClass="login-title" />
+        <Label text="Republic Act No. 10173 — Consent Notice" styleClass="login-subtitle" />
+    </VBox>
+
+    <!-- Gold divider -->
+    <Region prefHeight="2" style="-fx-background-color: -color-accent-border;" />
+
+    <!-- Privacy text + checkbox -->
+    <VBox spacing="14">
+        <padding><Insets top="20" right="24" bottom="0" left="24" /></padding>
+        <TextArea fx:id="privacyText" editable="false" wrapText="true" prefHeight="260" styleClass="privacy-text"
+                  text="In compliance with RA No. 10173 (Data Privacy Act of 2012), this system collects and processes your personal information — including your name, Student ID, contact number, and device details — strictly for campus BYOD monitoring and security purposes.&#10;&#10;Your data will not be disclosed to third parties without your consent and will only be retained for as long as necessary. You retain the right to access, correct, and request deletion of your personal data at any time by contacting the system administrator." />
+
+        <CheckBox fx:id="consentCheck" wrapText="true" styleClass="form-label-sm"
+                  text="I have read and agree to the collection and processing of my personal data in accordance with the Data Privacy Act of 2012." />
+    </VBox>
+
+    <!-- Buttons -->
+    <HBox alignment="CENTER_RIGHT" spacing="12">
+        <padding><Insets top="20" right="24" bottom="24" left="24" /></padding>
+        <Button fx:id="cancelBtn" text="Cancel" onAction="#handleCancel"
+                styleClass="btn-grey" prefWidth="140" />
+        <Button fx:id="okBtn" text="I Agree" onAction="#handleAgree"
+                styleClass="btn-disabled" prefWidth="140" disable="true" />
+    </HBox>
+
+</VBox>

@@ -593,3 +593,7 @@
 .tab:selected .tab-label { -fx-text-fill: -color-accent; }
 .tab-pane > .tab-header-area > .tab-header-background { -fx-background-color: -color-bg-default; -fx-border-color: transparent transparent -color-border-default transparent; -fx-border-width: 0 0 1px 0; }
 .tab-content { -fx-padding: 10 8 0 8; }
+
+.privacy-text {
+    -fx-font-size: 14px;
+}

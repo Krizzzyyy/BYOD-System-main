@@ -56,17 +56,17 @@
                     <HBox alignment="CENTER" spacing="0">
                         <VBox alignment="CENTER" prefWidth="160" spacing="6">
                             <Label fx:id="stepStudentInfo" styleClass="step-active" text="1" />
-                            <Label styleClass="step-label" text="Student info" />
+                            <Label styleClass="step-label" text="User Info" />
                         </VBox>
                         <Region fx:id="connector1" maxHeight="2" prefHeight="2" styleClass="step-connector" HBox.hgrow="ALWAYS" />
                         <VBox alignment="CENTER" prefWidth="160" spacing="6">
                             <Label fx:id="stepDeviceDetails" styleClass="step-inactive" text="2" />
-                            <Label styleClass="step-label" text="Item details" />
+                            <Label styleClass="step-label" text="Item Details" />
                         </VBox>
                         <Region fx:id="connector2" maxHeight="2" prefHeight="2" styleClass="step-connector" HBox.hgrow="ALWAYS" />
                         <VBox alignment="CENTER" prefWidth="160" spacing="6">
                             <Label fx:id="stepReview" styleClass="step-inactive" text="3" />
-                            <Label styleClass="step-label" text="Review and save" />
+                            <Label styleClass="step-label" text="Review and Submit" />
                         </VBox>
                     </HBox>
 
@@ -76,7 +76,7 @@
                     <VBox fx:id="stepPanel1" managed="true" spacing="16" visible="true">
                     <HBox alignment="CENTER_LEFT" spacing="10" styleClass="section-header-bar">
                         <Label styleClass="section-icon" text="i" />
-                        <Label styleClass="section-title" text="Student information" />
+                        <Label styleClass="section-title" text="User Information" />
                     </HBox>
                         <GridPane hgap="20" maxWidth="Infinity" vgap="14">
                             <columnConstraints>
@@ -236,7 +236,7 @@
                     <Button fx:id="nextStepBtn" managed="true" onAction="#handleNextStep" styleClass="btn-dark" text="Next Step" visible="true" />
                     <!-- Save + Cancel: step 3 only -->
                     <Button fx:id="cancelBtn" managed="false" onAction="#handleCancel" styleClass="action-button" text="Cancel" visible="false" />
-                    <Button fx:id="saveBtn" managed="false" onAction="#handleSave" styleClass="btn-save" text="Save" visible="false" />
+                    <Button fx:id="saveBtn" managed="false" onAction="#handleSave" styleClass="btn-save" text="Submit" visible="false" />
                 </HBox>
 
             </VBox>

@@ -46,13 +46,13 @@
                         </VBox.margin>
                     </Label>
 
-                    <Button fx:id="studentButton" alignment="CENTER" maxWidth="350.0" prefWidth="250.0" mnemonicParsing="false" styleClass="role-button-student" text="Student" textAlignment="CENTER">
+                    <Button fx:id="studentButton" alignment="CENTER" maxWidth="350.0" prefWidth="250.0" mnemonicParsing="false" styleClass="role-button-student" text="User" textAlignment="CENTER">
                         <VBox.margin>
                             <Insets bottom="12.0" />
                         </VBox.margin>
                     </Button>
 
-                    <Button fx:id="facultyButton" alignment="CENTER" maxWidth="350.0" prefWidth="250.0" mnemonicParsing="false" styleClass="role-button-faculty" text="Faculty" textAlignment="CENTER" />
+                    <Button fx:id="facultyButton" alignment="CENTER" maxWidth="350.0" prefWidth="250.0" mnemonicParsing="false" styleClass="role-button-faculty" text="Admin" textAlignment="CENTER" />
 
                     <HBox alignment="CENTER" spacing="5.0">
                         <padding>
@@ -72,7 +72,7 @@
                     <padding>
                         <Insets top="10.0" />
                     </padding>
-                    <Label fx:id="appTitleLabel2" styleClass="login-title" text="Faculty Login" />
+                    <Label fx:id="appTitleLabel2" styleClass="login-title" text="Admin Login" />
                     <Label styleClass="login-subtitle" text="↓ Enter your credentials to proceed.">
                         <VBox.margin>
                             <Insets bottom="20.0" />

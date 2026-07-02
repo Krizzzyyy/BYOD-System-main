@@ -159,7 +159,7 @@
             private void setupTableColumns() {
                 studentNameColumn.setCellValueFactory(new PropertyValueFactory<>("studentName"));
                 userCategoryColumn.setCellValueFactory(new PropertyValueFactory<>("userType"));
-                studentIdColumn.setCellValueFactory(new PropertyValueFactory<>("studentId"));
+                studentIdColumn.setCellValueFactory(new PropertyValueFactory<>("formId"));
                 deviceSerialColumn.setCellValueFactory(new PropertyValueFactory<>("deviceSerial"));
                 lastLogColumn.setCellValueFactory(new PropertyValueFactory<>("lastLog"));
 
@@ -634,7 +634,7 @@
             private void setupPendingTableColumns() {
                 pendingNameColumn.setCellValueFactory(new PropertyValueFactory<>("studentName"));
                 pendingUserCategoryColumn.setCellValueFactory(new PropertyValueFactory<>("userType"));
-                pendingIdColumn.setCellValueFactory(new PropertyValueFactory<>("studentId"));
+                pendingIdColumn.setCellValueFactory(new PropertyValueFactory<>("formId"));
                 pendingDeviceColumn.setCellValueFactory(new PropertyValueFactory<>("deviceSerial"));
                 pendingDateColumn.setCellValueFactory(new PropertyValueFactory<>("scheduledEntryDate"));
 

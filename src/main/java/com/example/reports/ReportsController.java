@@ -74,7 +74,8 @@ public class ReportsController {
     /* ── Interactive CRUD Admin Fields ──────────────────── */
     @FXML private TextField studentIdField;
     @FXML private TextField formIdField;
-    @FXML private TextField studentNameField;
+    @FXML private TextField firstNameField;
+    @FXML private TextField lastNameField;
     @FXML private TextField yearSectionField;
     @FXML private TextField colorDescField;
     @FXML private ComboBox<String> userCategoryCombo;
@@ -435,7 +436,11 @@ public class ReportsController {
 
             studentsTable.getSelectionModel().selectedItemProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal != null) {
-                    studentNameField.setText(newVal.getName());
+                    String[] nameParts = newVal.getName() != null && newVal.getName().contains(", ")
+                            ? newVal.getName().split(", ", 2)
+                            : new String[]{ newVal.getName() != null ? newVal.getName() : "", "" };
+                    lastNameField.setText(nameParts[0]);
+                    firstNameField.setText(nameParts.length > 1 ? nameParts[1] : "");
                     if (userCategoryCombo != null) userCategoryCombo.setValue(newVal.getUserCategory());
                     boolean isStudent = "Student".equals(newVal.getUserCategory());
                     if (studentIdField != null) { studentIdField.setText(newVal.getStudentId()); studentIdField.setDisable(!isStudent); studentIdField.setEditable(true); }
@@ -542,7 +547,8 @@ public class ReportsController {
     /* ── Core Admin Data Operations ── */
     @FXML
     private void handleClearForm() {
-        if (studentNameField != null) studentNameField.clear();
+        if (firstNameField != null) firstNameField.clear();
+        if (lastNameField != null) lastNameField.clear();
         if (userCategoryCombo != null) userCategoryCombo.setValue("Student");
         if (formIdField != null) formIdField.clear();
         if (departmentCombo != null) { departmentCombo.setValue("Select Course"); departmentCombo.setDisable(false); }
@@ -563,7 +569,8 @@ public class ReportsController {
     @FXML
     private void handleInsertStudent() {
         String id = studentIdField.getText().trim();
-        String name = studentNameField.getText().trim();
+        String name = (lastNameField.getText().trim() + ", " + firstNameField.getText().trim()).trim();
+        if (name.equals(",")) name = "";
         String dept = departmentCombo != null ? departmentCombo.getValue() : "";
         String type = deviceCombo != null ? deviceCombo.getValue() : "";
         String serial = serialField.getText().trim();
@@ -601,7 +608,8 @@ public class ReportsController {
 
     @FXML
     private void handleUpdateStudent() {
-        String name = studentNameField.getText().trim();
+        String name = (lastNameField.getText().trim() + ", " + firstNameField.getText().trim()).trim();
+        if (name.equals(",")) name = "";
         String userCategory = userCategoryCombo != null ? userCategoryCombo.getValue() : "Student";
         String id = formIdField != null ? formIdField.getText().trim() : "";
         if (id.isEmpty()) {

@@ -459,7 +459,7 @@ public class BYODService {
 
             try (ResultSet rs = ps.executeQuery()) {
                 while (rs.next()) {
-                    String fullName = rs.getString("first_name") + " " + rs.getString("last_name");
+                    String fullName = (rs.getString("last_name") != null ? rs.getString("last_name") : "") + ", " + (rs.getString("first_name") != null ? rs.getString("first_name") : "");
                     students.add(new String[]{
                             rs.getString("form_id"),
                             fullName,

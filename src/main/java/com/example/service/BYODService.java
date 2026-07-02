@@ -643,7 +643,8 @@ public class BYODService {
         Map<String, Integer> ingressMap = new LinkedHashMap<>();
         Map<String, Integer> egressMap  = new LinkedHashMap<>();
 
-        String sqlYears = "SELECT DISTINCT YEAR(ingress_time) as yr FROM student_device_logs ORDER BY yr ASC";
+        String sqlYears = "SELECT DISTINCT YEAR(submitted_time) as yr FROM student_device_logs " +
+                "WHERE submitted_time IS NOT NULL AND (is_deleted = 0 OR is_deleted IS NULL) ORDER BY yr ASC";
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              Statement stmt = conn.createStatement();
              ResultSet rs = stmt.executeQuery(sqlYears)) {
@@ -660,9 +661,11 @@ public class BYODService {
             egressMap.put(yr, 0);
         }
 
-        String sql = "SELECT YEAR(ingress_time) as yr, COUNT(*) as ic, " +
+        String sql = "SELECT YEAR(submitted_time) as yr, COUNT(*) as ic, " +
                 "SUM(CASE WHEN egress_time IS NOT NULL THEN 1 ELSE 0 END) as ec " +
-                "FROM student_device_logs GROUP BY yr ORDER BY yr ASC";
+                "FROM student_device_logs " +
+                "WHERE submitted_time IS NOT NULL AND (is_deleted = 0 OR is_deleted IS NULL) " +
+                "GROUP BY yr ORDER BY yr ASC";
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASS);
              Statement stmt = conn.createStatement();

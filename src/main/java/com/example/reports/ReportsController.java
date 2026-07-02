@@ -292,13 +292,17 @@ public class ReportsController {
             switch (type) {
                 case "Annual" -> {
                     java.sql.ResultSet rs = st.executeQuery(
-                            "SELECT DISTINCT YEAR(ingress_time) as yr FROM student_device_logs ORDER BY yr DESC");
+                            "SELECT DISTINCT YEAR(submitted_time) as yr FROM student_device_logs " +
+                                    "WHERE submitted_time IS NOT NULL AND (is_deleted = 0 OR is_deleted IS NULL) " +
+                                    "ORDER BY yr DESC");
                     while (rs.next()) exportScopeValueCombo.getItems().add(String.valueOf(rs.getInt("yr")));
                 }
                 case "Quarter" -> {
                     java.sql.ResultSet rs = st.executeQuery(
-                            "SELECT DISTINCT YEAR(ingress_time) as yr, QUARTER(ingress_time) as qr " +
-                                    "FROM student_device_logs ORDER BY yr DESC, qr DESC");
+                            "SELECT DISTINCT YEAR(submitted_time) as yr, QUARTER(submitted_time) as qr " +
+                                    "FROM student_device_logs " +
+                                    "WHERE submitted_time IS NOT NULL AND (is_deleted = 0 OR is_deleted IS NULL) " +
+                                    "ORDER BY yr DESC, qr DESC");
                     while (rs.next()) {
                         int yr = rs.getInt("yr"); int qr = rs.getInt("qr");
                         String label = switch (qr) {
@@ -312,8 +316,10 @@ public class ReportsController {
                 }
                 case "Month" -> {
                     java.sql.ResultSet rs = st.executeQuery(
-                            "SELECT DISTINCT YEAR(ingress_time) as yr, MONTH(ingress_time) as mn " +
-                                    "FROM student_device_logs ORDER BY yr DESC, mn DESC");
+                            "SELECT DISTINCT YEAR(submitted_time) as yr, MONTH(submitted_time) as mn " +
+                                    "FROM student_device_logs " +
+                                    "WHERE submitted_time IS NOT NULL AND (is_deleted = 0 OR is_deleted IS NULL) " +
+                                    "ORDER BY yr DESC, mn DESC");
                     String[] monthNames = {"Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"};
                     while (rs.next()) {
                         int yr = rs.getInt("yr"); int mn = rs.getInt("mn");
@@ -677,7 +683,7 @@ public class ReportsController {
             return;
         }
 
-        boolean success = byodService.restoreRegisteredStudent(selected.getStudentId());
+        boolean success = byodService.restoreRegisteredStudent(selected.getFormId());
         if (success) {
             loadTrashData();
             loadStudentsData();
@@ -705,7 +711,7 @@ public class ReportsController {
         confirmation.showAndWait();
 
         if (confirmation.getResult() == ButtonType.YES) {
-            boolean success = byodService.permanentlyDeleteStudent(selected.getStudentId());
+            boolean success = byodService.permanentlyDeleteStudent(selected.getFormId());
             if (success) {
                 loadTrashData();
                 showSuccessAlert("Record permanently deleted.");

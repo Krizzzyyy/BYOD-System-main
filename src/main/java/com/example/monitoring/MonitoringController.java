@@ -184,22 +184,20 @@
                 });
 
                 editColumn.setCellFactory(param -> new TableCell<>() {
-                    private final Button ingressButton = new Button("📥 In");
-                    private final Button egressButton = new Button("📤 Out");
+                    private final Button ingressButton = new Button("📥 Ingress");
+                    private final Button egressButton = new Button("📤 Egress");
                     {
                         ingressButton.getStyleClass().add("table-edit");
                         egressButton.getStyleClass().add("table-edit");
 
                         ingressButton.setOnAction(e -> {
                             LogEntry entry = getTableView().getItems().get(getIndex());
-                            if (entry != null) onMarkIngress(entry);
+                            if (entry != null) triggerQRCameraEgress();
                         });
 
                         egressButton.setOnAction(e -> {
                             LogEntry entry = getTableView().getItems().get(getIndex());
-                            if (entry != null) {
-                                triggerQRCameraEgress();
-                            }
+                            if (entry != null) triggerQRCameraEgress();
                         });
                     }
                     @Override
@@ -210,14 +208,17 @@
                             return;
                         }
                         LogEntry entry = getTableView().getItems().get(getIndex());
-                        if (STATUS_INGRESS.equalsIgnoreCase(entry.getStatus())) {
+                        String approvalStatus = entry.getApprovalStatus();
+                        if ("Ready for Entry".equals(approvalStatus)) {
+                            ingressButton.getStyleClass().removeAll("table-edit-in", "table-edit-out");
+                            ingressButton.getStyleClass().add("table-edit-in");
+                            setGraphic(ingressButton);
+                        } else if ("Checked In".equals(approvalStatus)) {
                             egressButton.getStyleClass().removeAll("table-edit-in", "table-edit-out");
                             egressButton.getStyleClass().add("table-edit-out");
                             setGraphic(egressButton);
                         } else {
-                            ingressButton.getStyleClass().removeAll("table-edit-in", "table-edit-out");
-                            ingressButton.getStyleClass().add("table-edit-in");
-                            setGraphic(ingressButton);
+                            setGraphic(null);
                         }
                     }
                 });
@@ -491,15 +492,6 @@
                 info.showAndWait();
             }
 
-            private void onMarkIngress(LogEntry entry) {
-                try {
-                    byodService.updateIngress(entry.getStudentId());
-                    refreshMonitoringData();
-                } catch (Exception e) {
-                    showAlert("Database Ingress Error", e.getMessage());
-                }
-            }
-
             private void triggerQRCameraEgress() {
                 Stage currentStage = (Stage) monitoringTableView.getScene().getWindow();
 
@@ -713,7 +705,7 @@
                 dialog.showAndWait().ifPresent(reason -> {
                     if (reason != null && !reason.isBlank()) {
                         try {
-                            byodService.disapproveRegistration(entry.getStudentId(), reason, "Faculty");
+                            byodService.disapproveRegistration(entry.getFormId(), reason, "Faculty");
                             refreshMonitoringData();
                         } catch (Exception ex) {
                             showAlert("Disapproval Error", ex.getMessage());
@@ -756,7 +748,7 @@
                 dialog.showAndWait().ifPresent(reason -> {
                     if (reason != null && !reason.isBlank()) {
                         try {
-                            byodService.cancelRegistration(selected.getStudentId(), reason, "Faculty");
+                            byodService.cancelRegistration(selected.getFormId(), reason, "Faculty");
                             refreshMonitoringData();
                         } catch (Exception ex) {
                             showAlert("Cancellation Error", ex.getMessage());

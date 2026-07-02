@@ -607,6 +607,7 @@
                     private final Button approveBtn = new Button("Approve");
                     private final Button disapproveBtn = new Button("Disapprove");
                     private final HBox box = new HBox(5, approveBtn, disapproveBtn);
+                    { box.setAlignment(javafx.geometry.Pos.CENTER); }
                     {
                         approveBtn.getStyleClass().add("btn-save");
                         approveBtn.setStyle("-fx-font-size:11px; -fx-padding:4 10;");

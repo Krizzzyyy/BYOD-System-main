@@ -229,6 +229,14 @@ public class ReportsController {
             formStatusCombo.setValue("Select Status");
         }
 
+        if (entryDatePicker != null)
+            entryDatePicker.setDayCellFactory(picker -> new javafx.scene.control.DateCell() {
+                @Override public void updateItem(java.time.LocalDate date, boolean empty) {
+                    super.updateItem(date, empty);
+                    setDisable(date.isBefore(java.time.LocalDate.now().plusDays(1)));
+                }
+            });
+
         setupTables();
         loadData();
         showView(View.MAIN);

@@ -126,6 +126,13 @@ public class RegistrationController {
             deviceTypeCombo.getItems().addAll(REGISTERED_ITEM_CATEGORIES);
         if (courseCombo != null)
             courseCombo.getItems().addAll(COURSE_LIST);
+        if (scheduledEntryDate != null)
+            scheduledEntryDate.setDayCellFactory(picker -> new javafx.scene.control.DateCell() {
+                @Override public void updateItem(java.time.LocalDate date, boolean empty) {
+                    super.updateItem(date, empty);
+                    setDisable(date.isBefore(java.time.LocalDate.now().plusDays(1)));
+                }
+            });
         if (userTypeCombo != null) {
             userTypeCombo.getItems().addAll("Student", "Staff", "Guest");
             userTypeCombo.valueProperty().addListener((obs, o, n) -> handleUserTypeChange(n));
@@ -631,17 +638,57 @@ public class RegistrationController {
     }
 
     @FXML
-    private void handleCancel() {
-        if ("Student".equals(Auth.userRole)) {
-            navigateTo("/fxml/dashboard.fxml");
+    private boolean hasPartialInput() {
+        boolean hasText = (lastNameField != null && !lastNameField.getText().trim().isEmpty())
+                || (firstNameField != null && !firstNameField.getText().trim().isEmpty())
+                || (contactField != null && !contactField.getText().trim().isEmpty())
+                || (yearSectionField != null && !yearSectionField.getText().trim().isEmpty())
+                || (courseCombo != null && courseCombo.getValue() != null);
+        boolean hasDevice = savedDevices != null && !savedDevices.isEmpty();
+        return hasText || hasDevice;
+    }
+
+    @FXML private void handleCancel() {
+        if (hasPartialInput()) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Unsaved Changes");
+            alert.setHeaderText("You have unsaved information.");
+            alert.setContentText("Your registration is not yet complete. Are you sure you want to leave? All entered data will be lost.");
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) {
+                    if ("Student".equals(Auth.userRole)) {
+                        navigateTo("/fxml/dashboard.fxml");
+                    } else {
+                        navigateTo("/fxml/monitoring.fxml");
+                    }
+                }
+            });
         } else {
-            navigateTo("/fxml/monitoring.fxml");
+            if ("Student".equals(Auth.userRole)) {
+                navigateTo("/fxml/dashboard.fxml");
+            } else {
+                navigateTo("/fxml/monitoring.fxml");
+            }
         }
     }
 
-    @FXML private void handleDashboard()    { navigateTo("/fxml/dashboard.fxml"); }
-    @FXML private void handleMonitoring()   { navigateTo("/fxml/monitoring.fxml"); }
-    @FXML private void handleReports() { navigateTo("/fxml/reports.fxml"); }
+    private void navigateWithGuard(String fxml) {
+        if (hasPartialInput()) {
+            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+            alert.setTitle("Unsaved Changes");
+            alert.setHeaderText("You have unsaved information.");
+            alert.setContentText("Your registration is not yet complete. Are you sure you want to leave? All entered data will be lost.");
+            alert.showAndWait().ifPresent(response -> {
+                if (response == ButtonType.OK) navigateTo(fxml);
+            });
+        } else {
+            navigateTo(fxml);
+        }
+    }
+
+    @FXML private void handleDashboard()    { navigateWithGuard("/fxml/dashboard.fxml"); }
+    @FXML private void handleMonitoring()   { navigateWithGuard("/fxml/monitoring.fxml"); }
+    @FXML private void handleReports()      { navigateWithGuard("/fxml/reports.fxml"); }
     @FXML private void handleRegistration() { /* already here */ }
 
     private void navigateTo(String fxml) {

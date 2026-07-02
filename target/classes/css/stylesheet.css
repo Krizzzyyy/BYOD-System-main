@@ -579,9 +579,13 @@
 /* ═══════════════════════════════════════════════════════════
    APPROVAL STATUS BADGES
    ═══════════════════════════════════════════════════════════ */
-.status-pending { -fx-background-color: -color-status-warning-alpha; -fx-text-fill: derive(-color-status-warning, -30%); -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
-.status-approved { -fx-background-color: -color-status-success-alpha; -fx-text-fill: derive(-color-status-success, -30%); -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
-.status-disapproved { -fx-background-color: rgba(211, 47, 47, 0.15); -fx-text-fill: -color-status-error; -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
+.status-pending       { -fx-background-color: #FFF3CD; -fx-text-fill: #856404; -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
+.status-approved      { -fx-background-color: #D0ECF0; -fx-text-fill: #1a6b7a; -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
+.status-ready         { -fx-background-color: #C8EED0; -fx-text-fill: #2e7d46; -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
+.status-checkedin     { -fx-background-color: #1B5E20; -fx-text-fill: white; -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
+.status-checkedout    { -fx-background-color: #F8D7DA; -fx-text-fill: #721C24; -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
+.status-disapproved   { -fx-background-color: #3a3a3a; -fx-text-fill: #cccccc; -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
+.status-cancelled     { -fx-background-color: #E2E3E5; -fx-text-fill: #6c757d; -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
 .status-cancelled { -fx-background-color: rgba(185, 187, 190, 0.15); -fx-text-fill: -color-fg-muted; -fx-background-radius: 12px; -fx-padding: 4 10; -fx-font-size: 16px; -fx-font-weight: bold; }
 
 /* ═══════════════════════════════════════════════════════════

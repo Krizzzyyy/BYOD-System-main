@@ -163,23 +163,44 @@
                 deviceSerialColumn.setCellValueFactory(new PropertyValueFactory<>("deviceSerial"));
                 lastLogColumn.setCellValueFactory(new PropertyValueFactory<>("lastLog"));
 
-                statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+                statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));statusColumn.setCellValueFactory(new PropertyValueFactory<>("status"));
+                statusColumn.setStyle("-fx-alignment: CENTER;");
                 statusColumn.setCellFactory(col -> new TableCell<>() {
                     @Override
                     protected void updateItem(String status, boolean empty) {
                         super.updateItem(status, empty);
-                        getStyleClass().removeAll("table-status", "table-status-in", "table-status-out");
-                        if (empty || status == null) {
-                            setText(null);
-                        } else {
-                            setText(status);
-                            getStyleClass().add("table-status");
-                            if (STATUS_INGRESS.equalsIgnoreCase(status)) {
-                                getStyleClass().add("table-status-in");
-                            } else if (STATUS_EGRESS.equalsIgnoreCase(status)) {
-                                getStyleClass().add("table-status-out");
-                            }
+                        setText(null);
+                        setGraphic(null);
+                        if (empty || status == null) return;
+                        Label badge = new Label(status);
+                        badge.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 4 10; -fx-background-radius: 12px;");
+                        switch (status) {
+                            case "Approved":
+                                badge.setStyle(badge.getStyle() + "-fx-background-color: #D0EEF0; -fx-text-fill: #1a6b7a;");
+                                break;
+                            case "Pending":
+                                badge.setStyle(badge.getStyle() + "-fx-background-color: #FFF3CD; -fx-text-fill: #856404;");
+                                break;
+                            case "Disapproved":
+                                badge.setStyle(badge.getStyle() + "-fx-background-color: #F8D7DA; -fx-text-fill: #721C24;");
+                                break;
+                            case "Cancelled":
+                                badge.setStyle(badge.getStyle() + "-fx-background-color: #E2E3E5; -fx-text-fill: #383D41;");
+                                break;
+                            case "Ready for Entry":
+                                badge.setStyle(badge.getStyle() + "-fx-background-color: #C8EED0; -fx-text-fill: #2e7d46;");
+                                break;
+                            case "Checked In":
+                                badge.setStyle(badge.getStyle() + "-fx-background-color: #C8EED0; -fx-text-fill: #1B5E20;");
+                                break;
+                            case "Checked Out":
+                                badge.setStyle(badge.getStyle() + "-fx-background-color: #F8D7DA; -fx-text-fill: #721C24;");
+                                break;
+                            default:
+                                badge.setStyle(badge.getStyle() + "-fx-background-color: #E2E3E5; -fx-text-fill: #383D41;");
+                                break;
                         }
+                        setGraphic(badge);
                     }
                 });
 
@@ -586,6 +607,20 @@
                 alert.showAndWait();
             }
 
+            private String getStatusStyleClass(String status) {
+                if (status == null) return "status-cancelled";
+                return switch (status) {
+                    case "Pending"         -> "status-pending";
+                    case "Approved"        -> "status-approved";
+                    case "Ready for Entry" -> "status-ready";
+                    case "Checked In"      -> "status-checkedin";
+                    case "Checked Out"     -> "status-checkedout";
+                    case "Disapproved"     -> "status-disapproved";
+                    case "Cancelled"       -> "status-cancelled";
+                    default                -> "status-cancelled";
+                };
+            }
+
             private void showAlert(String title, String message) {
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle(title);
@@ -704,13 +739,11 @@
                 dialog.setHeaderText("Disapprove " + entry.getStudentName() + "?");
                 dialog.setContentText("Reason for disapproval:");
                 dialog.showAndWait().ifPresent(reason -> {
-                    if (reason != null && !reason.isBlank()) {
-                        try {
-                            byodService.disapproveRegistration(entry.getFormId(), reason, "Faculty");
-                            refreshMonitoringData();
-                        } catch (Exception ex) {
-                            showAlert("Disapproval Error", ex.getMessage());
-                        }
+                    try {
+                        byodService.disapproveRegistration(entry.getFormId(), reason != null ? reason : "", "Faculty");
+                        refreshMonitoringData();
+                    } catch (Exception ex) {
+                        showAlert("Disapproval Error", ex.getMessage());
                     }
                 });
             }

@@ -386,6 +386,7 @@ public class ReportsController {
             colEntryDate.setCellValueFactory(new PropertyValueFactory<>("entryDate"));
             if (colStatus != null) {
                 colStatus.setCellValueFactory(new PropertyValueFactory<>("status"));
+                colStatus.setStyle("-fx-alignment: CENTER;");
                 colStatus.setCellFactory(col -> new TableCell<StudentRow, String>() {
                     @Override
                     protected void updateItem(String item, boolean empty) {
@@ -399,7 +400,7 @@ public class ReportsController {
                             badge.setStyle("-fx-font-size: 12px; -fx-font-weight: bold; -fx-padding: 4 10; -fx-background-radius: 12px;");
                             switch (item) {
                                 case "Approved":
-                                    badge.setStyle(badge.getStyle() + "-fx-background-color: #D4EDDA; -fx-text-fill: #155724;");
+                                    badge.setStyle(badge.getStyle() + "-fx-background-color: #D0EEF0; -fx-text-fill: #1a6b7a;");
                                     break;
                                 case "Pending":
                                     badge.setStyle(badge.getStyle() + "-fx-background-color: #FFF3CD; -fx-text-fill: #856404;");
@@ -409,6 +410,15 @@ public class ReportsController {
                                     break;
                                 case "Cancelled":
                                     badge.setStyle(badge.getStyle() + "-fx-background-color: #E2E3E5; -fx-text-fill: #383D41;");
+                                    break;
+                                case "Ready for Entry":
+                                    badge.setStyle(badge.getStyle() + "-fx-background-color: #C8EED0; -fx-text-fill: #2e7d46;");
+                                    break;
+                                case "Checked In":
+                                    badge.setStyle(badge.getStyle() + "-fx-background-color: #C8EED0; -fx-text-fill: #1B5E20;");
+                                    break;
+                                case "Checked Out":
+                                    badge.setStyle(badge.getStyle() + "-fx-background-color: #F8D7DA; -fx-text-fill: #721C24;");
                                     break;
                                 default:
                                     badge.setStyle(badge.getStyle() + "-fx-background-color: #E2E3E5; -fx-text-fill: #383D41;");
@@ -1295,6 +1305,20 @@ public class ReportsController {
     }
 
     private static final String STYLESHEET_PATH = "/css/stylesheet.css";
+
+    private String getStatusStyleClass(String status) {
+        if (status == null) return "status-cancelled";
+        return switch (status) {
+            case "Pending"         -> "status-pending";
+            case "Approved"        -> "status-approved";
+            case "Ready for Entry" -> "status-ready";
+            case "Checked In"      -> "status-checkedin";
+            case "Checked Out"     -> "status-checkedout";
+            case "Disapproved"     -> "status-disapproved";
+            case "Cancelled"       -> "status-cancelled";
+            default                -> "status-cancelled";
+        };
+    }
 
     private void showAlert(String t, String m) {
         Alert a = new Alert(Alert.AlertType.WARNING); a.setTitle(t); a.setHeaderText(null); a.setContentText(m); a.showAndWait();

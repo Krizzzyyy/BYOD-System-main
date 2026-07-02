@@ -47,7 +47,7 @@
             <HBox alignment="CENTER" spacing="10.0" VBox.vgrow="ALWAYS">
               <VBox HBox.hgrow="ALWAYS">
                 <Label styleClass="title-2" text="Report &amp; records" />
-                <Label styleClass="description" text="Daily/monthly device monitoring reports · History of device entries and edits" />
+                <Label styleClass="description" text="Device monitoring reports · History of device entries and edits" />
               </VBox>
               <Region HBox.hgrow="ALWAYS" />
               <Button fx:id="scheduleBtn" onAction="#handleSchedule" styleClass="action-button" text="📅 Schedule" />

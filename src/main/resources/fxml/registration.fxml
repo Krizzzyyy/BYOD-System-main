@@ -41,8 +41,8 @@
             <VBox VBox.vgrow="NEVER">
                 <HBox alignment="CENTER" spacing="10.0" VBox.vgrow="ALWAYS">
                     <VBox HBox.hgrow="ALWAYS">
-                        <Label styleClass="title-2" text="Student &amp; registered item registration" />
-                        <Label styleClass="description" text="Register a new student and their item/device under campus policy." />
+                        <Label styleClass="title-2" text="Device Registration" />
+                        <Label styleClass="description" text="Register a new user and their item/device under campus policy." />
                     </VBox>
                     <Region HBox.hgrow="ALWAYS" />
                     <Label fx:id="formIdLabel" styleClass="refresh-button" text="Form ID: BYOD-2026-04121" />

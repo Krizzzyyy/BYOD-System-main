@@ -40,7 +40,7 @@
             <VBox VBox.vgrow="NEVER">
                <HBox alignment="CENTER" spacing="10.0" VBox.vgrow="ALWAYS">
                   <VBox HBox.hgrow="ALWAYS">
-                     <Label styleClass="title-2" text="Dashboard overview" />
+                     <Label styleClass="title-2" text="Dashboard Overview" />
                      <Label fx:id="dateLabel" styleClass="description" text="Date" />
                   </VBox>
                   <Region HBox.hgrow="ALWAYS" />
@@ -79,7 +79,7 @@
             </HBox>
             <HBox spacing="10.0">
                <VBox styleClass="card" HBox.hgrow="ALWAYS">
-                  <Label styleClass="chart-title" text="Ingress-Egress activity (last 7 days)" />
+                  <Label styleClass="chart-title" text="Ingress-Egress Activity (Weekly)" />
                   <BarChart fx:id="activityChart" styleClass="chart">
                      <xAxis><CategoryAxis side="BOTTOM" styleClass="axis-label" /></xAxis>
                      <yAxis><NumberAxis side="LEFT" /></yAxis>

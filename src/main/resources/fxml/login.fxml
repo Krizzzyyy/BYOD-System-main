@@ -35,7 +35,7 @@
                     <padding>
                         <Insets top="10.0" />
                     </padding>
-                    <Label fx:id="appTitleLabel" styleClass="login-title" text="Hi, BYOD User!">
+                    <Label fx:id="appTitleLabel" styleClass="login-title" text="Bring Your Own Device System">
                         <VBox.margin>
                             <Insets bottom="5.0" />
                         </VBox.margin>
